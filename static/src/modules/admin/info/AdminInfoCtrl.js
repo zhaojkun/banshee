@@ -9,8 +9,9 @@ module.exports = function ($scope, Info) {
           $scope.info = null;
         } else {
           // Tofixed with cost
-          res.detectionCost = res.detectionCost.toFixed(3);
-          res.filterCost = res.filterCost.toFixed(3);
+          res.detectionCost = res.detectionCost.toFixed(4);
+          res.filterCost = res.filterCost.toFixed(4);
+          res.queryCost = res.queryCost.toFixed(4);
           $scope.info = res;
         }
       });
