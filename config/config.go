@@ -116,43 +116,43 @@ type configCleaner struct {
 
 // New creates a Config with default values.
 func New() *Config {
-	config := new(Config)
-	config.Interval = DefaultInterval
-	config.Period = DefaultPeriod
-	config.Expiration = DefaultExpiration
-	config.Storage.Path = "storage/"
-	config.Detector.Port = 2015
-	config.Detector.TrendingFactor = DefaultTrendingFactor
-	config.Detector.FilterOffset = DefaultFilterOffset
-	config.Detector.LeastCount = DefaultLeastCount
-	config.Detector.BlackList = []string{}
-	config.Detector.IntervalHitLimit = DefaultIntervalHitLimit
-	config.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
-	config.Detector.DefaultThresholdMins = make(map[string]float64, 0)
-	config.Detector.FillBlankZeros = []string{}
-	config.Webapp.Port = 2016
-	config.Webapp.Auth = [2]string{"admin", "admin"}
-	config.Webapp.Static = "static/dist"
-	config.Webapp.Notice = make(map[string]string, 0)
-	config.Webapp.Language = DefaultWebappLanguage
-	config.Alerter.Command = ""
-	config.Alerter.Workers = 4
-	config.Alerter.Interval = DefaultAlerterInterval
-	config.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
-	config.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
-	config.Cleaner.Interval = DefaultCleanerInterval
-	config.Cleaner.Threshold = DefaultCleanerThreshold
-	return config
+	c := new(Config)
+	c.Interval = DefaultInterval
+	c.Period = DefaultPeriod
+	c.Expiration = DefaultExpiration
+	c.Storage.Path = "storage/"
+	c.Detector.Port = 2015
+	c.Detector.TrendingFactor = DefaultTrendingFactor
+	c.Detector.FilterOffset = DefaultFilterOffset
+	c.Detector.LeastCount = DefaultLeastCount
+	c.Detector.BlackList = []string{}
+	c.Detector.IntervalHitLimit = DefaultIntervalHitLimit
+	c.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
+	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
+	c.Detector.FillBlankZeros = []string{}
+	c.Webapp.Port = 2016
+	c.Webapp.Auth = [2]string{"admin", "admin"}
+	c.Webapp.Static = "static/dist"
+	c.Webapp.Notice = make(map[string]string, 0)
+	c.Webapp.Language = DefaultWebappLanguage
+	c.Alerter.Command = ""
+	c.Alerter.Workers = 4
+	c.Alerter.Interval = DefaultAlerterInterval
+	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
+	c.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Cleaner.Interval = DefaultCleanerInterval
+	c.Cleaner.Threshold = DefaultCleanerThreshold
+	return c
 }
 
 // UpdateWithJSONFile update the config from a json file.
-func (config *Config) UpdateWithJSONFile(fileName string) error {
+func (c *Config) UpdateWithJSONFile(fileName string) error {
 	log.Debug("read config from %s..", fileName)
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, config)
+	err = json.Unmarshal(b, c)
 	if err != nil {
 		return err
 	}
@@ -160,112 +160,150 @@ func (config *Config) UpdateWithJSONFile(fileName string) error {
 }
 
 // Copy config.
-func (config *Config) Copy() *Config {
-	c := New()
-	c.Interval = config.Interval
-	c.Period = config.Period
-	c.Expiration = config.Expiration
-	c.Storage.Path = config.Storage.Path
-	c.Detector.Port = config.Detector.Port
-	c.Detector.TrendingFactor = config.Detector.TrendingFactor
-	c.Detector.FilterOffset = config.Detector.FilterOffset
-	c.Detector.LeastCount = config.Detector.LeastCount
-	c.Detector.BlackList = config.Detector.BlackList
-	c.Detector.DefaultThresholdMaxs = config.Detector.DefaultThresholdMaxs
-	c.Detector.DefaultThresholdMins = config.Detector.DefaultThresholdMins
-	c.Detector.FillBlankZeros = config.Detector.FillBlankZeros
-	c.Detector.IntervalHitLimit = config.Detector.IntervalHitLimit
-	c.Webapp.Port = config.Webapp.Port
-	c.Webapp.Auth = config.Webapp.Auth
-	c.Webapp.Static = config.Webapp.Static
-	c.Webapp.Notice = config.Webapp.Notice
-	c.Webapp.Language = config.Webapp.Language
-	c.Alerter.Command = config.Alerter.Command
-	c.Alerter.Workers = config.Alerter.Workers
-	c.Alerter.Interval = config.Alerter.Interval
-	c.Alerter.OneDayLimit = config.Alerter.OneDayLimit
-	c.Alerter.DefaultSilentTimeRange = config.Alerter.DefaultSilentTimeRange
-	c.Cleaner.Interval = config.Cleaner.Interval
-	c.Cleaner.Threshold = config.Cleaner.Threshold
-	return c
+func (c *Config) Copy() *Config {
+	cfg := New()
+	cfg.Interval = c.Interval
+	cfg.Period = c.Period
+	cfg.Expiration = c.Expiration
+	cfg.Storage.Path = c.Storage.Path
+	cfg.Detector.Port = c.Detector.Port
+	cfg.Detector.TrendingFactor = c.Detector.TrendingFactor
+	cfg.Detector.FilterOffset = c.Detector.FilterOffset
+	cfg.Detector.LeastCount = c.Detector.LeastCount
+	cfg.Detector.BlackList = c.Detector.BlackList
+	cfg.Detector.DefaultThresholdMaxs = c.Detector.DefaultThresholdMaxs
+	cfg.Detector.DefaultThresholdMins = c.Detector.DefaultThresholdMins
+	cfg.Detector.FillBlankZeros = c.Detector.FillBlankZeros
+	cfg.Detector.IntervalHitLimit = c.Detector.IntervalHitLimit
+	cfg.Webapp.Port = c.Webapp.Port
+	cfg.Webapp.Auth = c.Webapp.Auth
+	cfg.Webapp.Static = c.Webapp.Static
+	cfg.Webapp.Notice = c.Webapp.Notice
+	cfg.Webapp.Language = c.Webapp.Language
+	cfg.Alerter.Command = c.Alerter.Command
+	cfg.Alerter.Workers = c.Alerter.Workers
+	cfg.Alerter.Interval = c.Alerter.Interval
+	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit
+	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
+	cfg.Cleaner.Interval = c.Cleaner.Interval
+	cfg.Cleaner.Threshold = c.Cleaner.Threshold
+	return cfg
 }
 
-// Validate config
-func (config *Config) Validate() error {
-	// Globals
-	if config.Interval < 1*Second || config.Interval > 5*Minute {
+// Validate config.
+func (c *Config) Validate() error {
+	if err := c.validateGlobals(); err != nil {
+		return err
+	}
+	if err := c.Detector.validateDetector(); err != nil {
+		return err
+	}
+	if err := c.Webapp.validateWebapp(); err != nil {
+		return err
+	}
+	if err := c.Alerter.validateAlerter(); err != nil {
+		return err
+	}
+	if err := c.Cleaner.validateCleaner(c.Period); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) validateGlobals() error {
+	// Should: 1 Second <= Interval <= 5 Minute
+	if c.Interval < 1*Second || c.Interval > 5*Minute {
 		return ErrInterval
 	}
-	if config.Interval > config.Period {
+	// Should: Period >= Interval
+	if c.Interval > c.Period {
 		return ErrPeriod
 	}
-	if config.Expiration < config.Period*MinExpirationNumToPeriod {
+	// Should: Expiration >= Period * 5
+	if c.Expiration < c.Period*MinExpirationNumToPeriod {
 		return ErrExpiration
 	}
-	// Detector
-	if config.Detector.Port < 1 || config.Detector.Port > 65535 {
+	return nil
+}
+
+func (c *configDetector) validateDetector() error {
+	// Should: 0 < Port < 65536
+	if c.Port < 1 || c.Port > 65535 {
 		return ErrDetectorPort
 	}
-	if config.Detector.TrendingFactor <= 0 || config.Detector.TrendingFactor >= 1 {
+	// Should: 0 < TrendingFactor < 1
+	if c.TrendingFactor <= 0 || c.TrendingFactor >= 1 {
 		return ErrDetectorTrendingFactor
 	}
-	if config.Detector.FilterOffset <= 0 || config.Detector.FilterOffset >= 1 {
-		return ErrDetectorFilterOffset
-	}
-	if len(config.Detector.DefaultThresholdMaxs) > MaxNumDefaultThresholdMaxs {
+	// Should: len(DefaultThresholdMaxs) <= 8
+	if len(c.DefaultThresholdMaxs) > MaxNumDefaultThresholdMaxs {
 		return ErrDetectorDefaultThresholdMaxsLen
 	}
-	if len(config.Detector.DefaultThresholdMins) > MaxNumDefaultThresholdMins {
+	// Should: len(DefaultThresholdMins) <= 8
+	if len(c.DefaultThresholdMins) > MaxNumDefaultThresholdMins {
 		return ErrDetectorDefaultThresholdMinsLen
 	}
-	for _, value := range config.Detector.DefaultThresholdMaxs {
-		if value == 0 {
+	// Should: No zero values in DefaultThresholdMaxs
+	for _, v := range c.DefaultThresholdMaxs {
+		if v == 0 {
 			return ErrDetectorDefaultThresholdMaxZero
 		}
 	}
-	for _, value := range config.Detector.DefaultThresholdMins {
-		if value == 0 {
+	// Should: No zero values in DefaultThresholdMins
+	for _, v := range c.DefaultThresholdMins {
+		if v == 0 {
 			return ErrDetectorDefaultThresholdMinZero
 		}
 	}
-	if len(config.Detector.FillBlankZeros) > MaxFillBlankZerosLen {
+	// Should: len(FillBlankZeros) <= 8
+	if len(c.FillBlankZeros) > MaxFillBlankZerosLen {
 		return ErrDetectorFillBlankZerosLen
 	}
-	// Webapp
-	if config.Webapp.Port < 1 || config.Webapp.Port > 65535 {
+	return nil
+}
+
+func (c *configWebapp) validateWebapp() error {
+	// Should: 0 < Port < 65536
+	if c.Port < 1 || c.Port > 65535 {
 		return ErrWebappPort
 	}
-	langFound := false
-	for _, lang := range WebappSupportedLanguages {
-		if lang == config.Webapp.Language {
-			langFound = true
+	// Should : Language in Supported
+	b := false
+	for _, lg := range WebappSupportedLanguages {
+		if lg == c.Language {
+			b = true
 			break
 		}
 	}
-	if !langFound {
+	if !b {
 		return ErrWebappLanguage
 	}
-	// Alerter
-	if len(config.Alerter.Command) == 0 {
-		return ErrAlerterCommandEmpty
-	}
-	if config.Alerter.Interval <= 0 {
+	return nil
+}
+
+func (c *configAlerter) validateAlerter() error {
+	// Should: Interval > 0
+	if c.Interval <= 0 {
 		return ErrAlerterInterval
 	}
-	if config.Alerter.OneDayLimit <= 0 {
+	// Should: OneDayLimit > 0
+	if c.OneDayLimit <= 0 {
 		return ErrAlerterOneDayLimit
 	}
-	if config.Alerter.DefaultSilentTimeRange[0] < 0 || config.Alerter.DefaultSilentTimeRange[0] > 23 {
+	// Should: 0 <= SilentStart <= 23
+	if c.DefaultSilentTimeRange[0] < 0 || c.DefaultSilentTimeRange[0] > 23 {
 		return ErrAlerterDefaultSilentTimeRange
 	}
-	if config.Alerter.DefaultSilentTimeRange[1] < 0 || config.Alerter.DefaultSilentTimeRange[1] > 23 {
+	// Should: 0 <= SilentEnd <= 23
+	if c.DefaultSilentTimeRange[1] < 0 || c.DefaultSilentTimeRange[1] > 23 {
 		return ErrAlerterDefaultSilentTimeRange
 	}
-	if config.Alerter.DefaultSilentTimeRange[0] >= config.Alerter.DefaultSilentTimeRange[1] {
-		return ErrAlerterDefaultSilentTimeRange
-	}
-	// Cleaner
-	if config.Cleaner.Threshold < config.Period*MinCleanerThresholdNumToPeriod {
+	return nil
+}
+
+func (c *configCleaner) validateCleaner(period uint32) error {
+	// Should: Threshold >= 2 * Period
+	if c.Threshold < period*MinCleanerThresholdNumToPeriod {
 		return ErrCleanerThreshold
 	}
 	return nil
