@@ -190,79 +190,120 @@ func (config *Config) Copy() *Config {
 	return c
 }
 
-// Validate config
-func (config *Config) Validate() error {
-	// Globals
-	if config.Interval < 1*Second || config.Interval > 5*Minute {
+// Validate config.
+func (c *Config) Validate() error {
+	if err := c.validateGlobals(); err != nil {
+		return err
+	}
+	if err := c.Detector.validateDetector(); err != nil {
+		return err
+	}
+	if err := c.Webapp.validateWebapp(); err != nil {
+		return err
+	}
+	if err := c.Alerter.validateAlerter(); err != nil {
+		return err
+	}
+	if err := c.Cleaner.validateCleaner(c.Period); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) validateGlobals() error {
+	// Should: 1 Second <= Interval <= 5 Minute
+	if c.Interval < 1*Second || c.Interval > 5*Minute {
 		return ErrInterval
 	}
-	if config.Interval > config.Period {
+	// Should: Period >= Interval
+	if c.Interval > c.Period {
 		return ErrPeriod
 	}
-	if config.Expiration < config.Period*MinExpirationNumToPeriod {
+	// Should: Expiration >= Period * 5
+	if c.Expiration < c.Period*MinExpirationNumToPeriod {
 		return ErrExpiration
 	}
-	// Detector
-	if config.Detector.Port < 1 || config.Detector.Port > 65535 {
+	return nil
+}
+
+func (c *configDetector) validateDetector() error {
+	// Should: 0 < Port < 65536
+	if c.Port < 1 || c.Port > 65535 {
 		return ErrDetectorPort
 	}
-	if config.Detector.TrendingFactor <= 0 || config.Detector.TrendingFactor >= 1 {
+	// Should: 0 < TrendingFactor < 1
+	if c.TrendingFactor <= 0 || c.TrendingFactor >= 1 {
 		return ErrDetectorTrendingFactor
 	}
-	if config.Detector.FilterOffset <= 0 || config.Detector.FilterOffset >= 1 {
-		return ErrDetectorFilterOffset
-	}
-	if len(config.Detector.DefaultThresholdMaxs) > MaxNumDefaultThresholdMaxs {
+	// Should: len(DefaultThresholdMaxs) <= 8
+	if len(c.DefaultThresholdMaxs) > MaxNumDefaultThresholdMaxs {
 		return ErrDetectorDefaultThresholdMaxsLen
 	}
-	if len(config.Detector.DefaultThresholdMins) > MaxNumDefaultThresholdMins {
+	// Should: len(DefaultThresholdMins) <= 8
+	if len(c.DefaultThresholdMins) > MaxNumDefaultThresholdMins {
 		return ErrDetectorDefaultThresholdMinsLen
 	}
-	for _, value := range config.Detector.DefaultThresholdMaxs {
-		if value == 0 {
+	// Should: No zero values in DefaultThresholdMaxs
+	for _, v := range c.DefaultThresholdMaxs {
+		if v == 0 {
 			return ErrDetectorDefaultThresholdMaxZero
 		}
 	}
-	for _, value := range config.Detector.DefaultThresholdMins {
-		if value == 0 {
+	// Should: No zero values in DefaultThresholdMins
+	for _, v := range c.DefaultThresholdMins {
+		if v == 0 {
 			return ErrDetectorDefaultThresholdMinZero
 		}
 	}
-	if len(config.Detector.FillBlankZeros) > MaxFillBlankZerosLen {
+	// Should: len(FillBlankZeros) <= 8
+	if len(c.FillBlankZeros) > MaxFillBlankZerosLen {
 		return ErrDetectorFillBlankZerosLen
 	}
-	// Webapp
-	if config.Webapp.Port < 1 || config.Webapp.Port > 65535 {
+	return nil
+}
+
+func (c *configWebapp) validateWebapp() error {
+	// Should: 0 < Port < 65536
+	if c.Port < 1 || c.Port > 65535 {
 		return ErrWebappPort
 	}
-	langFound := false
-	for _, lang := range WebappSupportedLanguages {
-		if lang == config.Webapp.Language {
-			langFound = true
+	// Should : Language in Supported
+	b := false
+	for _, lg := range WebappSupportedLanguages {
+		if lg == c.Language {
+			b = true
 			break
 		}
 	}
-	if !langFound {
+	if !b {
 		return ErrWebappLanguage
 	}
-	// Alerter
-	if config.Alerter.Interval <= 0 {
+	return nil
+}
+
+func (c *configAlerter) validateAlerter() error {
+	// Should: Interval > 0
+	if c.Interval <= 0 {
 		return ErrAlerterInterval
 	}
-	if config.Alerter.OneDayLimit <= 0 {
+	// Should: OneDayLimit > 0
+	if c.OneDayLimit <= 0 {
 		return ErrAlerterOneDayLimit
 	}
-	if config.Alerter.DefaultSilentTimeRange[0] < 0 || config.Alerter.DefaultSilentTimeRange[0] > 23 {
+	// Should: 0 <= SilentStart <= 23
+	if c.DefaultSilentTimeRange[0] < 0 || c.DefaultSilentTimeRange[0] > 23 {
 		return ErrAlerterDefaultSilentTimeRange
 	}
-	if config.Alerter.DefaultSilentTimeRange[1] < 0 || config.Alerter.DefaultSilentTimeRange[1] > 23 {
+	// Should: 0 <= SilentEnd <= 23
+	if c.DefaultSilentTimeRange[1] < 0 || c.DefaultSilentTimeRange[1] > 23 {
 		return ErrAlerterDefaultSilentTimeRange
 	}
-	if config.Alerter.DefaultSilentTimeRange[0] >= config.Alerter.DefaultSilentTimeRange[1] {
-		return ErrAlerterDefaultSilentTimeRange
-	}
-	// Cleaner
-	if config.Cleaner.Threshold < config.Period*MinCleanerThresholdNumToPeriod {
+	return nil
+}
+
+func (c *configCleaner) validateCleaner(period uint32) error {
+	// Should: Threshold >= 2 * Period
+	if c.Threshold < period*MinCleanerThresholdNumToPeriod {
 		return ErrCleanerThreshold
 	}
 	return nil
