@@ -246,9 +246,6 @@ func (config *Config) Validate() error {
 		return ErrWebappLanguage
 	}
 	// Alerter
-	if len(config.Alerter.Command) == 0 {
-		return ErrAlerterCommandEmpty
-	}
 	if config.Alerter.Interval <= 0 {
 		return ErrAlerterInterval
 	}
