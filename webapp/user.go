@@ -119,8 +119,19 @@ func deleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, ErrUserID)
 		return
 	}
+	user := &models.User{ID: id}
+	// Remove its projects.
+	var projs []models.Project
+	if err := db.Admin.DB().Model(user).Association("Projects").Find(&projs).Error; err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	if err := db.Admin.DB().Model(user).Association("Projects").Delete(projs).Error; err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
 	// Delete.
-	if err := db.Admin.DB().Delete(&models.User{ID: id}).Error; err != nil {
+	if err := db.Admin.DB().Delete(user).Error; err != nil {
 		switch err {
 		case gorm.RecordNotFound:
 			ResponseError(w, ErrUserNotFound)
