@@ -304,6 +304,11 @@ type metricGetResult struct {
 // values with the same phase around this timestamp, within an filter
 // offset.
 func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
+	timer := util.NewTimer()
+	defer func() {
+		elapsed := timer.Elapsed()
+		health.AddQueryCost(elapsed)
+	}()
 	offset := uint32(d.cfg.Detector.FilterOffset * float64(d.cfg.Period))
 	expiration := d.cfg.Expiration
 	period := d.cfg.Period

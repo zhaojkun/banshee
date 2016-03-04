@@ -16,8 +16,11 @@ const AggregationInterval int = 5 * 60
 // max length for detectionCosts.
 const maxDetectionCostsLen = 100 * 1024
 
-// max length for filterCosets.
+// max length for filterCosts.
 const maxFilterCostsLen = 100 * 1024
+
+// max length for queryCosts.
+const maxQueryCostsLen = 100 * 1024
 
 // Info is the stats container.
 type Info struct {
@@ -30,6 +33,7 @@ type Info struct {
 	// Aggregation
 	DetectionCost     float64 `json:"detectionCost"` // ms
 	FilterCost        float64 `json:"filterCost"`    // ms
+	QueryCost         float64 `json:"queryCost"`     // ms
 	NumMetricIncomed  int64   `json:"numMetricIncomed"`
 	NumMetricDetected int64   `json:"numMetricDetected"`
 	NumAlertingEvents int64   `json:"numAlertingEvents"`
@@ -46,6 +50,7 @@ func (info *Info) copy() *Info {
 		NumRules:            info.NumRules,
 		DetectionCost:       info.DetectionCost,
 		FilterCost:          info.FilterCost,
+		QueryCost:           info.QueryCost,
 		NumMetricIncomed:    info.NumMetricIncomed,
 		NumMetricDetected:   info.NumMetricDetected,
 		NumAlertingEvents:   info.NumAlertingEvents,
@@ -65,6 +70,8 @@ type hub struct {
 	detectionCostsLock sync.Mutex
 	filterCosts        []float64
 	filterCostsLock    sync.Mutex
+	queryCosts         []float64
+	queryCostsLock     sync.Mutex
 	numMetricIncomed   int64
 	numMetricDetected  int64
 	numAlertingEvents  int64
@@ -108,6 +115,15 @@ func AddFilterCost(n float64) {
 	defer h.filterCostsLock.Unlock()
 	if len(h.filterCosts) < maxFilterCostsLen {
 		h.filterCosts = append(h.filterCosts, n)
+	}
+}
+
+// AddQueryCost appends cost to QueryCosts.
+func AddQueryCost(n float64) {
+	h.queryCostsLock.Lock()
+	defer h.queryCostsLock.Unlock()
+	if len(h.queryCosts) < maxQueryCostsLen {
+		h.queryCosts = append(h.queryCosts, n)
 	}
 }
 
@@ -167,6 +183,16 @@ func aggregationFilterCost() {
 	h.filterCosts = h.filterCosts[:0]
 }
 
+// Aggregate QueryCost.
+func aggregationQueryCost() {
+	h.info.lock.Lock()
+	defer h.info.lock.Unlock()
+	h.queryCostsLock.Lock()
+	defer h.queryCostsLock.Unlock()
+	h.info.QueryCost = mathutil.Average(h.queryCosts)
+	h.queryCosts = h.queryCosts[:0]
+}
+
 // Aggregate NumMetricIncomed.
 func aggregateNumMetricIncomed() {
 	h.info.lock.Lock()
@@ -205,5 +231,6 @@ func Start() {
 		aggregateNumMetricDetected()
 		aggregateNumAlertingEvents()
 		aggregationFilterCost()
+		aggregationQueryCost()
 	}
 }
