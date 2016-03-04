@@ -9,9 +9,15 @@ import (
 )
 
 func TestExampleConfigParsing(t *testing.T) {
-	config := New()
-	err := config.UpdateWithJSONFile("./exampleConfig.json")
+	c := New()
+	err := c.UpdateWithJSONFile("./exampleConfig.json")
 	assert.Ok(t, err == nil)
 	defaults := New()
-	assert.Ok(t, reflect.DeepEqual(config, defaults))
+	assert.Ok(t, reflect.DeepEqual(c, defaults))
+}
+
+func TestExampleConfigValidate(t *testing.T) {
+	c := New()
+	c.UpdateWithJSONFile("./exampleConfig.json")
+	assert.Ok(t, c.Validate() == nil)
 }

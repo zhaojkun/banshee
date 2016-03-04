@@ -116,43 +116,43 @@ type configCleaner struct {
 
 // New creates a Config with default values.
 func New() *Config {
-	config := new(Config)
-	config.Interval = DefaultInterval
-	config.Period = DefaultPeriod
-	config.Expiration = DefaultExpiration
-	config.Storage.Path = "storage/"
-	config.Detector.Port = 2015
-	config.Detector.TrendingFactor = DefaultTrendingFactor
-	config.Detector.FilterOffset = DefaultFilterOffset
-	config.Detector.LeastCount = DefaultLeastCount
-	config.Detector.BlackList = []string{}
-	config.Detector.IntervalHitLimit = DefaultIntervalHitLimit
-	config.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
-	config.Detector.DefaultThresholdMins = make(map[string]float64, 0)
-	config.Detector.FillBlankZeros = []string{}
-	config.Webapp.Port = 2016
-	config.Webapp.Auth = [2]string{"admin", "admin"}
-	config.Webapp.Static = "static/dist"
-	config.Webapp.Notice = make(map[string]string, 0)
-	config.Webapp.Language = DefaultWebappLanguage
-	config.Alerter.Command = ""
-	config.Alerter.Workers = 4
-	config.Alerter.Interval = DefaultAlerterInterval
-	config.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
-	config.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
-	config.Cleaner.Interval = DefaultCleanerInterval
-	config.Cleaner.Threshold = DefaultCleanerThreshold
-	return config
+	c := new(Config)
+	c.Interval = DefaultInterval
+	c.Period = DefaultPeriod
+	c.Expiration = DefaultExpiration
+	c.Storage.Path = "storage/"
+	c.Detector.Port = 2015
+	c.Detector.TrendingFactor = DefaultTrendingFactor
+	c.Detector.FilterOffset = DefaultFilterOffset
+	c.Detector.LeastCount = DefaultLeastCount
+	c.Detector.BlackList = []string{}
+	c.Detector.IntervalHitLimit = DefaultIntervalHitLimit
+	c.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
+	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
+	c.Detector.FillBlankZeros = []string{}
+	c.Webapp.Port = 2016
+	c.Webapp.Auth = [2]string{"admin", "admin"}
+	c.Webapp.Static = "static/dist"
+	c.Webapp.Notice = make(map[string]string, 0)
+	c.Webapp.Language = DefaultWebappLanguage
+	c.Alerter.Command = ""
+	c.Alerter.Workers = 4
+	c.Alerter.Interval = DefaultAlerterInterval
+	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
+	c.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Cleaner.Interval = DefaultCleanerInterval
+	c.Cleaner.Threshold = DefaultCleanerThreshold
+	return c
 }
 
 // UpdateWithJSONFile update the config from a json file.
-func (config *Config) UpdateWithJSONFile(fileName string) error {
+func (c *Config) UpdateWithJSONFile(fileName string) error {
 	log.Debug("read config from %s..", fileName)
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, config)
+	err = json.Unmarshal(b, c)
 	if err != nil {
 		return err
 	}
@@ -160,34 +160,34 @@ func (config *Config) UpdateWithJSONFile(fileName string) error {
 }
 
 // Copy config.
-func (config *Config) Copy() *Config {
-	c := New()
-	c.Interval = config.Interval
-	c.Period = config.Period
-	c.Expiration = config.Expiration
-	c.Storage.Path = config.Storage.Path
-	c.Detector.Port = config.Detector.Port
-	c.Detector.TrendingFactor = config.Detector.TrendingFactor
-	c.Detector.FilterOffset = config.Detector.FilterOffset
-	c.Detector.LeastCount = config.Detector.LeastCount
-	c.Detector.BlackList = config.Detector.BlackList
-	c.Detector.DefaultThresholdMaxs = config.Detector.DefaultThresholdMaxs
-	c.Detector.DefaultThresholdMins = config.Detector.DefaultThresholdMins
-	c.Detector.FillBlankZeros = config.Detector.FillBlankZeros
-	c.Detector.IntervalHitLimit = config.Detector.IntervalHitLimit
-	c.Webapp.Port = config.Webapp.Port
-	c.Webapp.Auth = config.Webapp.Auth
-	c.Webapp.Static = config.Webapp.Static
-	c.Webapp.Notice = config.Webapp.Notice
-	c.Webapp.Language = config.Webapp.Language
-	c.Alerter.Command = config.Alerter.Command
-	c.Alerter.Workers = config.Alerter.Workers
-	c.Alerter.Interval = config.Alerter.Interval
-	c.Alerter.OneDayLimit = config.Alerter.OneDayLimit
-	c.Alerter.DefaultSilentTimeRange = config.Alerter.DefaultSilentTimeRange
-	c.Cleaner.Interval = config.Cleaner.Interval
-	c.Cleaner.Threshold = config.Cleaner.Threshold
-	return c
+func (c *Config) Copy() *Config {
+	cfg := New()
+	cfg.Interval = c.Interval
+	cfg.Period = c.Period
+	cfg.Expiration = c.Expiration
+	cfg.Storage.Path = c.Storage.Path
+	cfg.Detector.Port = c.Detector.Port
+	cfg.Detector.TrendingFactor = c.Detector.TrendingFactor
+	cfg.Detector.FilterOffset = c.Detector.FilterOffset
+	cfg.Detector.LeastCount = c.Detector.LeastCount
+	cfg.Detector.BlackList = c.Detector.BlackList
+	cfg.Detector.DefaultThresholdMaxs = c.Detector.DefaultThresholdMaxs
+	cfg.Detector.DefaultThresholdMins = c.Detector.DefaultThresholdMins
+	cfg.Detector.FillBlankZeros = c.Detector.FillBlankZeros
+	cfg.Detector.IntervalHitLimit = c.Detector.IntervalHitLimit
+	cfg.Webapp.Port = c.Webapp.Port
+	cfg.Webapp.Auth = c.Webapp.Auth
+	cfg.Webapp.Static = c.Webapp.Static
+	cfg.Webapp.Notice = c.Webapp.Notice
+	cfg.Webapp.Language = c.Webapp.Language
+	cfg.Alerter.Command = c.Alerter.Command
+	cfg.Alerter.Workers = c.Alerter.Workers
+	cfg.Alerter.Interval = c.Alerter.Interval
+	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit
+	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
+	cfg.Cleaner.Interval = c.Cleaner.Interval
+	cfg.Cleaner.Threshold = c.Cleaner.Threshold
+	return cfg
 }
 
 // Validate config.
