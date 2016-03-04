@@ -1,3 +1,14 @@
+0.1.4
+-----
+
+* Health: Add filter matched rules cost average to info. #447
+* Health: Add number of total rules to info. #447
+* Health: Add query history metrics cost average to info. #447
+* Static: Fix autocomplete select users list position. #450
+* Storage: Use bloom filter in metricdb for better performance. #443
+* Webapp: Delete related rules and user relationships on project deleted. #448
+* Webapp: Delete related project relationships on user deleted. #451
+
 0.1.3
 -----
 
