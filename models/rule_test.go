@@ -54,6 +54,11 @@ func TestRuleTest(t *testing.T) {
 	rule = &Rule{TrendDown: true}
 	assert.Ok(t, !rule.Test(&Metric{Value: 19, Name: "foo"}, &Index{Score: -1.2}, cfg))
 	assert.Ok(t, rule.Test(&Metric{Value: 8, Name: "foo"}, &Index{Score: -1.2}, cfg))
+	// Bug#456: DefaultThresholdMax intercepts the testing for later trendDown.
+	cfg = config.New()
+	cfg.Detector.DefaultThresholdMaxs["fo*"] = 10
+	rule = &Rule{TrendDown: true}
+	assert.Ok(t, !rule.Test(&Metric{Value: 19, Name: "foo"}, &Index{Score: 0.37}, cfg))
 }
 
 func BenchmarkRuleTest(b *testing.B) {
