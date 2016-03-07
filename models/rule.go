@@ -81,51 +81,57 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 	rule.RLock()
 	defer rule.RUnlock()
 	// Default thresholds.
-	thresholdMax := rule.ThresholdMax
-	thresholdMin := rule.ThresholdMin
-	if thresholdMax == 0 && cfg != nil {
+	var defaultThresholdMax float64
+	var defaultThresholdMin float64
+	if cfg != nil {
 		// Check defaults
 		for p, v := range cfg.Detector.DefaultThresholdMaxs {
 			if ok, _ := filepath.Match(p, m.Name); ok && v != 0 {
-				thresholdMax = v
+				defaultThresholdMax = v
 				break
 			}
 		}
 	}
-	if thresholdMin == 0 && cfg != nil {
+	if cfg != nil {
 		// Check defaults
 		for p, v := range cfg.Detector.DefaultThresholdMins {
 			if ok, _ := filepath.Match(p, m.Name); ok && v != 0 {
-				thresholdMin = v
+				defaultThresholdMin = v
 				break
 			}
 		}
 	}
 	// Conditions
 	ok := false
-	if !ok && rule.TrendUp && thresholdMax == 0 {
+	if !ok && rule.TrendUp {
 		// TrendUp
 		ok = idx.Score > 1
+		if rule.ThresholdMax != 0 {
+			// TrendUp And Value >= ThresholdMax
+			ok = ok && m.Value >= rule.ThresholdMax
+		} else if defaultThresholdMax != 0 {
+			// TrendUp And Value >= DefaultThresholdMax
+			ok = ok && m.Value >= defaultThresholdMax
+		}
 	}
-	if !ok && rule.TrendUp && thresholdMax != 0 {
-		// TrendUp And Value >= X
-		ok = idx.Score > 1 && m.Value >= thresholdMax
+	if !ok && !rule.TrendUp && rule.ThresholdMax != 0 {
+		// Value >= ThresholdMax
+		ok = m.Value >= rule.ThresholdMax
 	}
-	if !ok && !rule.TrendUp && thresholdMax != 0 {
-		// Value >= X
-		ok = m.Value >= thresholdMax
-	}
-	if !ok && rule.TrendDown && thresholdMin == 0 {
+	if !ok && rule.TrendDown {
 		// TrendDown
 		ok = idx.Score < -1
+		if rule.ThresholdMin != 0 {
+			// TrendDown And Value <= ThresholdMin
+			ok = ok && m.Value <= rule.ThresholdMin
+		} else if defaultThresholdMin != 0 {
+			// TrendUp And Value >= DefaultThresholdMin
+			ok = ok && m.Value <= defaultThresholdMin
+		}
 	}
-	if !ok && rule.TrendDown && thresholdMin != 0 {
-		// TrendDown And Value <= X
-		ok = idx.Score < -1 && m.Value <= thresholdMin
-	}
-	if !ok && !rule.TrendDown && thresholdMin != 0 {
-		// Value <= X
-		ok = m.Value <= thresholdMin
+	if !ok && !rule.TrendDown && rule.ThresholdMin != 0 {
+		// Value <= ThresholdMin
+		ok = m.Value <= rule.ThresholdMin
 	}
 	return ok
 }
