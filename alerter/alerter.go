@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"sync/atomic"
@@ -19,9 +20,13 @@ import (
 	"github.com/eleme/banshee/util/safemap"
 )
 
-// Limit for buffered detected metric results, further results will be dropped
-// if this limit is reached.
-const bufferedMetricResultsLimit = 10 * 1024
+const (
+	// Limit for buffered detected metric results, further results will be dropped
+	// if this limit is reached.
+	bufferedMetricResultsLimit = 10 * 1024
+	// Exec command timeout in second
+	execCommandTimeout = 5 * time.Second
+)
 
 // Alerter alerts on anomalies detected.
 type Alerter struct {
@@ -113,6 +118,34 @@ func makeEventID(m *models.Metric) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
+// execute command with message within certain timeout.
+func (al *Alerter) execCommand(d *msg) error {
+	b, _ := json.Marshal(d)
+	arg := string(b)
+	done := make(chan error)
+	cmd := exec.Command(al.cfg.Alerter.Command, arg)
+	go func() {
+		done <- cmd.Run()
+	}()
+	timeout := time.After(execCommandTimeout)
+	select {
+	case <-timeout:
+		err := cmd.Process.Kill()
+		if err == nil {
+			err = errors.New("command timed out, killed")
+		} else {
+			s := fmt.Sprintf("failed to kill command: %v", err)
+			err = errors.New(s)
+		}
+		go func() {
+			<-done // exit the prev goroutine
+		}()
+		return err
+	case err := <-done:
+		return err
+	}
+}
+
 // work waits for detected metrics, then check each metric with all the
 // rules, the configured shell command will be executed once a rule is hit.
 func (al *Alerter) work() {
@@ -176,9 +209,7 @@ func (al *Alerter) work() {
 					log.Warn("alert command not configured")
 					continue
 				}
-				b, _ := json.Marshal(d)
-				cmd := exec.Command(al.cfg.Alerter.Command, string(b))
-				if err := cmd.Run(); err != nil {
+				if err := al.execCommand(d); err != nil {
 					log.Error("exec %s: %v", al.cfg.Alerter.Command, err)
 					continue
 				}
