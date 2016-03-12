@@ -1,3 +1,16 @@
+0.1.5
+-----
+
+* Alerter: Execute alerter command within 5 seconds timout. #460
+* Alerter: Won't send message if rule level is lower than user RuleLevel. #461
+* Models: Add field `Level` to models.Rule. #461
+* Models: Add field `RuleLevel` to models.User. #461
+* Models: Fix bug on Test when defaultThresholds and only trendDown. #457
+* Static: Add rule level to rule edit and create modal. #461
+* Static: Add user ruleLevel to user edit page and create modal. #461
+* Webapp: Add rule level to updateRule and createRule. #461
+* Webapp: Add user ruleLevel to updateUser and createUser. #461
+
 0.1.4
 -----
 
