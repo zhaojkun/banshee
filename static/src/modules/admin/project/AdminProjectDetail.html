@@ -32,6 +32,7 @@
                       <th> {{ 'ADMIN_RULE_COMMENT' | translate }} </th>
                       <th> {{ 'ADMIN_RULE_CONDITION' | translate }} </th>
                       <th> {{ 'ADMIN_RULE_NUMMETRICS' | translate }} </th>
+                      <th> {{ 'ADMIN_RULE_LEVEL' | translate }} </th>
                       <th class="th100"></th>
                     </tr>
                   <tbody>
@@ -55,6 +56,11 @@
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
                           <kbd ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold'}"></kbd>
                         </a>
+                      </td>
+                      <td>
+                        <span class="label label-info" ng-if="rule.level==0">{{ 'ADMIN_RULE_LEVEL_LOW' | translate }}</span>
+                        <span class="label label-warning" ng-if="rule.level==1">{{ 'ADMIN_RULE_LEVEL_MIDDLE' | translate }}</span>
+                        <span class="label label-danger" ng-if="rule.level==2">{{ 'ADMIN_RULE_LEVEL_HIGH' | translate }}</span>
                       </td>
                       <td class="text-right">
                         <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_EDIT_TEXT' | translate }}" ng-click="editRule($event, rule)">
