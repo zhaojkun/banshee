@@ -44,8 +44,7 @@ type DB struct {
 // Open a DB by fileName.
 func Open(fileName string) (*DB, error) {
 	opts := &leveldbOpt.Options{
-		Filter:      leveldbFilter.NewBloomFilter(LevelDBBloomFilterBitsPerKey),
-		BlockCacher: leveldbOpt.NoCacher,
+		Filter: leveldbFilter.NewBloomFilter(LevelDBBloomFilterBitsPerKey),
 	}
 	db, err := leveldb.OpenFile(fileName, opts)
 	if err != nil {
