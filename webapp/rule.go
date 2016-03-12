@@ -52,7 +52,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	if err := models.ValidateRuleLevel(req.Level); err != nil {
-		ResponseError(w, NewUnexceptedWebError(err))
+		ResponseError(w, NewValidationWebError(err))
 		return
 	}
 	// Find project.
@@ -149,7 +149,7 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	if err := models.ValidateRuleLevel(req.Level); err != nil {
-		ResponseError(w, NewUnexceptedWebError(err))
+		ResponseError(w, NewValidationWebError(err))
 		return
 	}
 	if !req.TrendUp && !req.TrendDown && req.ThresholdMax == 0 && req.ThresholdMin == 0 {
