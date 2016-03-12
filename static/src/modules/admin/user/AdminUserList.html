@@ -45,6 +45,7 @@
                 <th translate="ADMIN_USER_TABLE_HEAD_EMAIL"></th>
                 <th translate="ADMIN_USER_TABLE_HEAD_PHONE"></th>
                 <th translate="ADMIN_USER_TABLE_HEAD_UNIVERSAL"></th>
+                <th translate="ADMIN_USER_TABLE_HEAD_RULE_LEVEL"></th>
                 <th></th>
               </tr>
             </thead>
@@ -68,6 +69,11 @@
                 <td>
                   <span ng-if="user.universal">{{ 'YES' | translate }}</span>
                   <span ng-if="!user.universal">{{ 'NO' | translate }}</span>
+                </td>
+                <td>
+                  <span ng-if="user.ruleLevel==0">{{ 'ADMIN_USER_RULE_LEVEL_LOW' | translate }}</span>
+                  <span ng-if="user.ruleLevel==1">{{ 'ADMIN_USER_RULE_LEVEL_MIDDLE' | translate }}</span>
+                  <span ng-if="user.ruleLevel==2">{{ 'ADMIN_USER_RULE_LEVEL_HIGH' | translate }}</span>
                 </td>
                 <td style="text-align: right;">
                   <md-button class="md-raised md-primary md-mini"  ui-sref='banshee.admin.user.detail({id: user.id})' aria-label="edit user">
