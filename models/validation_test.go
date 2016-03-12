@@ -57,6 +57,13 @@ func TestValidateRulePattern(t *testing.T) {
 	assert.Ok(t, ValidateRulePattern("*.abc.*") == nil)
 }
 
+func TestValidateRuleLevel(t *testing.T) {
+	assert.Ok(t, ValidateRuleLevel(RuleLevelLow) == nil)
+	assert.Ok(t, ValidateRuleLevel(RuleLevelMiddle) == nil)
+	assert.Ok(t, ValidateRuleLevel(RuleLevelHigh) == nil)
+	assert.Ok(t, ValidateRuleLevel(2016) == ErrRuleLevel)
+}
+
 func TestValidateMetricName(t *testing.T) {
 	assert.Ok(t, ValidateMetricName("") == ErrMetricNameEmpty)
 	assert.Ok(t, ValidateMetricName(genLongString(MaxMetricNameLen+1)) == ErrMetricNameTooLong)

@@ -39,6 +39,7 @@ var (
 	ErrRulePatternTooLong       = errors.New("rule pattern is too long")
 	ErrRulePatternContainsSpace = errors.New("rule pattern contains spaces")
 	ErrRulePatternFormat        = errors.New("rule pattern format is invalid")
+	ErrRuleLevel                = errors.New("rule level is invalid")
 	ErrMetricNameEmpty          = errors.New("metric name is empty")
 	ErrMetricNameTooLong        = errors.New("metric name is too long")
 	ErrMetricStampTooSmall      = errors.New("metric stamp is too small")
@@ -140,6 +141,20 @@ func ValidateRulePattern(pattern string) error {
 		}
 	}
 	return nil
+}
+
+// ValidateRuleLevel validates rule level.
+func ValidateRuleLevel(level int) error {
+	switch level {
+	case RuleLevelLow:
+		return nil
+	case RuleLevelHigh:
+		return nil
+	case RuleLevelMiddle:
+		return nil
+	default:
+		return ErrRuleLevel
+	}
 }
 
 // ValidateMetricName validates metric name.
