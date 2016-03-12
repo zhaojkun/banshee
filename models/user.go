@@ -18,4 +18,6 @@ type User struct {
 	Universal bool `sql:"index" json:"universal"`
 	// Users can subscribe many projects.
 	Projects []*Project `gorm:"many2many:project_users" json:"-"`
+	// Rule level to receive
+	RuleLevel int `json:"ruleLevel"`
 }

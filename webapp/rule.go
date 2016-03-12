@@ -20,6 +20,7 @@ type createRuleRequest struct {
 	ThresholdMax float64 `json:"thresholdMax"`
 	ThresholdMin float64 `json:"thresholdMin"`
 	Comment      string  `json:"comment"`
+	Level        int     `json:"level"`
 }
 
 // createRule creates a rule.
@@ -31,7 +32,9 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	// Request
-	req := &createRuleRequest{}
+	req := &createRuleRequest{
+		Level: models.RuleLevelLow,
+	}
 	if err := RequestBind(r, req); err != nil {
 		ResponseError(w, ErrBadRequest)
 		return
@@ -48,6 +51,10 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	if !req.TrendUp && !req.TrendDown && req.ThresholdMax == 0 && req.ThresholdMin == 0 {
 		ResponseError(w, ErrRuleNoCondition)
+		return
+	}
+	if err := models.ValidateRuleLevel(req.Level); err != nil {
+		ResponseError(w, NewValidationWebError(err))
 		return
 	}
 	// Find project.
@@ -71,6 +78,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ThresholdMax: req.ThresholdMax,
 		ThresholdMin: req.ThresholdMin,
 		Comment:      req.Comment,
+		Level:        req.Level,
 	}
 	if err := db.Admin.DB().Create(rule).Error; err != nil {
 		// Write errors.
@@ -142,6 +150,10 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := models.ValidateRuleLevel(req.Level); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
 	if !req.TrendUp && !req.TrendDown && req.ThresholdMax == 0 && req.ThresholdMin == 0 {
 		ResponseError(w, ErrRuleNoCondition)
 		return
@@ -154,6 +166,7 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	rule.Comment = req.Comment
+	rule.Level = req.Level
 	rule.Pattern = req.Pattern
 	rule.TrendUp = req.TrendUp
 	rule.TrendDown = req.TrendDown

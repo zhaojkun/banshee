@@ -7,6 +7,13 @@ import (
 	"path/filepath"
 )
 
+// Rule Levels
+const (
+	RuleLevelLow = iota
+	RuleLevelMiddle
+	RuleLevelHigh
+)
+
 // Rule is a type to describe alerter rule.
 type Rule struct {
 	// Rule may be cached.
@@ -30,6 +37,8 @@ type Rule struct {
 	NumMetrics int `sql:"-" json:"numMetrics"`
 	// Comment
 	Comment string `sql:"type:varchar(256)" json:"comment"`
+	// Level
+	Level int `json:"level"`
 }
 
 // Copy the rule.
@@ -53,6 +62,7 @@ func (rule *Rule) CopyTo(r *Rule) {
 	r.ThresholdMax = rule.ThresholdMax
 	r.ThresholdMin = rule.ThresholdMin
 	r.Comment = rule.Comment
+	r.Level = rule.Level
 }
 
 // Equal tests rule equality
@@ -68,7 +78,8 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.TrendDown == rule.TrendDown &&
 		r.ThresholdMax == rule.ThresholdMax &&
 		r.ThresholdMin == rule.ThresholdMin &&
-		r.Comment == rule.Comment)
+		r.Comment == rule.Comment &&
+		r.Level == rule.Level)
 }
 
 // Test if a metric hits this rule.

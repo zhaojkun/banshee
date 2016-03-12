@@ -52,6 +52,7 @@ type createUserRequest struct {
 	Phone       string `json:"phone"`
 	EnablePhone bool   `json:"enablePhone"`
 	Universal   bool   `json:"universal"`
+	RuleLevel   int    `json:"ruleLevel"`
 }
 
 // createUser creats a user.
@@ -61,6 +62,7 @@ func createUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		EnableEmail: true,
 		EnablePhone: true,
 		Universal:   false,
+		RuleLevel:   models.RuleLevelLow,
 	}
 	if err := RequestBind(r, req); err != nil {
 		ResponseError(w, ErrBadRequest)
@@ -79,6 +81,10 @@ func createUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := models.ValidateRuleLevel(req.RuleLevel); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
 	// Save
 	user := &models.User{
 		Name:        req.Name,
@@ -87,6 +93,7 @@ func createUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Phone:       req.Phone,
 		EnablePhone: req.EnablePhone,
 		Universal:   req.Universal,
+		RuleLevel:   req.RuleLevel,
 	}
 	if err := db.Admin.DB().Create(user).Error; err != nil {
 		// Write errors.
@@ -151,6 +158,7 @@ type updateUserRequest struct {
 	Phone       string `json:"phone"`
 	EnablePhone bool   `json:"enablePhone"`
 	Universal   bool   `json:"universal"`
+	RuleLevel   int    `json:"ruleLevel"`
 }
 
 // updateUser updates a user.
@@ -180,6 +188,9 @@ func updateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := models.ValidateRuleLevel(req.RuleLevel); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+	}
 	// Find
 	user := &models.User{}
 	if err := db.Admin.DB().First(user, id).Error; err != nil {
@@ -199,6 +210,7 @@ func updateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	user.Phone = req.Phone
 	user.EnablePhone = req.EnablePhone
 	user.Universal = req.Universal
+	user.RuleLevel = req.RuleLevel
 	if err := db.Admin.DB().Save(user).Error; err != nil {
 		if err == gorm.RecordNotFound {
 			// User not found.

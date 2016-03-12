@@ -197,6 +197,9 @@ func (al *Alerter) work() {
 			users = append(users, univs...)
 			// Send
 			for _, user := range users {
+				if rule.Level < user.RuleLevel {
+					continue
+				}
 				d := &msg{
 					ID:      eventID,
 					Project: proj,

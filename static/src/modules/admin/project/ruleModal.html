@@ -34,6 +34,19 @@
           </md-input-container>
         </div>
         <div layout="row" flex="100">
+          <md-input-container flex="20" class="md-block">
+            <label>{{ 'ADMIN_RULE_LEVEL' | translate }}</label>
+          </md-input-container>
+          <md-input-container flex="80" class="md-block">
+            <md-radio-group ng-model="rule.level" layout="row">
+              <md-radio-button ng-value="0" ng-if="!isEdit" ng-init="rule.level=0"> {{ 'ADMIN_RULE_LEVEL_LOW' | translate }} </md-radio-button>
+              <md-radio-button ng-value="0" ng-if="isEdit"> {{ 'ADMIN_RULE_LEVEL_LOW' | translate }} </md-radio-button>
+              <md-radio-button ng-value="1"> {{ 'ADMIN_RULE_LEVEL_MIDDLE' | translate }} </md-radio-button>
+              <md-radio-button ng-value="2"> {{ 'ADMIN_RULE_LEVEL_HIGH' | translate }} </md-radio-button>
+            </md-radio-group>
+          </md-input-container>
+        </div>
+        <div layout="row" flex="100">
           <md-input-container flex="40" class="md-block">
             <md-checkbox ng-if="!isEdit" ng-init='rule.trendUp=true' ng-model="rule.trendUp">
               {{ 'ADMIN_RULE_ON_TREND_UP' | translate}}
