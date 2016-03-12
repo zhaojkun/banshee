@@ -32,7 +32,9 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	// Request
-	req := &createRuleRequest{}
+	req := &createRuleRequest{
+		Level: models.RuleLevelLow,
+	}
 	if err := RequestBind(r, req); err != nil {
 		ResponseError(w, ErrBadRequest)
 		return
