@@ -12,6 +12,7 @@ module.exports = function ($locationProvider, $mdThemingProvider, $translateProv
     });
 
   // Translate
+  $translateProvider.useMessageFormatInterpolation();
   $translateProvider
     .useStaticFilesLoader({
       prefix: './languages/locale-',

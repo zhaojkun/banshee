@@ -210,4 +210,5 @@ module.exports = function ($scope, $location, $mdDialog, $state, $stateParams, $
   }
 
   $scope.buildRepr = Util.buildRepr;
+  $scope.ruleCheck = Util.ruleCheck;
 };

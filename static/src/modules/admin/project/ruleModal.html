@@ -20,11 +20,11 @@
           <div ng-messages="form.pattern.$error" ng-if="form.pattern.$dirty">
             <div ng-message="required">{{ 'FIELD_IS_REQUIRED' | translate }}</div>
           </div>
-          <div ng-if="rule.pattern&&isGraphiteName(rule.pattern)" ng-style="{'color': '#777', 'margin-top': '10px'}">
+          <div ng-if="rule.pattern&&isGraphiteName(rule.pattern)" ng-style="{'color': 'saddlebrown', 'margin-top': '10px'}">
             {{ 'ADMIN_RULE_PATTERN_WARN_TEXT' | translate }}
-            <a ng-click="rule.pattern=translateGraphiteName(rule.pattern)" ng-style="{'cursor': 'pointer'}">
+            <kbd ng-click="rule.pattern=translateGraphiteName(rule.pattern)" ng-style="{'cursor': 'pointer'}">
               {{ translateGraphiteName(rule.pattern) }}
-            </a>
+            </kbd>
           </div>
         </md-input-container>
         <md-input-container class="md-block" flex-gt-sm>

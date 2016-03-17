@@ -58,5 +58,12 @@ module.exports = function () {
     }
   };
 
+  exports.ruleCheck = function(rule) {
+    if (exports.isGraphiteName(rule.pattern) && rule.numMetrics === 0) {
+      return false;
+    }
+    return true;
+  };
+
   return exports;
 };
