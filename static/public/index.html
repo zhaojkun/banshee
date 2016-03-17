@@ -27,12 +27,16 @@
 
 <body ng-app="banshee">
 <ui-view class="wrapper container"></ui-view>
-<!-- build:jsLib js/vendor.js -->
-<script src="node_modules/jquery/dist/jquery.min.js"></script>
-<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!-- build:mfLib js/msgfmt.js -->
 <script src="node_modules/messageformat/messageformat.js"></script>
 <script src="node_modules/messageformat/locale/zh.js"></script>
 <script src="node_modules/messageformat/locale/en.js"></script>
+<!-- endbuild -->
+
+<!-- build:jsLib js/vendor.js -->
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
 <script src="node_modules/angular/angular.min.js"></script>
 <script src="node_modules/angular-sanitize/angular-sanitize.min.js"></script>
