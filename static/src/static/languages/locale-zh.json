@@ -115,6 +115,7 @@
   "ADMIN_RULE_EDIT_TEXT": "编辑规则",
   "ADMIN_RULE_DELETE_TEXT": "删除规则",
   "ADMIN_RULE_DELETE_WARN": "确认删除这条规则？",
+  "ADMIN_RULE_PATTERN_WARN_TEXT": "你可能想填写的规则是",
   "ADMIN_USER_ADD_TEXT": "添加用户",
   "ADMIN_USER_REMOVE_TEXT": "从这个项目中删除该用户",
   "ADMIN_USER_REMOVE_WARN": "确认从这个项目里删除该用户?",
