@@ -114,6 +114,9 @@ gulp.task('usemin', ['tpl', 'less', 'js'], function () {
     .pipe(usemin({
       cssLib: [minifyCss(), 'concat', rev()],
       cssApp: [minifyCss(), 'concat', rev()],
+      mfLib: ['concat', uglify(), rename({
+        suffix: '.min'
+      }), rev()],
       jsLib: ['concat', rename({
         suffix: '.min'
       }), rev()],
