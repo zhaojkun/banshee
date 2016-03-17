@@ -11,6 +11,7 @@ var (
 	ErrDetectorPort                    = errors.New("invalid detector.port")
 	ErrDetectorTrendingFactor          = errors.New("detector.trendingFactor should be a float between 0 and 1")
 	ErrDetectorFilterOffset            = errors.New("detector.filterOffset should be a float between 0 and 1")
+	ErrDetectorFilterTimes             = errors.New("detector.filterTimes should be smaller")
 	ErrDetectorDefaultThresholdMaxsLen = errors.New("detector.defaultThresholdMaxs should have up to 8 items")
 	ErrDetectorDefaultThresholdMinsLen = errors.New("detector.defaultThresholdMins should have up to 8 items")
 	ErrDetectorDefaultThresholdMaxZero = errors.New("detector.defaultThresholdMaxs should not contain zeros")
