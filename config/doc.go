@@ -19,6 +19,7 @@ Configuration is in JSON file, for example:
 	    "port": 2015,
 	    "trendingFactor": 0.1,
 	    "filterOffset": 0.01,
+	    "filterTimes": 4,
 	    "leastCount": 30,
 	    "blacklist": ["statsd.*"],
 	    "intervalHitLimit": 100,
@@ -60,6 +61,7 @@ The documents for each configuration item with default values:
 	detector.port                  // Detector tcp port to listen.
 	detector.trendingFactor        // Detection weighted moving factor, should be a number between 0 and 1, default: 0.1
 	detector.filterOffset          // Offset to filter history data, as a percentage to period, default: 0.01
+	detector.filterTimes           // Number of times to filter history data, default: 4 (4 days history)
 	detector.leastCount            // Least count to start detection. default: 30
 	detector.blacklist             // Incoming metrics blacklist, each one should be a wildcard pattern, default: []
 	detector.intervalHitLimit      // Limitation for number of filtered metrics for each rule in one interval. default: 100

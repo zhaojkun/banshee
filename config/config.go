@@ -31,6 +31,8 @@ const (
 	DefaultTrendingFactor float64 = 0.1
 	// Default filter offset to query history metrics.
 	DefaultFilterOffset float64 = 0.01
+	// Default filter times to query history metrics.
+	DefaultFilterTimes int = 4
 	// Default cleaner interval.
 	DefaultCleanerInterval uint32 = 3 * Hour
 	// Default cleaner threshold.
@@ -85,6 +87,7 @@ type configDetector struct {
 	Port                 int                `json:"port"`
 	TrendingFactor       float64            `json:"trendingFactor"`
 	FilterOffset         float64            `json:"filterOffset"`
+	FilterTimes          int                `json:"filterTimes"`
 	LeastCount           uint32             `json:"leastCount"`
 	BlackList            []string           `json:"blackList"`
 	IntervalHitLimit     int                `json:"intervalHitLimit"`
@@ -124,6 +127,7 @@ func New() *Config {
 	c.Detector.Port = 2015
 	c.Detector.TrendingFactor = DefaultTrendingFactor
 	c.Detector.FilterOffset = DefaultFilterOffset
+	c.Detector.FilterTimes = DefaultFilterTimes
 	c.Detector.LeastCount = DefaultLeastCount
 	c.Detector.BlackList = []string{}
 	c.Detector.IntervalHitLimit = DefaultIntervalHitLimit
@@ -169,6 +173,7 @@ func (c *Config) Copy() *Config {
 	cfg.Detector.Port = c.Detector.Port
 	cfg.Detector.TrendingFactor = c.Detector.TrendingFactor
 	cfg.Detector.FilterOffset = c.Detector.FilterOffset
+	cfg.Detector.FilterTimes = c.Detector.FilterTimes
 	cfg.Detector.LeastCount = c.Detector.LeastCount
 	cfg.Detector.BlackList = c.Detector.BlackList
 	cfg.Detector.DefaultThresholdMaxs = c.Detector.DefaultThresholdMaxs
@@ -195,7 +200,7 @@ func (c *Config) Validate() error {
 	if err := c.validateGlobals(); err != nil {
 		return err
 	}
-	if err := c.Detector.validateDetector(); err != nil {
+	if err := c.Detector.validateDetector(c.Period, c.Expiration); err != nil {
 		return err
 	}
 	if err := c.Webapp.validateWebapp(); err != nil {
@@ -226,7 +231,7 @@ func (c *Config) validateGlobals() error {
 	return nil
 }
 
-func (c *configDetector) validateDetector() error {
+func (c *configDetector) validateDetector(period uint32, expiration uint32) error {
 	// Should: 0 < Port < 65536
 	if c.Port < 1 || c.Port > 65535 {
 		return ErrDetectorPort
@@ -258,6 +263,10 @@ func (c *configDetector) validateDetector() error {
 	// Should: len(FillBlankZeros) <= 8
 	if len(c.FillBlankZeros) > MaxFillBlankZerosLen {
 		return ErrDetectorFillBlankZerosLen
+	}
+	// Should: FilterTimes * Period < Expiration
+	if uint32(c.FilterTimes)*period > expiration {
+		return ErrDetectorFilterTimes
 	}
 	return nil
 }

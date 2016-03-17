@@ -5,6 +5,8 @@ package detector
 import (
 	"bufio"
 	"fmt"
+	"math"
+	"math/rand"
 	"net"
 	"path/filepath"
 
@@ -312,17 +314,28 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 	offset := uint32(d.cfg.Detector.FilterOffset * float64(d.cfg.Period))
 	expiration := d.cfg.Expiration
 	period := d.cfg.Period
+	ftimes := d.cfg.Detector.FilterTimes
+	k := int(math.Ceil(float64(expiration) / float64(period)))
+	s := rand.Perm(k)[:ftimes]
+	mp := make(map[int]bool, ftimes)
+	for _, v := range s {
+		mp[v] = true
+	}
 	// Get values with the same phase.
-	n := 0
+	n := 0 // number of goroutines to luanch
+	i := 0 // index of the following loop
 	ch := make(chan metricGetResult)
 	for stamp := m.Stamp; stamp+expiration > m.Stamp; stamp -= period {
 		start := stamp - offset
 		stop := stamp + offset
-		n++
-		go func() {
-			ms, err := d.db.Metric.Get(m.Name, start, stop)
-			ch <- metricGetResult{err, ms, start, stop}
-		}()
+		if mp[i] {
+			go func() {
+				ms, err := d.db.Metric.Get(m.Name, start, stop)
+				ch <- metricGetResult{err, ms, start, stop}
+			}()
+			n++
+		}
+		i++
 	}
 	// Concat chunks.
 	var vals []float64

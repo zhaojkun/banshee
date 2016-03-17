@@ -9,6 +9,7 @@
     "port": 2015,
     "trendingFactor": 0.1,
     "filterOffset": 0.01,
+    "filterTimes": 4,
     "leastCount": 30,
     "blacklist": [],
     "intervalHitLimit": 100,
