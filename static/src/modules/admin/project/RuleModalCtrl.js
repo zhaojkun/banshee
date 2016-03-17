@@ -35,4 +35,6 @@ module.exports = function ($scope, $mdDialog, $stateParams, toastr, Rule, Util) 
   };
 
   $scope.buildRepr = Util.buildRepr;
+  $scope.isGraphiteName = Util.isGraphiteName;
+  $scope.translateGraphiteName = Util.translateGraphiteName;
 };

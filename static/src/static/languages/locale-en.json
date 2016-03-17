@@ -116,6 +116,7 @@
   "ADMIN_RULE_EDIT_TEXT": "Edit Rule",
   "ADMIN_RULE_DELETE_TEXT": "Delete Rule",
   "ADMIN_RULE_DELETE_WARN": "Would you like to delete this rule?",
+  "ADMIN_RULE_PATTERN_WARN_TEXT": "May you wanna to write this rule",
   "ADMIN_USER_ADD_TEXT": "Add User",
   "ADMIN_USER_REMOVE_TEXT": "Remove User From Project",
   "ADMIN_USER_REMOVE_WARN": "Would you like to remove this user from project?",
