@@ -1,3 +1,11 @@
+0.1.6
+-----
+
+* Detector: Filter less times instead of full expiration. #464
+* Static: Add a warning to graphite like rule pattern. #463
+* Static: Add rule check to rule list page. #465
+* Static: Add a warning to create rule. #465
+
 0.1.5
 -----
 
