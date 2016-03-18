@@ -8,7 +8,9 @@ metrics.
 [![GoDoc](https://godoc.org/github.com/eleme/banshee?status.svg)](https://godoc.org/github.com/eleme/banshee)
 [![Join the chat at https://gitter.im/eleme/banshee](https://badges.gitter.im/eleme/banshee.svg)](https://gitter.im/eleme/banshee?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-![snap](snap.png)
+![snap-01](snap/01.png)
+![snap-02](snap/02.png)
+![snap-03](snap/03.png)
 
 Requirements
 ------------
