@@ -280,14 +280,20 @@ func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []float64 {
 			m := ms[i]
 			// start is smaller than current stamp.
 			for ; start < m.Stamp; start += step {
-				vals = append(vals, 0)
+				if len(vals) >= 1 && vals[0] != 0 {
+					// https://github.com/eleme/banshee/issues/470
+					vals = append(vals, 0)
+				}
 			}
 			// Push real-metric.
 			vals = append(vals, m.Value)
 			i++
 		} else {
 			// No more real-metric.
-			vals = append(vals, 0)
+			if len(vals) >= 1 && vals[0] != 0 {
+				// https://github.com/eleme/banshee/issues/470
+				vals = append(vals, 0)
+			}
 		}
 		start += step
 	}
