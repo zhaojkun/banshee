@@ -39,6 +39,8 @@ type Rule struct {
 	Comment string `sql:"type:varchar(256)" json:"comment"`
 	// Level
 	Level int `json:"level"`
+	// Disabled
+	Disabled bool `sql:"default:false" json:"disabled"`
 }
 
 // Copy the rule.
@@ -63,6 +65,7 @@ func (rule *Rule) CopyTo(r *Rule) {
 	r.ThresholdMin = rule.ThresholdMin
 	r.Comment = rule.Comment
 	r.Level = rule.Level
+	r.Disabled = rule.Disabled
 }
 
 // Equal tests rule equality
@@ -79,7 +82,8 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.ThresholdMax == rule.ThresholdMax &&
 		r.ThresholdMin == rule.ThresholdMin &&
 		r.Comment == rule.Comment &&
-		r.Level == rule.Level)
+		r.Level == rule.Level &&
+		r.Disabled == rule.Disabled)
 }
 
 // Test if a metric hits this rule.
@@ -91,6 +95,10 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 	// RLock if shared.
 	rule.RLock()
 	defer rule.RUnlock()
+	if rule.Disabled {
+		// Tmp disabled
+		return false
+	}
 	// Default thresholds.
 	var defaultThresholdMax float64
 	var defaultThresholdMin float64
