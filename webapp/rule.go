@@ -21,6 +21,7 @@ type createRuleRequest struct {
 	ThresholdMin float64 `json:"thresholdMin"`
 	Comment      string  `json:"comment"`
 	Level        int     `json:"level"`
+	Disabled     bool    `json:"disabled"`
 }
 
 // createRule creates a rule.
@@ -33,7 +34,8 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	// Request
 	req := &createRuleRequest{
-		Level: models.RuleLevelLow,
+		Level:    models.RuleLevelLow,
+		Disabled: false,
 	}
 	if err := RequestBind(r, req); err != nil {
 		ResponseError(w, ErrBadRequest)
@@ -79,6 +81,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ThresholdMin: req.ThresholdMin,
 		Comment:      req.Comment,
 		Level:        req.Level,
+		Disabled:     req.Disabled,
 	}
 	if err := db.Admin.DB().Create(rule).Error; err != nil {
 		// Write errors.
@@ -172,6 +175,7 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rule.TrendDown = req.TrendDown
 	rule.ThresholdMax = req.ThresholdMax
 	rule.ThresholdMin = req.ThresholdMin
+	rule.Disabled = req.Disabled
 
 	if db.Admin.DB().Save(rule).Error != nil {
 		ResponseError(w, ErrRuleUpdateFailed)
