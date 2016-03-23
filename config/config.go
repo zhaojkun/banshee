@@ -97,12 +97,11 @@ type configDetector struct {
 }
 
 type configWebapp struct {
-	Port          int               `json:"port"`
-	Auth          [2]string         `json:"auth"`
-	Static        string            `json:"static"`
-	Notice        map[string]string `json:"notice"`
-	Language      string            `json:"language"`
-	PrivateDocURL string            `json:"privateDocUrl"`
+	Port          int       `json:"port"`
+	Auth          [2]string `json:"auth"`
+	Static        string    `json:"static"`
+	Language      string    `json:"language"`
+	PrivateDocURL string    `json:"privateDocUrl"`
 }
 
 type configAlerter struct {
@@ -138,7 +137,6 @@ func New() *Config {
 	c.Webapp.Port = 2016
 	c.Webapp.Auth = [2]string{"admin", "admin"}
 	c.Webapp.Static = "static/dist"
-	c.Webapp.Notice = make(map[string]string, 0)
 	c.Webapp.Language = DefaultWebappLanguage
 	c.Webapp.PrivateDocURL = ""
 	c.Alerter.Command = ""
@@ -185,7 +183,6 @@ func (c *Config) Copy() *Config {
 	cfg.Webapp.Port = c.Webapp.Port
 	cfg.Webapp.Auth = c.Webapp.Auth
 	cfg.Webapp.Static = c.Webapp.Static
-	cfg.Webapp.Notice = c.Webapp.Notice
 	cfg.Webapp.Language = c.Webapp.Language
 	cfg.Webapp.PrivateDocURL = c.Webapp.PrivateDocURL
 	cfg.Alerter.Command = c.Alerter.Command
