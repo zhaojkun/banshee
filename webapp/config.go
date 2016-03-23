@@ -37,3 +37,12 @@ type languageResponse struct {
 func getLanguage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ResponseJSONOK(w, &languageResponse{cfg.Webapp.Language})
 }
+
+// getPrivateDocURL returns config.webapp.privateDocUrl.
+type privateDocURLResponse struct {
+	PrivateDocURL string `json:"privateDocUrl"`
+}
+
+func getPrivateDocURL(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ResponseJSONOK(w, &privateDocURLResponse{cfg.Webapp.PrivateDocURL})
+}
