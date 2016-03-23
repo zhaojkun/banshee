@@ -12,6 +12,10 @@ module.exports = function ($resource) {
     getLanguage: {
       method: 'GET',
       url: '/api/language'
-    }
+    },
+    getPrivateDocUrl: {
+      method: 'GET',
+      url: '/api/privateDocUrl'
+    },
   });
 };

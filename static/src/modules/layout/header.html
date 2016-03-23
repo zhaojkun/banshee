@@ -5,6 +5,7 @@
         <h3 class="md-button md-ink-ripple" ng-click="goMain()" translate="LAYOUT_HEADER_TITLE">
         </h3>
         <span flex></span>
+        <md-button href="{{privateDocUrl}}" ng-if="privateDocUrl.length>0"> {{ 'HEADER_DOCS_LINK_TEXT' | translate }}</md-button>
         <md-button ng-click="changeLanguage('zh')" ng-if="getLanguage()=='en'"> 简体中文
         </md-button>
         <md-button ng-click="changeLanguage('en')" ng-if="getLanguage()=='zh'"> English
