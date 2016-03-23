@@ -22,7 +22,8 @@
     "auth": ["admin", "admin"],
     "static": "static/dist",
     "notice": {},
-    "webapp": "en"
+    "webapp": "en",
+    "privateDocUrl": ""
   },
   "alerter": {
     "command": "",
