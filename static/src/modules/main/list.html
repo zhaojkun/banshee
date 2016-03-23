@@ -40,14 +40,6 @@
               </md-not-found>
             </md-autocomplete>
           </div>
-          <div ng-style="{'color': 'saddlebrown'}" ng-if="!(notice | isEmpty)">
-            <ul>
-              <span translate>MAIN_NOTICE_TEXT</span>:
-              <li ng-repeat="(name, url) in notice" ng-style="{'display': 'inline', 'margin': '10px'}">
-                <a href="{{ url }}">{{ name }}</a>
-              </li>
-            </ul>
-          </div>
           <md-input-container>
             <md-select ng-model="filter.datetime" aria-label="datetime">
               <md-option ng-repeat="time in dateTimes" ng-value="time.seconds" ng-selected="$index === 0">

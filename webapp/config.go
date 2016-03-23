@@ -24,11 +24,6 @@ func getInterval(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ResponseJSONOK(w, &intervalResponse{cfg.Interval})
 }
 
-// getNoice returns config.webapp.notice.
-func getNotice(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	ResponseJSONOK(w, cfg.Webapp.Notice)
-}
-
 // getLanguage returns config.webapp.language.
 type languageResponse struct {
 	Language string `json:"language"`
@@ -36,4 +31,13 @@ type languageResponse struct {
 
 func getLanguage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	ResponseJSONOK(w, &languageResponse{cfg.Webapp.Language})
+}
+
+// getPrivateDocURL returns config.webapp.privateDocUrl.
+type privateDocURLResponse struct {
+	PrivateDocURL string `json:"privateDocUrl"`
+}
+
+func getPrivateDocURL(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ResponseJSONOK(w, &privateDocURLResponse{cfg.Webapp.PrivateDocURL})
 }

@@ -45,6 +45,7 @@
   "MAIN_REFRESH_TOOLTIP_TEXT": "Refresh",
   "MAIN_PAUSE_TOOLTIP_TEXT": "Pause",
   "MAIN_RESUME_TOOLTIP_TEXT": "Resume",
+  "HEADER_DOCS_LINK_TEXT": "Documents",
   "ADMIN_NAV_TITLE": "Navigation",
   "ADMIN_NAV_ITEM_PROJECT": "Project",
   "ADMIN_NAV_ITEM_USER": "Receiver",

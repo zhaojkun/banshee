@@ -2,7 +2,7 @@
  * Created by Panda on 16/1/13.
  */
 /*@ngInject*/
-module.exports = function ($scope, $state, $translate) {
+module.exports = function ($scope, $state, $translate, Config) {
   $scope.goMain = function() {
     $state.go('banshee.main', {project: '', pattern: ''}, {reload: true});
   };
@@ -18,4 +18,15 @@ module.exports = function ($scope, $state, $translate) {
   $scope.getLanguage = function() {
     return $translate.use();
   };
+
+  $scope.privateDocUrl = null;
+
+  $scope.loadData = function() {
+    Config.getPrivateDocUrl().$promise
+      .then(function (res) {
+        $scope.privateDocUrl = res.privateDocUrl;
+      });
+  };
+
+  $scope.loadData();
 };

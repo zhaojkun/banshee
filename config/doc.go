@@ -30,8 +30,7 @@ Configuration is in JSON file, for example:
 	  "webapp": {
 	    "port": 2016,
 	    "auth": ["user", "pass"],
-	    "static": "static/dist",
-		"notice": {}
+	    "static": "static/dist"
 	  },
 	  "alerter": {
 	    "command": "",
@@ -71,7 +70,7 @@ The documents for each configuration item with default values:
 	webapp.port                    // Webapp http port to listen.
 	webapp.auth                    // Webapp admin pages basic auth, in form of [user, pass], use empty string ["", ""] to disable auth. default: ["admin", "admin"]
 	webapp.static                  // Webapp static files (htmls/css/js) path, default: "static/dist"
-	webapp.notice                  // Webapp notice in HTML, default: {}, example: {"docs": "url-to-docs"}
+	webapp.privateDocUrl           // Webapp private documentation url, default: "", example: "http://example.com/banshee-manual"
 	alerter.command                // Alerter command or script to execute on anomalies found. default: ""
 	alerter.workers                // Number of workers to consume command execution jobs. default: 4
 	alerter.interval               // Minimal interval (in seconds) between two alerting message for one metric. default: 1200

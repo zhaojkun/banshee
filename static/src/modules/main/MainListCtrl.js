@@ -7,7 +7,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
 
   $rootScope.currentMain = true;
   $scope.projectId = $stateParams.project;
-  $scope.notice = null;
 
   $scope.dateTimes = [
     {
@@ -188,10 +187,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
         watchAll();
       });
 
-    Config.getNotice().$promise
-    .then(function (res) {
-      $scope.notice = res;
-    });
   }
 
   function buildCubism() {

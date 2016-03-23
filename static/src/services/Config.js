@@ -5,13 +5,13 @@ module.exports = function ($resource) {
       method: 'GET',
       url: '/api/interval'
     },
-    getNotice: {
-      method: 'GET',
-      url: '/api/notice'
-    },
     getLanguage: {
       method: 'GET',
       url: '/api/language'
-    }
+    },
+    getPrivateDocUrl: {
+      method: 'GET',
+      url: '/api/privateDocUrl'
+    },
   });
 };
