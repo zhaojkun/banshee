@@ -36,10 +36,17 @@ module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, 
       Rule.save(params).$promise
         .then(function(res) {
           $mdDialog.hide(res);
-          toastr.warning(
-            $translate.instant('ADMIN_RULE_POST_ADD_TEXT', {'Interval': $scope.interval}),
-            {timeOut: 10 * 1000}
-          );
+          if (!Util.ruleCheck(res)) {
+            toastr.warning(
+              $translate.instant('ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT', {'Interval': $scope.interval}),
+              {timeOut: 10 * 1000}
+            );
+          } else {
+            toastr.success(
+              $translate.instant('ADMIN_RULE_POST_ADD_TEXT', {'Interval': $scope.interval}),
+              {timeOut: 10 * 1000}
+            );
+          }
         })
         .catch(function(err) {
           toastr.error(err.msg);
