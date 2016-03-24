@@ -1,5 +1,5 @@
 /*@ngInject*/
-module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate, Metric, Config, Project) {
+module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate, Metric, Config, Project, Util) {
   var chart = require('./chart');
   var cubism;
   var initOpt;
@@ -357,6 +357,9 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
     fn();
     return setInterval(fn, ms);
   }
+
+  $scope.isGraphiteName = Util.isGraphiteName;
+  $scope.translateGraphiteName = Util.translateGraphiteName;
 
   loadData();
   initScrollbars();

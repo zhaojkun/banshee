@@ -28,6 +28,12 @@
               <md-input-container class="md-block search-pattern">
               <label translate>MAIN_SEARCH_PATTERN_LABEL_TEXT</label>
                 <input ng-model="filter.pattern">
+                <div ng-if="filter.pattern&&isGraphiteName(filter.pattern)" ng-style="{'color': 'saddlebrown', 'margin-top': '10px'}">
+                  {{ 'ADMIN_RULE_PATTERN_WARN_TEXT' | translate }}
+                  <span ng-click="filter.pattern=translateGraphiteName(filter.pattern)" ng-style="{'cursor': 'pointer', 'color': 'red', 'text-decoration': 'underline'}">
+                    {{ translateGraphiteName(filter.pattern) }}
+                  </span>
+                </div>
               </md-input-container>
             </form>
             <md-autocomplete class="search-project" md-selected-item="autoComplete.selectedItem" md-search-text="autoComplete.searchText" md-selected-item-change="searchProject(project)" md-items="project in projects | filter: {name: autoComplete.searchText}" md-item-text="project.name"

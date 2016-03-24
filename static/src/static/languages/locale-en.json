@@ -45,6 +45,7 @@
   "MAIN_REFRESH_TOOLTIP_TEXT": "Refresh",
   "MAIN_PAUSE_TOOLTIP_TEXT": "Pause",
   "MAIN_RESUME_TOOLTIP_TEXT": "Resume",
+  "MAIN_PATTERN_WARN_TEXT": "May you wanna to write this pattern",
   "HEADER_DOCS_LINK_TEXT": "Documents",
   "ADMIN_NAV_TITLE": "Navigation",
   "ADMIN_NAV_ITEM_PROJECT": "Project",
