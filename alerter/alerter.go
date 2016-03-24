@@ -3,8 +3,6 @@
 package alerter
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,20 +33,11 @@ type Alerter struct {
 	// Config
 	cfg *config.Config
 	// Input
-	In chan *models.Metric
+	In chan *models.Event
 	// Alertings stamps
 	m *safemap.SafeMap
 	// Alertings counters
 	c *safemap.SafeMap
-}
-
-// Alerting message.
-type msg struct {
-	ID      string          `json:"id"`
-	Project *models.Project `json:"project"`
-	Metric  *models.Metric  `json:"metric"`
-	User    *models.User    `json:"user"`
-	Rule    *models.Rule    `json:"rule"`
 }
 
 // New creates a alerter.
@@ -56,7 +45,7 @@ func New(cfg *config.Config, db *storage.DB) *Alerter {
 	al := new(Alerter)
 	al.cfg = cfg
 	al.db = db
-	al.In = make(chan *models.Metric, bufferedMetricResultsLimit)
+	al.In = make(chan *models.Event, bufferedMetricResultsLimit)
 	al.m = safemap.New()
 	al.c = safemap.New()
 	return al
@@ -107,20 +96,9 @@ func (al *Alerter) shouldSilent(proj *models.Project) bool {
 	return hourInRange(now, start, end)
 }
 
-// make event id by metric:
-//
-//	sha1(metricName:metricStamp)
-//
-func makeEventID(m *models.Metric) string {
-	slug := fmt.Sprintf("%s:%s", m.Name, m.Stamp)
-	hash := sha1.New()
-	hash.Write([]byte(slug))
-	return hex.EncodeToString(hash.Sum(nil))
-}
-
-// execute command with message within certain timeout.
-func (al *Alerter) execCommand(d *msg) error {
-	b, _ := json.Marshal(d)
+// execute command with event within certain timeout.
+func (al *Alerter) execCommand(ev *models.Event) error {
+	b, _ := json.Marshal(ev)
 	arg := string(b)
 	done := make(chan error)
 	cmd := exec.Command(al.cfg.Alerter.Command, arg)
@@ -150,40 +128,40 @@ func (al *Alerter) execCommand(d *msg) error {
 // rules, the configured shell command will be executed once a rule is hit.
 func (al *Alerter) work() {
 	for {
-		metric := <-al.In
+		ev := <-al.In
 		// Check interval.
-		v, ok := al.m.Get(metric.Name)
-		if ok && metric.Stamp-v.(uint32) < al.cfg.Alerter.Interval {
+		v, ok := al.m.Get(ev.Metric.Name)
+		if ok && ev.Metric.Stamp-v.(uint32) < al.cfg.Alerter.Interval {
 			continue
 		}
 		// Check alert times in one day
-		v, ok = al.c.Get(metric.Name)
+		v, ok = al.c.Get(ev.Metric.Name)
 		if ok && atomic.LoadUint32(v.(*uint32)) > al.cfg.Alerter.OneDayLimit {
-			log.Warn("%s hit alerting one day limit, skipping..", metric.Name)
+			log.Warn("%s hit alerting one day limit, skipping..", ev.Metric.Name)
 			continue
 		}
 		if !ok {
 			var newCounter uint32
 			newCounter = 1
-			al.c.Set(metric.Name, &newCounter)
+			al.c.Set(ev.Metric.Name, &newCounter)
 		} else {
 			atomic.AddUint32(v.(*uint32), 1)
 		}
-		// Event id.
-		eventID := makeEventID(metric)
 		// Universals
 		var univs []models.User
 		if err := al.db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
 			log.Error("get universal users: %v, skiping..", err)
 			continue
 		}
-		for _, rule := range metric.TestedRules {
+		for _, rule := range ev.Metric.TestedRules {
+			ev.Rule = rule
 			// Project
 			proj := &models.Project{}
 			if err := al.db.Admin.DB().Model(rule).Related(proj).Error; err != nil {
 				log.Error("project, %v, skiping..", err)
 				continue
 			}
+			ev.Project = proj
 			// Silent
 			if al.shouldSilent(proj) {
 				continue
@@ -197,29 +175,23 @@ func (al *Alerter) work() {
 			users = append(users, univs...)
 			// Send
 			for _, user := range users {
+				ev.User = &user
 				if rule.Level < user.RuleLevel {
 					continue
-				}
-				d := &msg{
-					ID:      eventID,
-					Project: proj,
-					Metric:  metric,
-					User:    &user,
-					Rule:    rule,
 				}
 				// Exec
 				if len(al.cfg.Alerter.Command) == 0 {
 					log.Warn("alert command not configured")
 					continue
 				}
-				if err := al.execCommand(d); err != nil {
+				if err := al.execCommand(ev); err != nil {
 					log.Error("exec %s: %v", al.cfg.Alerter.Command, err)
 					continue
 				}
-				log.Info("send message to %s with %s ok", user.Name, metric.Name)
+				log.Info("send message to %s with %s ok", user.Name, ev.Metric.Name)
 			}
 			if len(users) != 0 {
-				al.m.Set(metric.Name, metric.Stamp)
+				al.m.Set(ev.Metric.Name, ev.Metric.Stamp)
 				health.IncrNumAlertingEvents(1)
 			}
 		}
