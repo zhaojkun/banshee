@@ -40,15 +40,6 @@ type Alerter struct {
 	c *safemap.SafeMap
 }
 
-// Alerting message.
-type msg struct {
-	ID      string          `json:"id"`
-	Project *models.Project `json:"project"`
-	Metric  *models.Metric  `json:"metric"`
-	User    *models.User    `json:"user"`
-	Rule    *models.Rule    `json:"rule"`
-}
-
 // New creates a alerter.
 func New(cfg *config.Config, db *storage.DB) *Alerter {
 	al := new(Alerter)
