@@ -29,25 +29,25 @@ type Detector struct {
 	cfg  *config.Config
 	db   *storage.DB
 	flt  *filter.Filter
-	outs []chan *models.Metric
+	outs []chan *models.Event
 }
 
 // New creates a detector.
 func New(cfg *config.Config, db *storage.DB, flt *filter.Filter) *Detector {
-	return &Detector{cfg, db, flt, make([]chan *models.Metric, 0)}
+	return &Detector{cfg, db, flt, make([]chan *models.Event, 0)}
 }
 
 // Out adds a channel to receive detection results.
-func (d *Detector) Out(ch chan *models.Metric) {
+func (d *Detector) Out(ch chan *models.Event) {
 	d.outs = append(d.outs, ch)
 }
 
 // Output detected metrics to channels in outs, will skip if the target channel
 // is full.
-func (d *Detector) output(m *models.Metric) {
+func (d *Detector) output(ev *models.Event) {
 	for _, ch := range d.outs {
 		select {
-		case ch <- m:
+		case ch <- ev:
 		default:
 			log.Error("output channel is full, skipping..")
 			continue
@@ -136,16 +136,15 @@ func (d *Detector) process(m *models.Metric) {
 		return
 	}
 	// Detect
-	err := d.detect(m, rules)
+	ev, err := d.detect(m, rules)
 	if err != nil {
 		log.Error("detect: %v, skipping..", err)
 		return
 	}
 	health.IncrNumMetricDetected(1)
 	// Output
-	if len(m.TestedRules) > 0 {
-		// Test ok.
-		d.output(m)
+	if ev != nil {
+		d.output(ev)
 	}
 	// Time end.
 	elapsed := timer.Elapsed()
@@ -198,14 +197,14 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 //	5. Save the metric and index to db.
 //	6. Test with its matched rules and output it.
 //
-func (d *Detector) detect(m *models.Metric, rules []*models.Rule) error {
+func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event, error) {
 	// Get index.
 	idx, err := d.db.Index.Get(m.Name)
 	if err != nil {
 		if err == indexdb.ErrNotFound {
 			idx = nil
 		} else {
-			return err // unexcepted
+			return nil, err // unexcepted
 		}
 	}
 	// Fill zero?
@@ -213,7 +212,7 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) error {
 	// History values.
 	vals, err := d.values(m, fz)
 	if err != nil {
-		return err // unexcepted
+		return nil, err // unexcepted
 	}
 	// Apply 3-sigma.
 	d.div3Sigma(m, vals)
@@ -222,7 +221,13 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) error {
 	// Test with rules.
 	d.test(m, idx, rules)
 	// Save
-	return d.save(m, idx)
+	err = d.save(m, idx)
+	if len(m.TestedRules) > 0 {
+		// Test ok.
+		ev := models.NewEvent(m, idx)
+		return ev, err
+	}
+	return nil, err
 }
 
 // Test metric and index with rules.
