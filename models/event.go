@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-// Events is the alerting event.
+// Event is the alerting event.
 type Event struct {
 	ID      string   `json:"id"`
 	Project *Project `json:"project"`
