@@ -62,6 +62,14 @@ module.exports = function () {
     if (exports.isGraphiteName(rule.pattern) && rule.numMetrics === 0) {
       return false;
     }
+    if (!exports.startsWith(rule.pattern, 'timer.count_ps.') &&
+        !exports.startsWith(rule.pattern, 'timer.mean_90.') &&
+        !exports.startsWith(rule.pattern, 'timer.upper_90.') &&
+        !exports.startsWith(rule.pattern, 'counter.') &&
+        !exports.startsWith(rule.pattern, 'gauge.')
+       ) {
+       return false;
+       }
     return true;
   };
 
