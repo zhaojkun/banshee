@@ -1,3 +1,14 @@
+0.1.7
+-----
+
+* Config: Remove config.Webapp.Notice and add config.Webapp.PrivateDocUrl. #472
+* Detector: Only fill zeros if the values not empty and the first not zero. #471
+* Models: Add field `Disabled` to models.Rule. #469
+* Static: Add rule disable feature. #469
+* Static: More strict rule pattern checking. #474
+* Static: Add filter pattern checking warning. #474
+* Webapp: Add rule disable feature to createRule and editRule. #469
+
 0.1.6
 -----
 
