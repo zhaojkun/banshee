@@ -124,6 +124,7 @@
   "ADMIN_RULE_DELETE_WARN": "确认删除这条规则？",
   "ADMIN_RULE_PATTERN_WARN_TEXT": "你可能想填写的规则是",
   "ADMIN_RULE_POST_ADD_TEXT": "预计{Interval}秒钟后指标流入监控，计数类离散指标除外",
+  "ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT": "无效的规则通配符，请再次检查下格式.",
   "ADMIN_USER_ADD_TEXT": "添加用户",
   "ADMIN_USER_REMOVE_TEXT": "从这个项目中删除该用户",
   "ADMIN_USER_REMOVE_WARN": "确认从这个项目里删除该用户?",
