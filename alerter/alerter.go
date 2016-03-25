@@ -155,6 +155,7 @@ func (al *Alerter) work() {
 		}
 		for _, rule := range ev.Metric.TestedRules {
 			ev.Rule = rule
+			ev.TranslateRuleComment()
 			// Project
 			proj := &models.Project{}
 			if err := al.db.Admin.DB().Model(rule).Related(proj).Error; err != nil {
