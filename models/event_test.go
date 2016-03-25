@@ -17,3 +17,21 @@ func TestGenerateID(t *testing.T) {
 	ev2 = NewEvent(&Metric{Name: "bar", Stamp: 1456815973}, nil)
 	assert.Ok(t, ev1.ID != ev2.ID)
 }
+
+func TestTranslateRuleComment(t *testing.T) {
+	m := &Metric{Name: "timer.count_ps.foo.bar"}
+	r := &Rule{Pattern: "timer.count_ps.*.*", Comment: "$1 and $2 timing"}
+	ev := &Event{Metric: m, Rule: r}
+	ev.TranslateRuleComment()
+	excepted := "foo and bar timing"
+	assert.Ok(t, ev.RuleTranslatedComment == excepted)
+}
+
+func TestTranslateRuleCommentNoVariables(t *testing.T) {
+	m := &Metric{Name: "foo.bar"}
+	r := &Rule{Pattern: "foo.*", Comment: "no variables"}
+	ev := &Event{Metric: m, Rule: r}
+	ev.TranslateRuleComment()
+	excepted := "no variables"
+	assert.Ok(t, ev.RuleTranslatedComment == excepted)
+}
