@@ -29,6 +29,7 @@ Note:
 
 import os
 import argparse
+import contextlib
 
 from fabric.api import (
     abort,
@@ -107,6 +108,20 @@ def remove_local_dir():
     local("rm -rf {}".format(LOCAL_DIR))
 
 
+@contextlib.contextmanager
+def local_tmp_build():
+    try:
+        record_commit()
+        install_static_deps()
+        build_static_files()
+        if not env.only_static:
+            build_binary()
+        make_local_dir()
+        yield
+    finally:
+        remove_local_dir()
+
+
 ###
 # Remote
 ###
@@ -133,24 +148,15 @@ def refresh():
 def deploy():
     """Deploy banshee.
     """
-    try:
-        record_commit()
-        install_static_deps()
-        build_static_files()
-        if not env.only_static:
-            build_binary()
-        make_local_dir()
-        upload()
-        if env.refresh and not env.only_static:
-            refresh()
-    finally:
-        remove_local_dir()
+    upload()
+    if env.refresh and not env.only_static:
+        refresh()
 
 
 def main(host=None, user=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--user', help="user to connect")
-    parser.add_argument('-H', '--host', help="host to deploy", required=True)
+    parser.add_argument('-H', '--hosts', help="hosts to deploy", required=True)
     parser.add_argument('--refresh', help="whether to refresh service",
                         action='store_true', default=False)
     parser.add_argument('--remote-path', help="remote service path",
@@ -160,6 +166,11 @@ def main(host=None, user=None):
     parser.add_argument("--only-static", help="deploy only static files",
                         action='store_true', default=False)
     args = parser.parse_args()
+
+    hosts = map(lambda s: s.strip(),  args.hosts.split(','))
+
+    if not hosts:
+        abort("No hosts to deploy.")
 
     if not args.user:
         warn("Using default user: {}".format(env.user))
@@ -176,7 +187,10 @@ def main(host=None, user=None):
     env.only_static = args.only_static
     env.refresh = args.refresh
     env.use_ssh_config = True
-    execute(deploy, hosts=[args.host])
+    env.parallel = True
+
+    with local_tmp_build():
+        execute(deploy, hosts=hosts)
 
 
 if __name__ == '__main__':
