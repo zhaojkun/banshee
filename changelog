@@ -1,8 +1,10 @@
-Pending
--------
+0.1.8
+-----
 
 * Deploy: Add support to deploy banshee to multiple hosts. #480
 * Models: Add TranslateRuleComment to models.Event. #478
+* Static: Add translateRuleRepr to add human readable rule repr hint. #484
+* Static: Add tooltips to rule disabled and ruleCheck. #484
 
 0.1.7
 -----
