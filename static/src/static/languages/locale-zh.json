@@ -105,7 +105,7 @@
   "ADMIN_RULE_COMMENT": "注释",
   "ADMIN_RULE_CONDITION": "报警条件",
   "ADMIN_RULE_PREVIEW": "条件预览",
-  "ADMIN_RULE_NUMMETRICS": "命中指标",
+  "ADMIN_RULE_NUMMETRICS": "匹配指标",
   "ADMIN_RULE_ON_TREND_UP": "当趋势异常上升",
   "ADMIN_RULE_ON_TREND_DOWN": "当趋势异常下降",
   "ADMIN_RULE_VALUE": "指标值",
