@@ -239,7 +239,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
     _titles.forEach(function(el, index) {
       var _el = _titles[index];
       var currentEl = data[index];
-      var className = getClassNameByTrend(currentEl.score);
+      var className = getClassNameByTrend(currentEl.score, currentEl.stamp);
       var str;
       var _box = ['<div class="box"><span>' + $translate.instant('MAIN_METRIC_RULES_TEXT') + '<span class="icon-tr"></span></span><ul>'];
 
@@ -265,10 +265,18 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
   /**
    * Get title class name.
    * @param {Number} trend
+   * @param {Number} stamp
    * @return {String}
    */
-  function getClassNameByTrend(trend) {
-    if (Math.abs(trend) >= 1) {
+  function getClassNameByTrend(trend, stamp) {
+    var isOutDate = false;
+    var nowStamp = new Date() / 1000;
+
+    if (nowStamp - 2 * $scope.filter.interval > stamp) {
+      isOutDate = true;
+    }
+
+    if (Math.abs(trend) >= 1 && !isOutDate) {
       return 'anomalous';
     }
     return 'normal';
