@@ -60,7 +60,7 @@ module.exports = function () {
 
   exports.ruleCheck = function(rule) {
     if (exports.isGraphiteName(rule.pattern) && rule.numMetrics === 0) {
-      return false;
+      return 1; // Graphite name.
     }
     if (!exports.startsWith(rule.pattern, 'timer.count_ps.') &&
         !exports.startsWith(rule.pattern, 'timer.mean_90.') &&
@@ -68,9 +68,41 @@ module.exports = function () {
         !exports.startsWith(rule.pattern, 'counter.') &&
         !exports.startsWith(rule.pattern, 'gauge.')
        ) {
-       return false;
+       return 2; // Unsupported metric.
        }
-    return true;
+    return 0; // OK
+  };
+
+  // Translate rule repr to readable string.
+  exports.translateRuleRepr = function(rule, config, $translate) {
+    var parts = [];
+
+    var trendUp = rule.trendUp || false;
+    var trendDown = rule.trendDown || false;
+    var thresholdMax = rule.thresholdMax || 0;
+    var thresholdMin = rule.thresholdMin || 0;
+
+    if (trendUp && thresholdMax === 0) { // trendUp
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRENDUP'));
+    }
+    if (trendUp && thresholdMax !== 0) { // trendUp && value >= thresholdMax
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRENDUP_AND_THRESHOLDMAX', {'thresholdMax': thresholdMax}));
+    }
+    if (!trendUp && thresholdMax !== 0) { // value >= thresholdMax
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRESHOLDMAX', {'thresholdMax': thresholdMax}));
+    }
+    if (trendDown && thresholdMin === 0) { // trendDown
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRENDDOWN'));
+    }
+    if (trendDown && thresholdMin !== 0) { // trendDown && value <= thresholdMin
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRENDDOWN_AND_THRESHOLDMIN', {'thresholdMin': thresholdMin}));
+    }
+    if (!trendDown && thresholdMin !== 0) { // value <= thresholdMin
+      parts.push($translate.instant('ADMIN_RULE_TRANS_TRESHOLDMIN', {'thresholdMin': thresholdMin}));
+    }
+
+    var s = parts.join($translate.instant('ADMIN_RULE_TRANS_OR'));
+    return $translate.instant('ADMIN_RULE_TRANS_TPL', {'text': s});
   };
 
   return exports;

@@ -40,13 +40,14 @@
                     <tr ng-if="!rules || !rules.length">
                       <td colspan="3">{{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
                     </tr>
-                    <tr ng-repeat="rule in rules">
+                    <tr ng-repeat="rule in rules" ng-style="rule.disabled?{'background-color': '#eee'}:{}">
                       <td class="padding-left-16" ng-bind="$index+1"></td>
                       <td>
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
                           <kbd ng-if="!rule.disabled" ng-bind="rule.pattern" ng-style="{'font-weight': 'bold'}"></kbd>
                           <kbd ng-if="rule.disabled" ng-bind="rule.pattern" class="del" ng-style="{'color': '#ddd'}"></kbd>
                         </a>
+                        <md-tooltip ng-if="rule.disabled" md-autohide>{{ 'ADMIN_RULE_DISABLED' | translate }}</md-tooltip>
                       </td>
                       <td>
                         <span ng-class="{del: rule.disabled}" ng-bind="rule.comment"></span>
@@ -54,6 +55,7 @@
                       <td>
                         <code ng-if="!rule.disabled" ng-bind="buildRepr(rule)"></code>
                         <code ng-if="rule.disabled"  class="del" ng-bind="buildRepr(rule)" ng-style="{'color': '#999'}"></code>
+                        <md-tooltip md-autohide>{{ translateRuleRepr(rule) }}</md-tooltip>
                       </td>
                       <td>
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
@@ -66,8 +68,10 @@
                         <span class="label label-danger" ng-if="rule.level==2">{{ 'ADMIN_RULE_LEVEL_HIGH' | translate }}</span>
                       </td>
                       <td>
-                        <span class="label label-success" ng-if="ruleCheck(rule)">{{ 'ADMIN_RULE_CHECK_VALID' | translate }}</span>
-                        <span class="label label-danger" ng-if="!ruleCheck(rule)">{{ 'ADMIN_RULE_CHECK_INVALID' | translate }}</span>
+                        <span class="label label-success" ng-if="ruleCheck(rule)===0">{{ 'ADMIN_RULE_CHECK_VALID' | translate }}</span>
+                        <span class="label label-danger" ng-if="ruleCheck(rule)!==0">{{ 'ADMIN_RULE_CHECK_INVALID' | translate }}</span>
+                        <md-tooltip ng-if="ruleCheck(rule)===1" md-autohide>{{ 'ADMIN_RULE_CHECK_INVALID_HINT_GRAPHITENAME' | translate }}</md-tooltip>
+                        <md-tooltip ng-if="ruleCheck(rule)===2" md-autohide>{{ 'ADMIN_RULE_CHECK_INVALID_HINT_UNSUPPORTED_METRIC' | translate }}</md-tooltip>
                       </td>
                       <td class="text-right">
                         <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_EDIT_TEXT' | translate }}" ng-click="editRule($event, rule)">

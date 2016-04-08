@@ -188,6 +188,10 @@ module.exports = function ($scope, $location, $mdDialog, $state, $stateParams, $
       });
   };
 
+  $scope.translateRuleRepr = function(rule) {
+    return Util.translateRuleRepr(rule, $scope.config, $translate);
+  };
+
   $scope.loadData();
 
   /**

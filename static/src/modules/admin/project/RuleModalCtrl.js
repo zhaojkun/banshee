@@ -8,6 +8,7 @@ module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, 
     Config.getInterval().$promise
       .then(function (res) {
         $scope.interval = res.interval;
+        $scope.config = res;
       });
   };
 
@@ -57,5 +58,8 @@ module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, 
   $scope.buildRepr = Util.buildRepr;
   $scope.isGraphiteName = Util.isGraphiteName;
   $scope.translateGraphiteName = Util.translateGraphiteName;
+  $scope.translateRuleRepr = function(rule) {
+    return Util.translateRuleRepr(rule, $scope.config, $translate);
+  };
   $scope.loadData();
 };
