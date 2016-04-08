@@ -60,7 +60,7 @@ module.exports = function () {
 
   exports.ruleCheck = function(rule) {
     if (exports.isGraphiteName(rule.pattern) && rule.numMetrics === 0) {
-      return false;
+      return 1; // Graphite name.
     }
     if (!exports.startsWith(rule.pattern, 'timer.count_ps.') &&
         !exports.startsWith(rule.pattern, 'timer.mean_90.') &&
@@ -68,9 +68,9 @@ module.exports = function () {
         !exports.startsWith(rule.pattern, 'counter.') &&
         !exports.startsWith(rule.pattern, 'gauge.')
        ) {
-       return false;
+       return 2; // Unsupported metric.
        }
-    return true;
+    return 0; // OK
   };
 
   // Translate rule repr to readable string.

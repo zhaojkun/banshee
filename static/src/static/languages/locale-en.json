@@ -117,6 +117,8 @@
   "ADMIN_RULE_CHECK": "Check",
   "ADMIN_RULE_CHECK_VALID": "OK",
   "ADMIN_RULE_CHECK_INVALID": "NO",
+  "ADMIN_RULE_CHECK_INVALID_HINT_UNSUPPORTED_METRIC": "Unsupported metric type",
+  "ADMIN_RULE_CHECK_INVALID_HINT_GRAPHITENAME": "Graphite name format",
   "ADMIN_RULE_DISABLE": "Disable",
   "ADMIN_RULE_DISABLED": "Rule is disabled",
   "ADMIN_RULE_DISABLED_WARN": "its metrics will still income, but related alertings will be muted",

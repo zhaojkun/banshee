@@ -67,8 +67,10 @@
                         <span class="label label-danger" ng-if="rule.level==2">{{ 'ADMIN_RULE_LEVEL_HIGH' | translate }}</span>
                       </td>
                       <td>
-                        <span class="label label-success" ng-if="ruleCheck(rule)">{{ 'ADMIN_RULE_CHECK_VALID' | translate }}</span>
-                        <span class="label label-danger" ng-if="!ruleCheck(rule)">{{ 'ADMIN_RULE_CHECK_INVALID' | translate }}</span>
+                        <span class="label label-success" ng-if="ruleCheck(rule)===0">{{ 'ADMIN_RULE_CHECK_VALID' | translate }}</span>
+                        <span class="label label-danger" ng-if="ruleCheck(rule)!==0">{{ 'ADMIN_RULE_CHECK_INVALID' | translate }}</span>
+                        <md-tooltip ng-if="ruleCheck(rule)===1" md-autohide>{{ 'ADMIN_RULE_CHECK_INVALID_HINT_GRAPHITENAME' | translate }}</md-tooltip>
+                        <md-tooltip ng-if="ruleCheck(rule)===2" md-autohide>{{ 'ADMIN_RULE_CHECK_INVALID_HINT_UNSUPPORTED_METRIC' | translate }}</md-tooltip>
                       </td>
                       <td class="text-right">
                         <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_EDIT_TEXT' | translate }}" ng-click="editRule($event, rule)">
