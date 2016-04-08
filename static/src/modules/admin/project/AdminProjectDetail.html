@@ -54,6 +54,7 @@
                       <td>
                         <code ng-if="!rule.disabled" ng-bind="buildRepr(rule)"></code>
                         <code ng-if="rule.disabled"  class="del" ng-bind="buildRepr(rule)" ng-style="{'color': '#999'}"></code>
+                        <md-tooltip md-autohide>{{ translateRuleRepr(rule) }}</md-tooltip>
                       </td>
                       <td>
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
