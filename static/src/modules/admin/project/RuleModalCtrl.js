@@ -37,9 +37,16 @@ module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, 
       Rule.save(params).$promise
         .then(function(res) {
           $mdDialog.hide(res);
-          if (!Util.ruleCheck(res)) {
+          var ruleCheckResult = Util.ruleCheck(res);
+          if (ruleCheckResult !== 0) {
+            var key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT';
+            if (ruleCheckResult === 1) {
+              key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_GRAPHITE_NAME_TEXT';
+            } else if (ruleCheckResult === 2) {
+              key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_UNSUPPORTED_METRIC_TEXT';
+            }
             toastr.warning(
-              $translate.instant('ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT', {'Interval': $scope.interval}),
+              $translate.instant(key, {'Interval': $scope.interval}),
               {timeOut: 10 * 1000}
             );
           } else {
