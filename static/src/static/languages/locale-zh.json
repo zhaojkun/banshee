@@ -128,6 +128,8 @@
   "ADMIN_RULE_PATTERN_WARN_TEXT": "你可能想填写的规则是",
   "ADMIN_RULE_POST_ADD_TEXT": "预计{Interval}秒钟后指标流入监控，计数类离散指标除外",
   "ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT": "无效的规则通配符，请再次检查下格式.",
+  "ADMIN_RULE_POST_ADD_CHECK_FAILED_GRAPHITE_NAME_TEXT": "无效的规则通配: 不支持Graphite命名格式，请再次检查下格式.",
+  "ADMIN_RULE_POST_ADD_CHECK_FAILED_UNSUPPORTED_METRIC_TEXT": "无效的规则通配: 不支持的指标类型，请再次检查下格式.",
   "ADMIN_RULE_TRANS_TRENDUP": "趋势异常地上升",
   "ADMIN_RULE_TRANS_TRENDUP_AND_THRESHOLDMAX": "趋势异常地上升到{thresholdMax}以上",
   "ADMIN_RULE_TRANS_TRESHOLDMAX": "数值大于{thresholdMax}",

@@ -129,6 +129,8 @@
   "ADMIN_RULE_PATTERN_WARN_TEXT": "May you wanna to write this rule",
   "ADMIN_RULE_POST_ADD_TEXT": "Metric will flow into this monitor in {Interval}s (dose not including counters)",
   "ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT": "Invalid rule pattern, please check again.",
+  "ADMIN_RULE_POST_ADD_CHECK_FAILED_GRAPHITE_NAME_TEXT": "Invalid rule pattern, unspported graphite name style, please check again.",
+  "ADMIN_RULE_POST_ADD_CHECK_FAILED_UNSUPPORTED_METRIC_TEXT": "Invalid rule pattern,unspported metric type, please check again.",
   "ADMIN_RULE_TRANS_TRENDUP": "trend abnormally rises ",
   "ADMIN_RULE_TRANS_TRENDUP_AND_THRESHOLDMAX": "trend abnormally rises to at least {thresholdMax}",
   "ADMIN_RULE_TRANS_TRESHOLDMAX": "value greater than {thresholdMax}",
