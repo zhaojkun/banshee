@@ -136,6 +136,8 @@ Implementation Details
 
 4. Filter, see package filter.
 
+Reference: https://github.com/eleme/banshee/blob/master/intro.md
+
 License
 
 MIT (c) eleme, inc.

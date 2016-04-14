@@ -21,15 +21,16 @@ func IsAnomaly(value float64) bool {
 }
 ```
 
-The 3-sigma rule gives us dynamic thresholds which rely on history data.
+The 3-sigma rule gives us dynamic thresholds which relies on history data.
 
 Let's take a factor, named `score`, used to used to describe the anomalous serverity:
 
 ```
-score := math.Abs(value - avg) / (3 * stdDev)
+score := (value - avg) / (3 * stdDev)
 ```
 
-If a input value gives `score > 1`, it should be an anomaly, and the `score` larger, the more serious anomalous.
+If an input value gives `score > 1` or `score < -1`, it should be an anomaly,
+and the `math.Abs(score)` larger, the more serious anomalous.
 
 Periodicity
 -----------
