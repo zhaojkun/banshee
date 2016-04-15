@@ -96,6 +96,7 @@
   "ADMIN_PROJECT_CREATE_TEXT": "Create Project",
   "ADMIN_PROJECT_SEARCH_TEXT": "Search Project",
   "ADMIN_PROJECT_NAME": "Name",
+  "ADMIN_PROJECT_NUM_RULES": "Number of Rules",
   "ADMIN_PROJECT_RULES_TEXT": "Rules",
   "ADMIN_PROJECT_USERS_TEXT": "Receivers",
   "ADMIN_PROJECT_EDIT_TEXT": "Edit",
