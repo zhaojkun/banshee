@@ -11,14 +11,24 @@ import (
 	"strconv"
 )
 
+type getProjectsResult struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	NumRules int    `json:"numRules"`
+}
+
 // getProjects returns all projects.
 func getProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var projs []models.Project
-	if err := db.Admin.DB().Find(&projs).Error; err != nil {
+	var results []getProjectsResult
+	err := db.Admin.DB().Table("projects").
+		Joins("JOIN rules ON rules.project_id = projects.id").
+		Select("projects.id as id, projects.name as name, count(*) as num_rules").
+		Group("projects.id").Scan(&results).Error
+	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
 		return
 	}
-	ResponseJSONOK(w, projs)
+	ResponseJSONOK(w, results)
 }
 
 // getProject returns project by id.
