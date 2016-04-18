@@ -21,8 +21,8 @@ type getProjectsResult struct {
 func getProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var results []getProjectsResult
 	err := db.Admin.DB().Table("projects").
-		Joins("JOIN rules ON rules.project_id = projects.id").
-		Select("projects.id as id, projects.name as name, count(*) as num_rules").
+		Joins("LEFT JOIN rules ON rules.project_id = projects.id").
+		Select("projects.id as id, projects.name as name, count(rules.id) as num_rules").
 		Group("projects.id").Scan(&results).Error
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
