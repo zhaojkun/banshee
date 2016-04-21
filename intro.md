@@ -23,7 +23,7 @@ func IsAnomaly(value float64) bool {
 
 The 3-sigma rule gives us dynamic thresholds which relies on history data.
 
-Let's take a factor, named `score`, used to used to describe the anomalous serverity:
+Let's take a factor, named `score`, used to describe the anomalous serverity:
 
 ```
 score := (value - avg) / (3 * stdDev)
