@@ -113,6 +113,7 @@ type configAlerter struct {
 }
 
 type configCleaner struct {
+	Enable    bool   `json:"enable"`
 	Interval  uint32 `json:"interval"`
 	Threshold uint32 `json:"threshold"`
 }
@@ -144,6 +145,7 @@ func New() *Config {
 	c.Alerter.Interval = DefaultAlerterInterval
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Cleaner.Enable = false // FIXME: Hotfix
 	c.Cleaner.Interval = DefaultCleanerInterval
 	c.Cleaner.Threshold = DefaultCleanerThreshold
 	return c

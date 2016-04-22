@@ -111,8 +111,10 @@ func main() {
 	health.Init(db)
 	go health.Start()
 
-	cleaner := cleaner.New(cfg, db)
-	go cleaner.Start()
+	if cfg.Cleaner.Enable {
+		cleaner := cleaner.New(cfg, db)
+		go cleaner.Start()
+	}
 
 	alerter := alerter.New(cfg, db)
 	alerter.Start()

@@ -32,6 +32,7 @@
     "defaultSilentTimeRange": [0, 6]
   },
   "cleaner": {
+    "enable": false,
     "interval": 10800,
     "threshold": 259200
   }
