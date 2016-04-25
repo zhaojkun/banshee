@@ -27,16 +27,16 @@ func TestLoad(t *testing.T) {
 	idx := &models.Index{Name: "foo", Stamp: 1450430839, Score: 0.7, Average: 78.5}
 	// Add one
 	db.Put(idx)
-	util.Must(t, db.m.Has(idx.Name))
+	util.Must(t, db.tr.Has(idx.Name))
 	// Clear cache
-	db.m.Clear()
-	util.Must(t, db.m.Len() == 0)
-	util.Must(t, !db.m.Has(idx.Name))
+	db.tr.Clear()
+	util.Must(t, db.tr.Len() == 0)
+	util.Must(t, !db.tr.Has(idx.Name))
 	// Reload
 	db.load()
 	// Must not empty and idx in cache
-	util.Must(t, db.m.Len() == 1)
-	util.Must(t, db.m.Has(idx.Name))
+	util.Must(t, db.tr.Len() == 1)
+	util.Must(t, db.tr.Has(idx.Name))
 }
 
 func TestPut(t *testing.T) {
@@ -50,7 +50,7 @@ func TestPut(t *testing.T) {
 	err := db.Put(idx)
 	util.Must(t, err == nil)
 	// Must in cache
-	util.Must(t, db.m.Has(idx.Name))
+	util.Must(t, db.tr.Has(idx.Name))
 	// Must in db file
 	v, err := db.db.Get([]byte(idx.Name), nil)
 	util.Must(t, err == nil)
@@ -89,12 +89,12 @@ func TestDelete(t *testing.T) {
 	idx := &models.Index{Name: "foo", Stamp: 1450430837, Score: 0.3, Average: 100}
 	db.Put(idx)
 	// Must in cache.
-	util.Must(t, db.m.Has(idx.Name))
+	util.Must(t, db.tr.Has(idx.Name))
 	// Delete it.
 	err := db.Delete(idx.Name)
 	util.Must(t, err == nil)
 	// Must not exist in cache
-	util.Must(t, !db.m.Has(idx.Name))
+	util.Must(t, !db.tr.Has(idx.Name))
 	// Must not in db.
 	_, err = db.db.Get([]byte(idx.Name), nil)
 	util.Must(t, err == leveldb.ErrNotFound)
@@ -110,12 +110,12 @@ func TestFilter(t *testing.T) {
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Add indexes.
-	excludeName := "abfxyz"
-	db.Put(&models.Index{Name: "abcefg"})
-	db.Put(&models.Index{Name: "abcxyz"})
+	excludeName := "a.b.c.d.e.f"
+	db.Put(&models.Index{Name: "a.b.c.e.f.g"})
+	db.Put(&models.Index{Name: "a.b.c.d.f.g"})
 	db.Put(&models.Index{Name: excludeName})
 	// Filter
-	l := db.Filter("abc*")
+	l := db.Filter("a.b.c.*.f.*")
 	util.Must(t, len(l) == 2)
 	util.Must(t, l[0].Name != excludeName && l[1].Name != excludeName)
 }

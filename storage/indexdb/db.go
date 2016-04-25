@@ -5,17 +5,19 @@ package indexdb
 import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util/log"
-	"github.com/eleme/banshee/util/safemap"
+	"github.com/eleme/banshee/util/trie"
 	"github.com/syndtr/goleveldb/leveldb"
-	"path/filepath"
 )
+
+// delim is the metric name delimeter.
+const delim = "."
 
 // DB handles indexes storage.
 type DB struct {
-	// LevelDB
+	// LevelDB.
 	db *leveldb.DB
-	// Cache
-	m *safemap.SafeMap
+	// Cache.
+	tr *trie.Trie
 }
 
 // Open a DB by fileName.
@@ -24,10 +26,10 @@ func Open(fileName string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	m := safemap.New()
+	tr := trie.New(delim)
 	db := new(DB)
 	db.db = ldb
-	db.m = m
+	db.tr = tr
 	db.load()
 	return db, nil
 }
@@ -51,19 +53,21 @@ func (db *DB) load() {
 		err := decode(value, idx)
 		if err != nil {
 			// Skip corrupted values
+			log.Warn("corrupted data found, skipping..")
 			continue
 		}
-		db.m.Set(idx.Name, idx)
+		idx.Share()
+		db.tr.Put(idx.Name, idx)
 	}
 }
 
 // get index by name.
 func (db *DB) get(name string) (*models.Index, bool) {
-	v, ok := db.m.Get(name)
-	if ok {
-		return v.(*models.Index), true
+	v := db.tr.Get(name)
+	if v == nil {
+		return nil, false
 	}
-	return nil, false
+	return v.(*models.Index), true
 }
 
 // Operations.
@@ -81,7 +85,7 @@ func (db *DB) Put(idx *models.Index) error {
 	idx = idx.Copy()
 	// Add to cache.
 	idx.Share()
-	db.m.Set(idx.Name, idx)
+	db.tr.Put(idx.Name, idx)
 	return nil
 }
 
@@ -96,39 +100,32 @@ func (db *DB) Get(name string) (*models.Index, error) {
 
 // Delete an index by name.
 func (db *DB) Delete(name string) error {
-	if db.m.Has(name) {
-		// Delete in cache.
-		db.m.Delete(name)
-	}
+	// Delete in cache.
+	db.tr.Pop(name)
 	key := []byte(name)
 	return db.db.Delete(key, nil)
 }
 
 // Filter indexes by pattern.
 func (db *DB) Filter(pattern string) (l []*models.Index) {
-	m := db.m.Items()
-	for k, v := range m {
+	for _, v := range db.tr.Match(pattern) {
 		idx := v.(*models.Index)
-		name := k.(string)
-		ok, err := filepath.Match(pattern, name)
-		if err == nil && ok {
-			l = append(l, idx.Copy())
-		}
+		l = append(l, idx.Copy())
 	}
-	return l
+	return
 }
 
 // All returns all indexes.
 func (db *DB) All() (l []*models.Index) {
-	m := db.m.Items()
+	m := db.tr.Map()
 	for _, v := range m {
 		idx := v.(*models.Index)
 		l = append(l, idx.Copy())
 	}
-	return l
+	return
 }
 
 // Len returns the number of indexes.
 func (db *DB) Len() int {
-	return db.m.Len()
+	return db.tr.Len()
 }
