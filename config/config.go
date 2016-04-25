@@ -151,7 +151,7 @@ func New() *Config {
 
 // UpdateWithJSONFile update the config from a json file.
 func (c *Config) UpdateWithJSONFile(fileName string) error {
-	log.Debug("read config from %s..", fileName)
+	log.Debugf("read config from %s..", fileName)
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return err

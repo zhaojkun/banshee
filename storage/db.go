@@ -34,7 +34,7 @@ func Open(fileName string) (*DB, error) {
 	// Create if not exist
 	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
-		log.Debug("create dir %s", fileName)
+		log.Debugf("create dir %s", fileName)
 		err := os.Mkdir(fileName, filemode)
 		if err != nil {
 			return nil, err
@@ -56,7 +56,7 @@ func Open(fileName string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("storage is opened successfully")
+	log.Debugf("storage is opened successfully")
 	return db, nil
 }
 

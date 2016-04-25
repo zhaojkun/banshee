@@ -55,7 +55,7 @@ func New(cfg *config.Config, db *storage.DB) *Alerter {
 // metric with all the rules, the configured shell command will be executed
 // once a rule is hit.
 func (al *Alerter) Start() {
-	log.Info("start %d alerter workers..", al.cfg.Alerter.Workers)
+	log.Infof("start %d alerter workers..", al.cfg.Alerter.Workers)
 	for i := 0; i < al.cfg.Alerter.Workers; i++ {
 		go al.work()
 	}
@@ -137,7 +137,7 @@ func (al *Alerter) work() {
 		// Check alert times in one day
 		v, ok = al.c.Get(ev.Metric.Name)
 		if ok && atomic.LoadUint32(v.(*uint32)) > al.cfg.Alerter.OneDayLimit {
-			log.Warn("%s hit alerting one day limit, skipping..", ev.Metric.Name)
+			log.Warnf("%s hit alerting one day limit, skipping..", ev.Metric.Name)
 			continue
 		}
 		if !ok {
@@ -150,7 +150,7 @@ func (al *Alerter) work() {
 		// Universals
 		var univs []models.User
 		if err := al.db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
-			log.Error("get universal users: %v, skiping..", err)
+			log.Errorf("get universal users: %v, skiping..", err)
 			continue
 		}
 		for _, rule := range ev.Metric.TestedRules {
@@ -159,7 +159,7 @@ func (al *Alerter) work() {
 			// Project
 			proj := &models.Project{}
 			if err := al.db.Admin.DB().Model(rule).Related(proj).Error; err != nil {
-				log.Error("project, %v, skiping..", err)
+				log.Errorf("project, %v, skiping..", err)
 				continue
 			}
 			ev.Project = proj
@@ -170,7 +170,7 @@ func (al *Alerter) work() {
 			// Users
 			var users []models.User
 			if err := al.db.Admin.DB().Model(proj).Related(&users, "Users").Error; err != nil {
-				log.Error("get users: %v, skiping..", err)
+				log.Errorf("get users: %v, skiping..", err)
 				continue
 			}
 			users = append(users, univs...)
@@ -182,14 +182,14 @@ func (al *Alerter) work() {
 				}
 				// Exec
 				if len(al.cfg.Alerter.Command) == 0 {
-					log.Warn("alert command not configured")
+					log.Warnf("alert command not configured")
 					continue
 				}
 				if err := al.execCommand(ev); err != nil {
-					log.Error("exec %s: %v", al.cfg.Alerter.Command, err)
+					log.Errorf("exec %s: %v", al.cfg.Alerter.Command, err)
 					continue
 				}
-				log.Info("send message to %s with %s ok", user.Name, ev.Metric.Name)
+				log.Infof("send message to %s with %s ok", user.Name, ev.Metric.Name)
 			}
 			if len(users) != 0 {
 				al.m.Set(ev.Metric.Name, ev.Metric.Stamp)

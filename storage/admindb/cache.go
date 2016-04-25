@@ -28,7 +28,7 @@ func newRulesCache() *rulesCache {
 
 // Init cache from db.
 func (c *rulesCache) Init(db *gorm.DB) error {
-	log.Debug("init rules from admindb..")
+	log.Debugf("init rules from admindb..")
 	// Query
 	var rules []models.Rule
 	err := db.Find(&rules).Error
@@ -108,7 +108,7 @@ func (c *rulesCache) pushAdded(rule *models.Rule) {
 		select {
 		case ch <- rule:
 		default:
-			log.Error("buffered added rules chan is full, skipping..")
+			log.Errorf("buffered added rules chan is full, skipping..")
 		}
 	}
 }
@@ -119,7 +119,7 @@ func (c *rulesCache) pushDeled(rule *models.Rule) {
 		select {
 		case ch <- rule:
 		default:
-			log.Error("buffered deleted rules chan is full, skipping..")
+			log.Errorf("buffered deleted rules chan is full, skipping..")
 		}
 	}
 }
