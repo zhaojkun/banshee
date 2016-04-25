@@ -7,7 +7,7 @@ import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/storage"
 	"github.com/eleme/banshee/storage/indexdb"
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"os"
 	"testing"
 	"time"
@@ -44,15 +44,15 @@ func TestClean(t *testing.T) {
 	// m1 should be fully cleaned
 	var err error
 	_, err = db.Index.Get(m1.Name)
-	assert.Ok(t, err == indexdb.ErrNotFound)
+	util.Must(t, err == indexdb.ErrNotFound)
 	l, err := db.Metric.Get(m1.Name, 0, uint32(time.Now().Unix()))
-	assert.Ok(t, len(l) == 0)
+	util.Must(t, len(l) == 0)
 	// m2 should be cleaned and m3 shouldn't be cleaned
 	l, err = db.Metric.Get(m2.Name, m2.Stamp, uint32(time.Now().Unix()))
-	assert.Ok(t, len(l) == 1)
-	assert.Ok(t, l[0].Name == m2.Name)
-	assert.Ok(t, l[0].Stamp == m3.Stamp && l[0].Stamp != m2.Stamp)
+	util.Must(t, len(l) == 1)
+	util.Must(t, l[0].Name == m2.Name)
+	util.Must(t, l[0].Stamp == m3.Stamp && l[0].Stamp != m2.Stamp)
 	// m2/m3's index shouldn't be cleaned
 	i, err := db.Index.Get(m2.Name)
-	assert.Ok(t, err == nil && i.Name == m2.Name)
+	util.Must(t, err == nil && i.Name == m2.Name)
 }

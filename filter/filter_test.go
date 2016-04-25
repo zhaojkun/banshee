@@ -5,7 +5,7 @@ package filter
 import (
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"github.com/eleme/banshee/util/log"
 	"path/filepath"
 	"testing"
@@ -21,18 +21,18 @@ func TestSimple(t *testing.T) {
 	filter.addRule(rule2)
 	// Test
 	rules1 := filter.MatchedRules(&models.Metric{Name: "nothing"})
-	assert.Ok(t, 0 == len(rules1))
+	util.Must(t, 0 == len(rules1))
 
 	rules2 := filter.MatchedRules(&models.Metric{Name: "a.b.c.e"})
-	assert.Ok(t, 1 == len(rules2))
-	assert.Ok(t, rules2[0] == rule2)
+	util.Must(t, 1 == len(rules2))
+	util.Must(t, rules2[0] == rule2)
 
 	rules3 := filter.MatchedRules(&models.Metric{Name: "a.e.c.d"})
-	assert.Ok(t, 1 == len(rules3))
-	assert.Ok(t, rules3[0] == rule1)
+	util.Must(t, 1 == len(rules3))
+	util.Must(t, rules3[0] == rule1)
 
 	rules4 := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
-	assert.Ok(t, 2 == len(rules4))
+	util.Must(t, 2 == len(rules4))
 }
 
 func TestHitLimit(t *testing.T) {
@@ -50,16 +50,16 @@ func TestHitLimit(t *testing.T) {
 	for i := 0; i < config.Detector.IntervalHitLimit; i++ {
 		//hit rule when counter < intervalHitLimit
 		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
-		assert.Ok(t, 1 == len(rules))
+		util.Must(t, 1 == len(rules))
 
 	}
 	//counter over limit, matched rules = 0
 	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
-	assert.Ok(t, 0 == len(rules))
+	util.Must(t, 0 == len(rules))
 	time.Sleep(time.Second * 2)
 	//after interval counter is cleared, matched rules = 1
 	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
-	assert.Ok(t, 1 == len(rules))
+	util.Must(t, 1 == len(rules))
 }
 
 func BenchmarkRules1KNativeBest(b *testing.B) {

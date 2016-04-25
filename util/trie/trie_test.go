@@ -3,18 +3,10 @@
 package trie
 
 import (
+	"github.com/eleme/banshee/util"
 	"math/rand"
-	"runtime"
 	"testing"
 )
-
-// Must asserts the given value is True for testing.
-func Must(t *testing.T, v bool) {
-	if !v {
-		_, fileName, line, _ := runtime.Caller(1)
-		t.Errorf("\n unexcepted: %s:%d", fileName, line)
-	}
-}
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
@@ -43,56 +35,56 @@ func TestPut(t *testing.T) {
 	tr.Put("a.b.c.d.e.f", 6)
 	tr.Put("a.b.c.d.e.f.g", 7)
 	tr.Put("a.b.c.d.e.f.g.h", 8)
-	Must(t, tr.Len() == 5)
-	Must(t, tr.Get("a.b.c.d").(int) == 99)
-	Must(t, tr.Get("a.b.c.d.e").(int) == 5)
-	Must(t, tr.Get("a.b.c.d.e.f").(int) == 6)
-	Must(t, tr.Get("a.b.c.d.e.f.g").(int) == 7)
-	Must(t, tr.Get("a.b.c.d.e.f.g.h").(int) == 8)
+	util.Must(t, tr.Len() == 5)
+	util.Must(t, tr.Get("a.b.c.d").(int) == 99)
+	util.Must(t, tr.Get("a.b.c.d.e").(int) == 5)
+	util.Must(t, tr.Get("a.b.c.d.e.f").(int) == 6)
+	util.Must(t, tr.Get("a.b.c.d.e.f.g").(int) == 7)
+	util.Must(t, tr.Get("a.b.c.d.e.f.g.h").(int) == 8)
 	// Case larger number.
 	n := 1024 * 5
 	for i := 0; i < n; i++ {
 		key := randKey(rand.Intn(128))
 		tr.Put(key, i)
-		Must(t, tr.Get(key).(int) == i)
+		util.Must(t, tr.Get(key).(int) == i)
 	}
 }
 
 func TestGet(t *testing.T) {
 	tr := New(".")
 	// Case not found.
-	Must(t, tr.Get("not.exist") == nil)
+	util.Must(t, tr.Get("not.exist") == nil)
 	// Case simple.
 	tr.Put("a.b.c.d", 43)
 	tr.Put("b.c.d.a", 34)
 	tr.Put("m.n.o.p.q", 52)
-	Must(t, tr.Get("a.b.c.d").(int) == 43)
-	Must(t, tr.Get("b.c.d.a").(int) == 34)
-	Must(t, tr.Get("m.n.o.p.q").(int) == 52)
-	Must(t, tr.Get("a.b.c") == nil)
+	util.Must(t, tr.Get("a.b.c.d").(int) == 43)
+	util.Must(t, tr.Get("b.c.d.a").(int) == 34)
+	util.Must(t, tr.Get("m.n.o.p.q").(int) == 52)
+	util.Must(t, tr.Get("a.b.c") == nil)
 	// Case Has.
-	Must(t, tr.Has("a.b.c.d"))
-	Must(t, !tr.Has("a.b.c.d.e"))
+	util.Must(t, tr.Has("a.b.c.d"))
+	util.Must(t, !tr.Has("a.b.c.d.e"))
 }
 
 func TestPop(t *testing.T) {
 	tr := New(".")
 	// Case not found.
-	Must(t, tr.Pop("not.exist") == nil)
-	Must(t, tr.Len() == 0)
+	util.Must(t, tr.Pop("not.exist") == nil)
+	util.Must(t, tr.Len() == 0)
 	// Case simple.
 	tr.Put("a.b.c.d", 4)
 	tr.Put("a.b.c.d.e", 5)
 	tr.Put("a.b.c.d.e.f", 6)
-	Must(t, tr.Len() == 3)
-	Must(t, tr.Pop("a.b.c") == nil)
-	Must(t, tr.Len() == 3)
-	Must(t, tr.Pop("a.b.c.d").(int) == 4)
-	Must(t, tr.Len() == 2)
-	Must(t, tr.Pop("a.b.c.d.e").(int) == 5)
-	Must(t, tr.Len() == 1)
-	Must(t, tr.Pop("a.b.c.d.e.f").(int) == 6)
-	Must(t, tr.Len() == 0)
+	util.Must(t, tr.Len() == 3)
+	util.Must(t, tr.Pop("a.b.c") == nil)
+	util.Must(t, tr.Len() == 3)
+	util.Must(t, tr.Pop("a.b.c.d").(int) == 4)
+	util.Must(t, tr.Len() == 2)
+	util.Must(t, tr.Pop("a.b.c.d.e").(int) == 5)
+	util.Must(t, tr.Len() == 1)
+	util.Must(t, tr.Pop("a.b.c.d.e.f").(int) == 6)
+	util.Must(t, tr.Len() == 0)
 }
 
 func TestClear(t *testing.T) {
@@ -101,10 +93,10 @@ func TestClear(t *testing.T) {
 	tr.Put("a.b.c.d", 4)
 	tr.Put("a.b.c.d.e", 5)
 	tr.Put("a.b.c.d.e.f", 6)
-	Must(t, tr.Len() == 3)
+	util.Must(t, tr.Len() == 3)
 	tr.Clear()
-	Must(t, tr.Len() == 0)
-	Must(t, !tr.Has("a.b.c.d"))
+	util.Must(t, tr.Len() == 0)
+	util.Must(t, !tr.Has("a.b.c.d"))
 }
 
 func TestMatch(t *testing.T) {
@@ -120,46 +112,46 @@ func TestMatch(t *testing.T) {
 	var m map[string]interface{}
 	// Case x.*
 	m = tr.Match("a.b.*.*")
-	Must(t, len(m) == 2)
-	Must(t, m["a.b.c.d"].(int) == 4)
-	Must(t, m["a.b.c.f"].(int) == 9)
+	util.Must(t, len(m) == 2)
+	util.Must(t, m["a.b.c.d"].(int) == 4)
+	util.Must(t, m["a.b.c.f"].(int) == 9)
 	// Case x
 	m = tr.Match("a.b.c.d")
-	Must(t, len(m) == 1)
-	Must(t, m["a.b.c.d"].(int) == 4)
+	util.Must(t, len(m) == 1)
+	util.Must(t, m["a.b.c.d"].(int) == 4)
 	// Case ""
 	m = tr.Match("")
-	Must(t, len(m) == 0)
+	util.Must(t, len(m) == 0)
 	// Case *.x
 	m = tr.Match("*.n.o.p")
-	Must(t, len(m) == 1)
-	Must(t, m["m.n.o.p"].(int) == 43)
+	util.Must(t, len(m) == 1)
+	util.Must(t, m["m.n.o.p"].(int) == 43)
 	// Case *.*
 	m = tr.Match("*.b.c.*")
-	Must(t, len(m) == 2)
-	Must(t, m["a.b.c.d"].(int) == 4)
-	Must(t, m["a.b.c.f"].(int) == 9)
+	util.Must(t, len(m) == 2)
+	util.Must(t, m["a.b.c.d"].(int) == 4)
+	util.Must(t, m["a.b.c.f"].(int) == 9)
 	// Case *...*
 	m = tr.Match("*.*.*.*")
-	Must(t, len(m) == 3)
+	util.Must(t, len(m) == 3)
 	// Case x.*.x
 	m = tr.Match("a.*.*.d")
-	Must(t, len(m) == 1)
+	util.Must(t, len(m) == 1)
 }
 
 func TestMap(t *testing.T) {
 	tr := New(".")
 	// Case empty.
-	Must(t, len(tr.Map()) == 0)
+	util.Must(t, len(tr.Map()) == 0)
 	// Case simple.
 	tr.Put("a.b.c.d", 41)
 	tr.Put("a.b.c.d.e", 51)
 	tr.Put("a.b.c.d.e.f", 61)
 	m := tr.Map()
-	Must(t, len(m) == 3)
-	Must(t, m["a.b.c.d"].(int) == 41)
-	Must(t, m["a.b.c.d.e"].(int) == 51)
-	Must(t, m["a.b.c.d.e.f"].(int) == 61)
+	util.Must(t, len(m) == 3)
+	util.Must(t, m["a.b.c.d"].(int) == 41)
+	util.Must(t, m["a.b.c.d.e"].(int) == 51)
+	util.Must(t, m["a.b.c.d.e.f"].(int) == 61)
 }
 
 func BenchmarkPutRandKeys(b *testing.B) {
@@ -186,7 +178,6 @@ func BenchmarkPutPrefixedKeys(b *testing.B) {
 }
 func BenchmarkPutAndGetRandKeys(b *testing.B) {
 	tr := New(".")
-	b.SetParallelism(8)
 	for i := 0; i < b.N; i++ {
 		tr.Put(randKey(128), i)
 		tr.Get(randKey(128))

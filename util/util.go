@@ -5,10 +5,21 @@ package util
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 )
+
+// Must asserts the given value is True for testing.
+func Must(t *testing.T, v bool) {
+	if !v {
+		_, fileName, line, _ := runtime.Caller(1)
+		t.Errorf("\n unexcepted: %s:%d", fileName, line)
+		t.FailNow()
+	}
+}
 
 // ToFixed truncates float64 type to a particular percision in string.
 func ToFixed(n float64, prec int) string {
