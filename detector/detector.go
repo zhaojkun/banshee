@@ -456,7 +456,7 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 // Index score is the trending description of metric score.
 //
 func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
-	n := &models.Index{Name: m.Name, Stamp: m.Stamp, Link: idx.Link}
+	n := &models.Index{Name: m.Name, Stamp: m.Stamp}
 	if idx == nil {
 		// As first
 		n.Score = m.Score
@@ -467,5 +467,6 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 	f := d.cfg.Detector.TrendingFactor
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average
+	n.Link = idx.Link
 	return n
 }
