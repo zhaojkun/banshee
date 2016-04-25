@@ -16,6 +16,8 @@ type Index struct {
 	Score float64 `json:"score"`
 	// Latest average for the metric.
 	Average float64 `json:"average"`
+	// Link between index and metric.
+	Link uint32 `json:"link"`
 	// Matched rules.
 	MatchedRules []*Rule `json:"matchedRules"`
 }
@@ -47,6 +49,7 @@ func (idx *Index) CopyTo(i *Index) {
 	i.Stamp = idx.Stamp
 	i.Score = idx.Score
 	i.Average = idx.Average
+	i.Link = idx.Link
 }
 
 // Equal tests the equality.
@@ -58,5 +61,6 @@ func (idx *Index) Equal(i *Index) bool {
 	return (idx.Name == i.Name &&
 		idx.Stamp == i.Stamp &&
 		idx.Score == i.Score &&
-		idx.Average == i.Average)
+		idx.Average == i.Average &&
+		idx.Link == i.Link)
 }
