@@ -8,13 +8,15 @@ Design
 
 The db file name is index, and the key-value design in leveldb is:
 
-	Key:   <Name>
-	Value: <Stamp>:<Score>:<Average>
+	|--> Key <-|-----------> Value (20) <------------+
+	+----------+-----------+-----------+-------------+
+	| Name (X) | Stamp (4) | Score (8) | Average (8) |
+	+----------+-----------+-----------+-------------+
 
 Cache
 
 To access indexes faster in webapp, indexes are cached in memory, in
-a safemap with a RWLock.
+a trie with a RWLock.
 
 Read operations are in cache.
 
