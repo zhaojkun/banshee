@@ -35,6 +35,13 @@ func TestRelease(t *testing.T) {
 	util.Must(t, p.Allocate() == 3)
 }
 
+func TestClear(t *testing.T) {
+	p := New(1, 5)
+	util.Must(t, p.Allocate() == 1)
+	p.Clear()
+	util.Must(t, p.Allocate() == 1)
+}
+
 func TestLargeHigh(t *testing.T) {
 	N := math.MaxUint32
 	n := 1024

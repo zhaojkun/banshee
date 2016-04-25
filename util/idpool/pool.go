@@ -72,6 +72,13 @@ func (p *Pool) Release(id int) {
 	}
 }
 
+// Clear the pool.
+func (p *Pool) Clear() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.table = big.NewInt(0)
+}
+
 // High returns the high.
 func (p *Pool) High() int {
 	return p.high
