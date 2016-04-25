@@ -39,7 +39,9 @@ func TestClear(t *testing.T) {
 	p := New(1, 5)
 	util.Must(t, p.Allocate() == 1)
 	p.Clear()
+	util.Must(t, p.Len() == 0)
 	util.Must(t, p.Allocate() == 1)
+	util.Must(t, p.Len() == 1)
 }
 
 func TestLen(t *testing.T) {

@@ -85,6 +85,7 @@ func (p *Pool) Clear() {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	p.table = big.NewInt(0)
+	p.length = 0
 }
 
 // High returns the high.
