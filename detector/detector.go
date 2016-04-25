@@ -209,6 +209,9 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event
 	}
 	// Fill zero?
 	fz := idx != nil && d.shouldFz(m)
+	if idx != nil {
+		m.LinkTo(idx)
+	}
 	// History values.
 	vals, err := d.values(m, fz)
 	if err != nil {
@@ -248,6 +251,7 @@ func (d *Detector) save(m *models.Metric, idx *models.Index) error {
 		return err
 	}
 	// Save metric.
+	m.LinkTo(idx)
 	if err := d.db.Metric.Put(m); err != nil {
 		return err
 	}
@@ -341,7 +345,7 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 		stop := stamp + offset
 		if mp[i] {
 			go func() {
-				ms, err := d.db.Metric.Get(m.Name, start, stop)
+				ms, err := d.db.Metric.Get(m.Name, m.Link, start, stop)
 				ch <- metricGetResult{err, ms, start, stop}
 			}()
 			n++
@@ -452,7 +456,7 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 // Index score is the trending description of metric score.
 //
 func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
-	n := &models.Index{Name: m.Name, Stamp: m.Stamp}
+	n := &models.Index{Name: m.Name, Stamp: m.Stamp, Link: idx.Link}
 	if idx == nil {
 		// As first
 		n.Score = m.Score

@@ -4,6 +4,7 @@ package webapp
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/julienschmidt/httprouter"
 	"math"
 	"net/http"
@@ -104,8 +105,19 @@ func getMetrics(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, ErrBadRequest)
 		return
 	}
+	var metrics []*models.Metric
+	// Get index.
+	idx, err := db.Index.Get(name)
+	if err != nil {
+		if err == indexdb.ErrNotFound {
+			ResponseJSONOK(w, metrics)
+			return
+		}
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
 	// Query
-	metrics, err := db.Metric.Get(name, uint32(start), uint32(stop))
+	metrics, err = db.Metric.Get(name, idx.Link, uint32(start), uint32(stop))
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
 		return

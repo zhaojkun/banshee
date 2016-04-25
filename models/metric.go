@@ -19,3 +19,8 @@ type Metric struct {
 	// Matched rules
 	TestedRules []*Rule `json:"-"`
 }
+
+// LinkTo links the metric to an index.
+func (m *Metric) LinkTo(idx *Index) {
+	m.Link = idx.Link
+}
