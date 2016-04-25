@@ -46,8 +46,8 @@ var colors = map[string]int{
 
 // levelColors
 var levelColors = map[int]string{
-	DEBUG: "cyan",
-	INFO:  "white",
+	DEBUG: "white",
+	INFO:  "green",
 	WARN:  "yellow",
 	ERROR: "red",
 }
@@ -83,28 +83,54 @@ func Enable() {
 }
 
 // Debug logs message with level DEBUG.
-func Debug(format string, a ...interface{}) {
-	log(DEBUG, format, a...)
+func Debug(a ...interface{}) error {
+	return log(DEBUG, fmt.Sprint(a...))
 }
 
 // Info logs message with level INFO.
-func Info(format string, a ...interface{}) {
-	log(INFO, format, a...)
+func Info(a ...interface{}) error {
+	return log(INFO, fmt.Sprint(a...))
 }
 
 // Warn logs message with level WARN.
-func Warn(format string, a ...interface{}) {
-	log(WARN, format, a...)
+func Warn(a ...interface{}) error {
+	return log(WARN, fmt.Sprint(a...))
 }
 
 // Error logs message with level ERROR.
-func Error(format string, a ...interface{}) {
-	log(ERROR, format, a...)
+func Error(a ...interface{}) error {
+	return log(ERROR, fmt.Sprint(a...))
 }
 
-// Fatal logs message with level FATAL.
-func Fatal(format string, a ...interface{}) {
-	log(ERROR, format, a...)
+// Fatal and logs message with level FATAL.
+func Fatal(a ...interface{}) {
+	log(ERROR, fmt.Sprint(a...))
+	os.Exit(1)
+}
+
+// Debugf formats and logs message with level DEBUG.
+func Debugf(format string, a ...interface{}) error {
+	return log(DEBUG, fmt.Sprintf(format, a...))
+}
+
+// Infof formats and logs message with level INFO.
+func Infof(format string, a ...interface{}) error {
+	return log(INFO, fmt.Sprintf(format, a...))
+}
+
+// Warnf formats and logs message with level WARN.
+func Warnf(format string, a ...interface{}) error {
+	return log(WARN, fmt.Sprintf(format, a...))
+}
+
+// Errorf formats and logs message with level ERROR.
+func Errorf(format string, a ...interface{}) error {
+	return log(ERROR, fmt.Sprintf(format, a...))
+}
+
+// Fatalf formats and logs message with level FATAL.
+func Fatalf(format string, a ...interface{}) {
+	log(ERROR, fmt.Sprintf(format, a...))
 	os.Exit(1)
 }
 
@@ -114,25 +140,27 @@ func Colored(color string, text string) string {
 }
 
 // log dose logging.
-func log(l int, format string, a ...interface{}) {
+func log(l int, msg string) error {
 	if enabled && l >= level {
 		// Caller pkg.
 		_, fileName, _, _ := runtime.Caller(2)
 		pkgName := path.Base(path.Dir(fileName))
 		// Datetime and pid.
 		now := time.Now().String()[:23]
-		pid := os.Getpid()
 		// Message
-		msg := fmt.Sprintf(format, a...)
 		var (
+			snow   = now
 			slevel = fmt.Sprintf("%-5s", levelNames[l])
-			sname  = fmt.Sprintf("%s.%-8s", name, pkgName)
+			sname  = fmt.Sprintf("%s.%s", name, pkgName)
 		)
 		if colored {
-			sname = Colored("white", sname)
+			snow = Colored("magenta", snow)
+			sname = Colored("blue", sname)
 			slevel = Colored(levelColors[l], slevel)
 		}
-		s := fmt.Sprintf("%s %s %s[%d]: %s", now, slevel, sname, pid, msg)
-		fmt.Fprintln(w, s)
+		s := fmt.Sprintf("%s %s %s: %s", snow, slevel, sname, msg)
+		_, err := fmt.Fprintln(w, s)
+		return err
 	}
+	return nil
 }

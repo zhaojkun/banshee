@@ -54,7 +54,8 @@ func getMetricIndexes(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 			return
 		}
 		// Filter
-		for _, rule := range rules {
+		for i := 0; i < len(rules); i++ {
+			rule := &rules[i]
 			idxs = append(idxs, db.Index.Filter(rule.Pattern)...)
 		}
 	} else {

@@ -49,7 +49,7 @@ func (d *Detector) output(ev *models.Event) {
 		select {
 		case ch <- ev:
 		default:
-			log.Error("output channel is full, skipping..")
+			log.Errorf("output channel is full, skipping..")
 			continue
 		}
 	}
@@ -61,14 +61,14 @@ func (d *Detector) Start() {
 	addr := fmt.Sprintf("0.0.0.0:%d", d.cfg.Detector.Port)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal("listen: %v", err)
+		log.Fatalf("listen: %v", err)
 	}
-	log.Info("detector is listening on %s..", addr)
+	log.Infof("detector is listening on %s..", addr)
 	// Accept
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Error("cannot accept conn: %v, skipping..", err)
+			log.Errorf("cannot accept conn: %v, skipping..", err)
 			continue
 		}
 		go d.handle(conn)
@@ -85,14 +85,14 @@ func (d *Detector) handle(conn net.Conn) {
 	// New conn established.
 	addr := conn.RemoteAddr()
 	health.IncrNumClients(1)
-	log.Info("conn %s established", addr)
+	log.Infof("conn %s established", addr)
 	// Read
 	scanner := bufio.NewScanner(conn)
 	for scanner.Scan() {
 		// Read line by line.
 		if err := scanner.Err(); err != nil {
 			// Close conn on read error.
-			log.Error("read error: %v, closing conn..", err)
+			log.Errorf("read error: %v, closing conn..", err)
 			break
 		}
 		line := scanner.Text()
@@ -100,16 +100,16 @@ func (d *Detector) handle(conn net.Conn) {
 		m, err := parseMetric(line)
 		if err != nil {
 			// Skip invalid input.
-			log.Error("parse error: %v, skipping..", err)
+			log.Errorf("parse error: %v, skipping..", err)
 			continue
 		}
 		// Validate metric.
 		if err := models.ValidateMetricName(m.Name); err != nil {
-			log.Error("invalid metric: %v, skipping..", err)
+			log.Errorf("invalid metric: %v, skipping..", err)
 			continue
 		}
 		if err := models.ValidateMetricStamp(m.Stamp); err != nil {
-			log.Error("invalid metric: %v, skipping..", err)
+			log.Errorf("invalid metric: %v, skipping..", err)
 			continue
 		}
 		// Process
@@ -117,7 +117,7 @@ func (d *Detector) handle(conn net.Conn) {
 	}
 	// Close conn.
 	conn.Close()
-	log.Info("conn %s disconnected", addr)
+	log.Infof("conn %s disconnected", addr)
 	health.DecrNumClients(1)
 }
 
@@ -138,7 +138,7 @@ func (d *Detector) process(m *models.Metric) {
 	// Detect
 	ev, err := d.detect(m, rules)
 	if err != nil {
-		log.Error("detect: %v, skipping..", err)
+		log.Errorf("detect: %v, skipping..", err)
 		return
 	}
 	health.IncrNumMetricDetected(1)
@@ -149,7 +149,7 @@ func (d *Detector) process(m *models.Metric) {
 	// Time end.
 	elapsed := timer.Elapsed()
 	if elapsed > timeout {
-		log.Warn("detection is slow: %.2fms", elapsed)
+		log.Warnf("detection is slow: %.2fms", elapsed)
 	}
 	health.AddDetectionCost(elapsed)
 }
@@ -175,12 +175,12 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 		ok, err := filepath.Match(p, m.Name)
 		if err != nil {
 			// Invalid black pattern.
-			log.Error("invalid black pattern: %s, %v", p, err)
+			log.Errorf("invalid black pattern: %s, %v", p, err)
 			continue
 		}
 		if ok {
 			// Hit black pattern.
-			log.Debug("%s hit black pattern %s", m.Name, p)
+			log.Debugf("%s hit black pattern %s", m.Name, p)
 			return false, rules
 		}
 	}
@@ -261,7 +261,7 @@ func (d *Detector) shouldFz(m *models.Metric) bool {
 		ok, err := filepath.Match(p, m.Name)
 		if err != nil {
 			// Invalid pattern.
-			log.Error("invalid fillBlankZeros pattern: %s, %v", p, err)
+			log.Errorf("invalid fillBlankZeros pattern: %s, %v", p, err)
 			continue
 		}
 		if ok {

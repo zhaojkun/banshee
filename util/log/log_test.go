@@ -9,8 +9,12 @@ import (
 func TestLog(t *testing.T) {
 	// No assertions.
 	SetLevel(DEBUG)
-	Debug("hello %s", "world")
-	Info("hello %s", "world")
-	Warn("hello %s", "world")
-	Error("hello %s", "world")
+	Debug(nil)
+	Info(nil)
+	Warn(nil)
+	Error(nil)
+	Debugf("hello %s", "world")
+	Infof("hello %s", "world")
+	Warnf("hello %s", "world")
+	Errorf("hello %s", "world")
 }

@@ -34,12 +34,12 @@ func (c *Cleaner) clean() {
 			// Long time no data, clean all.
 			c.db.Index.Delete(idx.Name)
 			c.db.Metric.DeleteTo(idx.Name, idx.Stamp+1) // DeleteTo is right closed
-			log.Info("%s fully cleaned", idx.Name)
+			log.Infof("%s fully cleaned", idx.Name)
 		} else {
 			// Clean outdated metrics.
 			n, _ := c.db.Metric.DeleteTo(idx.Name, now-c.cfg.Expiration)
 			if n > 0 {
-				log.Debug("%s %d outdated metrics cleaned", idx.Name, n)
+				log.Debugf("%s %d outdated metrics cleaned", idx.Name, n)
 			}
 		}
 	}
@@ -47,7 +47,7 @@ func (c *Cleaner) clean() {
 
 // Start a time ticker to clean.
 func (c *Cleaner) Start() {
-	log.Info("start cleaner..")
+	log.Infof("start cleaner..")
 	// Clean right now.
 	c.clean()
 	// Clean each interval.

@@ -47,25 +47,25 @@ func initLog() {
 	goVs := runtime.Version()
 	nCPU := runtime.GOMAXPROCS(-1)
 	vers := version.Version
-	log.Debug("banshee%s %s %d cpu", vers, goVs, nCPU)
+	log.Debugf("banshee%s %s %d cpu", vers, goVs, nCPU)
 }
 
 func initConfig() {
 	// Config parsing.
 	if flag.NFlag() == 0 || (flag.NFlag() == 1 && *debug) {
 		// Case ./program [-d]
-		log.Warn("no config specified, using default..")
+		log.Warnf("no config specified, using default..")
 	} else {
 		// Update config.
 		err := cfg.UpdateWithJSONFile(*fileName)
 		if err != nil {
-			log.Fatal("failed to load %s, %s", *fileName, err)
+			log.Fatalf("failed to load %s, %s", *fileName, err)
 		}
 	}
 	// Config validation.
 	err := cfg.Validate()
 	if err != nil {
-		log.Fatal("config: %s", err)
+		log.Fatalf("config: %s", err)
 	}
 }
 
@@ -78,7 +78,7 @@ func initDB() {
 	var err error
 	db, err = storage.Open(path)
 	if err != nil {
-		log.Fatal("failed to open %s: %v", path, err)
+		log.Fatalf("failed to open %s: %v", path, err)
 	}
 }
 

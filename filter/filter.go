@@ -64,7 +64,7 @@ func (f *Filter) EnableHitLimit() {
 
 // Init from db.
 func (f *Filter) Init(db *storage.DB) {
-	log.Debug("init filter's rules from cache..")
+	log.Debugf("init filter's rules from cache..")
 	// Listen rules changes.
 	db.Admin.RulesCache.OnAdd(f.addRuleCh)
 	db.Admin.RulesCache.OnDel(f.delRuleCh)
@@ -107,7 +107,7 @@ func (f *Filter) matchedRs(c *childFilter, prefix string, l []string) []*models.
 			//use atomic
 			atomic.AddInt32(v.(*int32), 1)
 			if f.enableHitLimit && atomic.LoadInt32(v.(*int32)) > int32(f.intervalHitLimit) {
-				log.Warn("hits over intervalHitLimit, metric: %s", prefix)
+				log.Warnf("hits over intervalHitLimit, metric: %s", prefix)
 				return []*models.Rule{}
 			}
 		} else {
