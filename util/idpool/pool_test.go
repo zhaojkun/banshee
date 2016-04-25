@@ -9,23 +9,30 @@ import (
 	"testing"
 )
 
+func TestAllocate(t *testing.T) {
+	p := New(1, 5)
+	util.Must(t, p.Allocate() == 1)
+	util.Must(t, p.Allocate() == 2)
+	util.Must(t, p.Allocate() == 3)
+	util.Must(t, p.Allocate() == 4)
+	util.Must(t, p.Allocate() == 5)
+	util.Must(t, p.Allocate() == 5)
+}
+
 func TestReserve(t *testing.T) {
 	p := New(1, 5)
-	util.Must(t, p.Reserve() == 1)
-	util.Must(t, p.Reserve() == 2)
-	util.Must(t, p.Reserve() == 3)
-	util.Must(t, p.Reserve() == 4)
-	util.Must(t, p.Reserve() == 5)
-	util.Must(t, p.Reserve() == 5)
+	util.Must(t, p.Allocate() == 1)
+	p.Reserve(2)
+	util.Must(t, p.Allocate() == 3)
 }
 
 func TestRelease(t *testing.T) {
 	p := New(1, 5)
-	util.Must(t, p.Reserve() == 1)
-	util.Must(t, p.Reserve() == 2)
+	util.Must(t, p.Allocate() == 1)
+	util.Must(t, p.Allocate() == 2)
 	p.Release(2)
-	util.Must(t, p.Reserve() == 2)
-	util.Must(t, p.Reserve() == 3)
+	util.Must(t, p.Allocate() == 2)
+	util.Must(t, p.Allocate() == 3)
 }
 
 func TestLargeHigh(t *testing.T) {
@@ -33,25 +40,25 @@ func TestLargeHigh(t *testing.T) {
 	n := 1024
 	p := New(1, N)
 	for i := 0; i < n; i++ {
-		util.Must(t, p.Reserve() == i+1)
+		util.Must(t, p.Allocate() == i+1)
 	}
 	id := rand.Intn(n-1) + 1
 	p.Release(id)
-	util.Must(t, p.Reserve() == id)
-	util.Must(t, p.Reserve() == n+1)
+	util.Must(t, p.Allocate() == id)
+	util.Must(t, p.Allocate() == n+1)
 }
 
-func BenchmarkReserve(b *testing.B) {
+func BenchmarkAllocate(b *testing.B) {
 	p := New(0, b.N)
 	for i := 0; i < b.N; i++ {
-		p.Reserve()
+		p.Allocate()
 	}
 }
 
 func BenchmarkRelease(b *testing.B) {
 	p := New(0, b.N)
 	for i := 0; i < b.N; i++ {
-		p.Reserve()
+		p.Allocate()
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

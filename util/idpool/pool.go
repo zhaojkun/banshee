@@ -6,10 +6,10 @@
 // Example
 //
 //	pool := idpool.New(5,1024)
-//	pool.Reserve() // 5
-//	pool.Reserve() // 6
-//	pool.Release(5)
-//	pool.Release() // 5
+//	pool.Allocate() // 5
+//	pool.Allocate() // 6
+//	pool.Allocate(5)
+//	pool.Allocate() // 5
 //
 package idpool
 
@@ -39,9 +39,9 @@ func New(low, high int) *Pool {
 	}
 }
 
-// Reserve an id from the pool.
+// Allocate an id from the pool.
 // Returns high if no id is available.
-func (p *Pool) Reserve() int {
+func (p *Pool) Allocate() int {
 	for i := p.low; i < p.high; i++ {
 		if p.table.Bit(i) == 0 {
 			p.table.SetBit(p.table, i, 1)
@@ -49,6 +49,11 @@ func (p *Pool) Reserve() int {
 		}
 	}
 	return p.high
+}
+
+// Reserve an id from the pool.
+func (p *Pool) Reserve(id int) {
+	p.table.SetBit(p.table, id, 1)
 }
 
 // Release an id back to the pool.
