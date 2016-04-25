@@ -4,6 +4,7 @@ package indexdb
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/idpool"
 	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/trie"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -12,12 +13,18 @@ import (
 // delim is the metric name delimeter.
 const delim = "."
 
+// MaxNumIndex is the max value of the number indexes this db can handle.
+// Note that this number has no other meanings, just a limitation of the
+// indexes capacity, it can be larger, theoretically can be MaxUint32.
+const MaxNumIndex = 16 * 1024 * 1024
+
 // DB handles indexes storage.
 type DB struct {
 	// LevelDB.
 	db *leveldb.DB
 	// Cache.
-	tr *trie.Trie
+	tr  *trie.Trie
+	idp *idpool.Pool
 }
 
 // Open a DB by fileName.
@@ -26,10 +33,10 @@ func Open(fileName string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	tr := trie.New(delim)
 	db := new(DB)
 	db.db = ldb
-	db.tr = tr
+	db.tr = trie.New(delim)
+	db.idp = idpool.New(1, MaxNumIndex) // low is 1 to distinct default 0
 	db.load()
 	return db, nil
 }
@@ -58,6 +65,7 @@ func (db *DB) load() {
 		}
 		idx.Share()
 		db.tr.Put(idx.Name, idx)
+		db.idp.Reserve(int(idx.Link))
 	}
 }
 
@@ -74,6 +82,9 @@ func (db *DB) get(name string) (*models.Index, bool) {
 
 // Put an index into db.
 func (db *DB) Put(idx *models.Index) error {
+	if !db.tr.Has(idx.Name) { // It's new
+		idx.Link = uint32(db.idp.Allocate()) // allocate link
+	}
 	// Save to db.
 	key := []byte(idx.Name)
 	value := encode(idx)
@@ -101,9 +112,24 @@ func (db *DB) Get(name string) (*models.Index, error) {
 // Delete an index by name.
 func (db *DB) Delete(name string) error {
 	// Delete in cache.
-	db.tr.Pop(name)
+	v := db.tr.Pop(name)
+	if v == nil {
+		return ErrNotFound
+	}
+	idx := v.(*models.Index)
+	// Delete from db.
 	key := []byte(name)
-	return db.db.Delete(key, nil)
+	if err := db.db.Delete(key, nil); err != nil {
+		return err
+	}
+	// Release link.
+	db.idp.Release(int(idx.Link))
+	return nil
+}
+
+// Has checks if an index is in db.
+func (db *DB) Has(name string) bool {
+	return db.tr.Has(name)
 }
 
 // Filter indexes by pattern.

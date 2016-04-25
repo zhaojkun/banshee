@@ -28,8 +28,10 @@ func TestLoad(t *testing.T) {
 	// Add one
 	db.Put(idx)
 	util.Must(t, db.tr.Has(idx.Name))
+	util.Must(t, idx.Link == 1) // the first link
 	// Clear cache
 	db.tr.Clear()
+	db.idp.Clear()
 	util.Must(t, db.tr.Len() == 0)
 	util.Must(t, !db.tr.Has(idx.Name))
 	// Reload
@@ -37,6 +39,12 @@ func TestLoad(t *testing.T) {
 	// Must not empty and idx in cache
 	util.Must(t, db.tr.Len() == 1)
 	util.Must(t, db.tr.Has(idx.Name))
+	t.Logf("idp len: %v", db.idp.Len())
+	util.Must(t, db.idp.Len() == 1)
+	// Get again.
+	i, err := db.Get(idx.Name)
+	util.Must(t, err == nil && i.Equal(idx))
+	util.Must(t, i.Link == 1) // link should be correct
 }
 
 func TestPut(t *testing.T) {
@@ -51,6 +59,9 @@ func TestPut(t *testing.T) {
 	util.Must(t, err == nil)
 	// Must in cache
 	util.Must(t, db.tr.Has(idx.Name))
+	// Must have link
+	util.Must(t, db.idp.Len() == 1)
+	util.Must(t, idx.Link == 1)
 	// Must in db file
 	v, err := db.db.Get([]byte(idx.Name), nil)
 	util.Must(t, err == nil)
@@ -59,6 +70,11 @@ func TestPut(t *testing.T) {
 	util.Must(t, idx1.Stamp == idx.Stamp)
 	util.Must(t, idx1.Score == idx.Score)
 	util.Must(t, idx1.Average == idx.Average)
+	// RePut with another value.
+	idx.Score = 1.3
+	util.Must(t, db.Put(idx) == nil)
+	util.Must(t, db.idp.Len() == 1) // pool shouldn't change
+	util.Must(t, idx.Link == 1)
 }
 
 func TestGet(t *testing.T) {
@@ -90,6 +106,8 @@ func TestDelete(t *testing.T) {
 	db.Put(idx)
 	// Must in cache.
 	util.Must(t, db.tr.Has(idx.Name))
+	util.Must(t, db.idp.Len() == 1)
+	util.Must(t, idx.Link == 1)
 	// Delete it.
 	err := db.Delete(idx.Name)
 	util.Must(t, err == nil)
@@ -98,6 +116,8 @@ func TestDelete(t *testing.T) {
 	// Must not in db.
 	_, err = db.db.Get([]byte(idx.Name), nil)
 	util.Must(t, err == leveldb.ErrNotFound)
+	// Must not in link pool.
+	util.Must(t, db.idp.Len() == 0)
 	// Cant get again.
 	_, err = db.Get(idx.Name)
 	util.Must(t, ErrNotFound == err)
