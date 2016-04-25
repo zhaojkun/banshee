@@ -36,11 +36,10 @@ func (c *rulesCache) Init(db *gorm.DB) error {
 		return err
 	}
 	// Load
-	for _, rule := range rules {
-		// Share
-		r := &rule
-		r.Share()
-		c.rules.Set(rule.ID, r.Copy())
+	for i := 0; i < len(rules); i++ {
+		rule := &rules[i]
+		rule.Share()
+		c.rules.Set(rule.ID, rule)
 	}
 	return nil
 }
