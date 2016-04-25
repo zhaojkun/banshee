@@ -85,6 +85,9 @@ func (db *DB) Put(idx *models.Index) error {
 	if !db.tr.Has(idx.Name) { // It's new
 		idx.Link = uint32(db.idp.Allocate()) // allocate link
 	}
+	if idx.Link == 0 {
+		return ErrNoLink
+	}
 	// Save to db.
 	key := []byte(idx.Name)
 	value := encode(idx)

@@ -9,4 +9,6 @@ var (
 	ErrNotFound = errors.New("indexdb: not found")
 	// ErrCorrupted is returned when corrupted data found.
 	ErrCorrupted = errors.New("indexdb: corrupted data found")
+	// ErrNoLink is returned when the index to put has no link.
+	ErrNoLink = errors.New("indexdb: no link")
 )
