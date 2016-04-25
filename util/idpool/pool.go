@@ -21,10 +21,11 @@ import (
 
 // Pool is the id pool.
 type Pool struct {
-	lock  sync.Mutex
-	table *big.Int
-	high  int
-	low   int
+	lock   sync.RWMutex
+	table  *big.Int
+	high   int
+	low    int
+	length int
 }
 
 // New returns a new Pool for given range.
@@ -49,6 +50,7 @@ func (p *Pool) Allocate() int {
 	for i := p.low; i < p.high; i++ {
 		if p.table.Bit(i) == 0 {
 			p.table.SetBit(p.table, i, 1)
+			p.length++
 			return i
 		}
 	}
@@ -59,7 +61,10 @@ func (p *Pool) Allocate() int {
 func (p *Pool) Reserve(id int) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	p.table.SetBit(p.table, id, 1)
+	if p.table.Bit(id) == 0 {
+		p.table.SetBit(p.table, id, 1)
+		p.length++
+	}
 }
 
 // Release an id back to the pool.
@@ -68,7 +73,10 @@ func (p *Pool) Release(id int) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	if id >= p.low && id < p.high {
-		p.table.SetBit(p.table, id, 0)
+		if p.table.Bit(id) == 1 {
+			p.table.SetBit(p.table, id, 0)
+			p.length--
+		}
 	}
 }
 
@@ -87,4 +95,11 @@ func (p *Pool) High() int {
 // Low returns the low.
 func (p *Pool) Low() int {
 	return p.low
+}
+
+// Len returns the number of id reserved or allocated.
+func (p *Pool) Len() int {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.length
 }

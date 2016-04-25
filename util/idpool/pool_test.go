@@ -42,6 +42,22 @@ func TestClear(t *testing.T) {
 	util.Must(t, p.Allocate() == 1)
 }
 
+func TestLen(t *testing.T) {
+	p := New(1, 8)
+	util.Must(t, p.Allocate() == 1)
+	util.Must(t, p.Len() == 1)
+	util.Must(t, p.Allocate() == 2)
+	util.Must(t, p.Len() == 2)
+	p.Reserve(2)
+	util.Must(t, p.Len() == 2)
+	p.Reserve(3)
+	util.Must(t, p.Len() == 3)
+	p.Release(3)
+	util.Must(t, p.Len() == 2)
+	p.Release(1)
+	util.Must(t, p.Len() == 1)
+}
+
 func TestLargeHigh(t *testing.T) {
 	N := math.MaxUint32
 	n := 1024
