@@ -10,7 +10,6 @@ import (
 	"runtime"
 
 	"github.com/eleme/banshee/alerter"
-	"github.com/eleme/banshee/cleaner"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
@@ -110,9 +109,6 @@ func init() {
 func main() {
 	health.Init(db)
 	go health.Start()
-
-	cleaner := cleaner.New(cfg, db)
-	go cleaner.Start()
 
 	alerter := alerter.New(cfg, db)
 	alerter.Start()
