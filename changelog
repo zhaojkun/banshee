@@ -1,9 +1,17 @@
 pending
 -------
 
+* Storage: Indexdb uses trie as cache. #498
+* Storage: Indexdb uses binary encoding. #498
+* Storage: Indexdb uses link between index and its metrics. #498
+* Storage: Metricdb uses link as key, instead of long name. #498
+* Models: Add models.Index new field `Link`. #498
+* Models: Add models.Metric new field `Link`. #498
 * Makefile: Add vet and lint to test. #497
+* Logging: Vet friendly logging. #496
 * Util: Use util.Must instead of assert package. #496
-* Log: Vet friendly logging. #496
+* Util: Add trie implementation. #498
+* Util: Add id pool implementation. #498
 
 0.1.8
 -----
