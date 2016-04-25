@@ -28,6 +28,7 @@ func TestPut(t *testing.T) {
 	// Put.
 	m := &models.Metric{
 		Name:    "foo",
+		Link:    1,
 		Stamp:   1452758773,
 		Value:   3.14,
 		Score:   0.1892,
@@ -42,6 +43,7 @@ func TestPut(t *testing.T) {
 	m1 := &models.Metric{
 		Name:  m.Name,
 		Stamp: m.Stamp,
+		Link:  1,
 	}
 	err = decodeValue(value, m1)
 	util.Must(t, err == nil)
@@ -55,21 +57,21 @@ func TestGet(t *testing.T) {
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Nothing.
-	ms, err := db.Get("foo", 0, 1452758773)
+	ms, err := db.Get("not-exist", 1234, 0, 1452758773)
 	util.Must(t, err == nil)
 	util.Must(t, len(ms) == 0)
 	// Put some.
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758723})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758733, Value: 1.89, Score: 1.12, Average: 1.72})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758743})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758753})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758723})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758733, Value: 1.89, Score: 1.12, Average: 1.72})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758743})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758753})
 	// Get again.
-	ms, err = db.Get("foo", 1452758733, 1452758753)
+	ms, err = db.Get("foo", 1, 1452758733, 1452758753)
 	util.Must(t, err == nil)
 	util.Must(t, len(ms) == 2)
 	// Test the value.
 	m := ms[0]
-	util.Must(t, m.Value == 1.89 && m.Score == 1.12)
+	util.Must(t, m.Value == 1.89 && m.Score == 1.12 && m.Link == 1)
 }
 
 func TestDelete(t *testing.T) {
@@ -79,116 +81,19 @@ func TestDelete(t *testing.T) {
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Nothing.
-	n, err := db.Delete("foo", 0, 1452758773)
+	n, err := db.Delete(1222222, 0, 1452758773)
 	util.Must(t, err == nil && n == 0)
 	// Put some.
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758723})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758733})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758743})
-	db.Put(&models.Metric{Name: "foo", Stamp: 1452758753})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758723})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758733})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758743})
+	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758753})
 	// Delete again
-	n, err = db.Delete("foo", 1452758733, 1452758753)
+	n, err = db.Delete(1, 1452758733, 1452758753)
 	util.Must(t, err == nil && n == 2)
 	// Get
-	ms, err := db.Get("foo", 1452758723, 1452758763)
+	ms, err := db.Get("foo", 1, 1452758723, 1452758763)
 	util.Must(t, len(ms) == 2)
 	util.Must(t, ms[0].Stamp == 1452758723)
 	util.Must(t, ms[1].Stamp == 1452758753)
-}
-
-func BenchmarkPut(b *testing.B) {
-	// Open db.
-	fileName := "db-bench"
-	db, _ := Open(fileName)
-	defer os.RemoveAll(fileName)
-	defer db.Close()
-	horizon := Horizon()
-	// Bench
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		db.Put(&models.Metric{Name: "foo", Stamp: horizon + uint32(10*i)})
-	}
-}
-
-func BenchmarkGet(b *testing.B) {
-	// Open db.
-	fileName := "db-bench"
-	db, _ := Open(fileName)
-	defer os.RemoveAll(fileName)
-	defer db.Close()
-	// Put
-	horizon := Horizon()
-	name := "foo"
-	n := 3600 * 24 * 7 / 10 // 7 days count
-	for i := 0; i < n; i++ {
-		db.Put(&models.Metric{Name: name, Stamp: horizon + uint32(10*i)})
-	}
-	// Bench
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Get 30 metrics for 7 times
-		for j := 0; j < 7; j++ {
-			db.Get(name, horizon, horizon+30*10)
-		}
-	}
-}
-
-func BenchmarkGetAsyncNoBufferChannel(b *testing.B) {
-	// Open db.
-	fileName := "db-bench"
-	db, _ := Open(fileName)
-	defer os.RemoveAll(fileName)
-	defer db.Close()
-	// Put
-	horizon := Horizon()
-	name := "foo"
-	n := 3600 * 24 * 7 / 10 // 7 days count
-	for i := 0; i < n; i++ {
-		db.Put(&models.Metric{Name: name, Stamp: horizon + uint32(10*i)})
-	}
-	// Bench
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Get 30 metrics for 7 times
-		ch := make(chan bool)
-		for j := 0; j < 7; j++ {
-			go func() {
-				db.Get(name, horizon, horizon+30*10)
-				ch <- true
-			}()
-		}
-		for j := 0; j < 7; j++ {
-			<-ch
-		}
-	}
-}
-
-func BenchmarkGetAsyncBufferedChannel(b *testing.B) {
-	// Open db.
-	fileName := "db-bench"
-	db, _ := Open(fileName)
-	defer os.RemoveAll(fileName)
-	defer db.Close()
-	// Put
-	horizon := Horizon()
-	name := "foo"
-	n := 3600 * 24 * 7 / 10 // 7 days count
-	for i := 0; i < n; i++ {
-		db.Put(&models.Metric{Name: name, Stamp: horizon + uint32(10*i)})
-	}
-	// Bench
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		// Get 30 metrics for 7 times
-		ch := make(chan bool, 7)
-		for j := 0; j < 7; j++ {
-			go func() {
-				db.Get(name, horizon, horizon+30*10)
-				ch <- true
-			}()
-		}
-		for j := 0; j < 7; j++ {
-			<-ch
-		}
-	}
 }

@@ -5,35 +5,8 @@ package metricdb
 import (
 	"github.com/eleme/banshee/models"
 	"github.com/syndtr/goleveldb/leveldb"
-	leveldbFilter "github.com/syndtr/goleveldb/leveldb/filter"
-	leveldbOpt "github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
-
-const (
-	// LevelDBBloomFilterBitsPerKey is the leveldb builtin bloom filter
-	// bitsPerKey.
-	//
-	// Filter name will be persisted to disk on a per sstable basis, during
-	// reads leveldb will try to find matching filter. And the filter can be
-	// replaced after a DB has been created, or say that the filter can be
-	// changed between db opens. But if this is done, note that old sstables
-	// will continue using the old filter and every new created sstable will
-	// use the new filter. For this reason, I make the parameter `bitsPerKey`
-	// a constant, there is no need to replace it.
-	//
-	// Also, this means that no big performance penalty will be experienced
-	// when changing the parameter, and the goleveldb docs points this as well.
-	//
-	// About the probability of false positives, the following link may help:
-	// http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
-	//
-	LevelDBBloomFilterBitsPerKey = 10
-)
-
-// Options is db opening options.
-type Options struct {
-}
 
 // DB handles metrics storage.
 type DB struct {
@@ -43,10 +16,7 @@ type DB struct {
 
 // Open a DB by fileName.
 func Open(fileName string) (*DB, error) {
-	opts := &leveldbOpt.Options{
-		Filter: leveldbFilter.NewBloomFilter(LevelDBBloomFilterBitsPerKey),
-	}
-	db, err := leveldb.OpenFile(fileName, opts)
+	db, err := leveldb.OpenFile(fileName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +32,8 @@ func (db *DB) Close() error {
 
 // Put a metric into db.
 func (db *DB) Put(m *models.Metric) error {
-	if m.Stamp < horizon {
-		return ErrStampTooSmall
+	if m.Link == 0 {
+		return ErrNoLink
 	}
 	key := encodeKey(m)
 	value := encodeValue(m)
@@ -71,10 +41,10 @@ func (db *DB) Put(m *models.Metric) error {
 }
 
 // Get metrics in a timestamp range, the range is left open and right closed.
-func (db *DB) Get(name string, start, end uint32) ([]*models.Metric, error) {
+func (db *DB) Get(name string, link uint32, start, end uint32) ([]*models.Metric, error) {
 	// Key encoding.
-	startMetric := &models.Metric{Name: name, Stamp: start}
-	endMetric := &models.Metric{Name: name, Stamp: end}
+	startMetric := &models.Metric{Link: link, Stamp: start}
+	endMetric := &models.Metric{Link: link, Stamp: end}
 	startKey := encodeKey(startMetric)
 	endKey := encodeKey(endMetric)
 	// Iterate db.
@@ -87,7 +57,7 @@ func (db *DB) Get(name string, start, end uint32) ([]*models.Metric, error) {
 		m := &models.Metric{}
 		key := iter.Key()
 		value := iter.Value()
-		// Fill in the name and stamp.
+		// Fill in the link and stamp.
 		err := decodeKey(key, m)
 		if err != nil {
 			return metrics, err
@@ -97,6 +67,8 @@ func (db *DB) Get(name string, start, end uint32) ([]*models.Metric, error) {
 		if err != nil {
 			return metrics, err
 		}
+		// Fill in the name
+		m.Name = name
 		metrics = append(metrics, m)
 	}
 	return metrics, nil
@@ -104,10 +76,10 @@ func (db *DB) Get(name string, start, end uint32) ([]*models.Metric, error) {
 
 // Delete metrics in a timestamp range, the range is left open and right
 // closed.
-func (db *DB) Delete(name string, start, end uint32) (int, error) {
+func (db *DB) Delete(link uint32, start, end uint32) (int, error) {
 	// Key encoding.
-	startMetric := &models.Metric{Name: name, Stamp: start}
-	endMetric := &models.Metric{Name: name, Stamp: end}
+	startMetric := &models.Metric{Link: link, Stamp: start}
+	endMetric := &models.Metric{Link: link, Stamp: end}
 	startKey := encodeKey(startMetric)
 	endKey := encodeKey(endMetric)
 	// Iterate db.
@@ -128,7 +100,7 @@ func (db *DB) Delete(name string, start, end uint32) (int, error) {
 	return n, nil
 }
 
-// DeleteTo deletes metrics ranging to a stamp by name.
-func (db *DB) DeleteTo(name string, end uint32) (int, error) {
-	return db.Delete(name, horizon, end)
+// DeleteTo deletes metrics ranging to a stamp by link.
+func (db *DB) DeleteTo(link uint32, end uint32) (int, error) {
+	return db.Delete(link, 0, end)
 }
