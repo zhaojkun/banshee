@@ -1,3 +1,9 @@
+pending
+-------
+
+* Util: Use util.Must instead of assert package. #496
+
+
 0.1.8
 -----
 

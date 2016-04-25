@@ -3,7 +3,7 @@
 package config
 
 import (
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"reflect"
 	"testing"
 )
@@ -11,13 +11,13 @@ import (
 func TestExampleConfigParsing(t *testing.T) {
 	c := New()
 	err := c.UpdateWithJSONFile("./exampleConfig.json")
-	assert.Ok(t, err == nil)
+	util.Must(t, err == nil)
 	defaults := New()
-	assert.Ok(t, reflect.DeepEqual(c, defaults))
+	util.Must(t, reflect.DeepEqual(c, defaults))
 }
 
 func TestExampleConfigValidate(t *testing.T) {
 	c := New()
 	c.UpdateWithJSONFile("./exampleConfig.json")
-	assert.Ok(t, c.Validate() == nil)
+	util.Must(t, c.Validate() == nil)
 }

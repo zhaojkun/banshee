@@ -3,19 +3,19 @@
 package mathutil
 
 import (
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"math/rand"
 	"testing"
 )
 
 func TestAverage(t *testing.T) {
 	vals := []float64{1, 2, 3, 4}
-	assert.Ok(t, Average(vals) == 2.5)
+	util.Must(t, Average(vals) == 2.5)
 }
 
 func TestStdDev(t *testing.T) {
 	vals := []float64{1, 2, 2, 1}
-	assert.Ok(t, StdDev(vals, Average(vals)) == .5)
+	util.Must(t, StdDev(vals, Average(vals)) == .5)
 }
 
 func genValues(n int) []float64 {

@@ -5,7 +5,6 @@ package admindb
 import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util"
-	"github.com/eleme/banshee/util/assert"
 	"os"
 	"testing"
 )
@@ -13,12 +12,12 @@ import (
 func TestOpen(t *testing.T) {
 	fileName := "db-testing"
 	db, err := Open(fileName)
-	assert.Ok(t, nil == err)
-	assert.Ok(t, db != nil)
-	assert.Ok(t, util.IsFileExist(fileName))
+	util.Must(t, nil == err)
+	util.Must(t, db != nil)
+	util.Must(t, util.IsFileExist(fileName))
 	defer os.RemoveAll(fileName)
 	defer db.Close()
-	assert.Ok(t, db.DB().HasTable(&models.User{}))
-	assert.Ok(t, db.DB().HasTable(&models.Rule{}))
-	assert.Ok(t, db.DB().HasTable(&models.Project{}))
+	util.Must(t, db.DB().HasTable(&models.User{}))
+	util.Must(t, db.DB().HasTable(&models.Rule{}))
+	util.Must(t, db.DB().HasTable(&models.Project{}))
 }

@@ -3,7 +3,7 @@
 package models
 
 import (
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"math/rand"
 	"testing"
 )
@@ -18,57 +18,57 @@ func genLongString(length int) string {
 }
 
 func TestValidateProjectName(t *testing.T) {
-	assert.Ok(t, ValidateProjectName("") == ErrProjectNameEmpty)
-	assert.Ok(t, ValidateProjectName(genLongString(MaxProjectNameLen+1)) == ErrProjectNameTooLong)
-	assert.Ok(t, ValidateProjectName("project") == nil)
+	util.Must(t, ValidateProjectName("") == ErrProjectNameEmpty)
+	util.Must(t, ValidateProjectName(genLongString(MaxProjectNameLen+1)) == ErrProjectNameTooLong)
+	util.Must(t, ValidateProjectName("project") == nil)
 }
 
 func TestValidateProjectSilentTimeRange(t *testing.T) {
-	assert.Ok(t, ValidateProjectSilentRange(39, 6) == ErrProjectSilentTimeStart)
-	assert.Ok(t, ValidateProjectSilentRange(0, 29) == ErrProjectSilentTimeEnd)
-	assert.Ok(t, ValidateProjectSilentRange(7, 4) == ErrProjectSilentTimeRange)
-	assert.Ok(t, ValidateProjectSilentRange(1, 9) == nil)
+	util.Must(t, ValidateProjectSilentRange(39, 6) == ErrProjectSilentTimeStart)
+	util.Must(t, ValidateProjectSilentRange(0, 29) == ErrProjectSilentTimeEnd)
+	util.Must(t, ValidateProjectSilentRange(7, 4) == ErrProjectSilentTimeRange)
+	util.Must(t, ValidateProjectSilentRange(1, 9) == nil)
 }
 
 func TestValidateUserName(t *testing.T) {
-	assert.Ok(t, ValidateUserName("") == ErrUserNameEmpty)
-	assert.Ok(t, ValidateUserName(genLongString(MaxUserNameLen+1)) == ErrUserNameTooLong)
-	assert.Ok(t, ValidateUserName("user") == nil)
+	util.Must(t, ValidateUserName("") == ErrUserNameEmpty)
+	util.Must(t, ValidateUserName(genLongString(MaxUserNameLen+1)) == ErrUserNameTooLong)
+	util.Must(t, ValidateUserName("user") == nil)
 }
 
 func TestValidateUserEmail(t *testing.T) {
-	assert.Ok(t, ValidateUserEmail("") == ErrUserEmailEmpty)
-	assert.Ok(t, ValidateUserEmail("abc") == ErrUserEmailFormat)
-	assert.Ok(t, ValidateUserEmail("hit9@ele.me") == nil)
+	util.Must(t, ValidateUserEmail("") == ErrUserEmailEmpty)
+	util.Must(t, ValidateUserEmail("abc") == ErrUserEmailFormat)
+	util.Must(t, ValidateUserEmail("hit9@ele.me") == nil)
 }
 
 func TestValidateUserPhone(t *testing.T) {
-	assert.Ok(t, ValidateUserPhone("123456789012") == ErrUserPhoneLen)
-	assert.Ok(t, ValidateUserPhone("12345678a01") == ErrUserPhoneFormat)
-	assert.Ok(t, ValidateUserPhone("18701616177") == nil)
+	util.Must(t, ValidateUserPhone("123456789012") == ErrUserPhoneLen)
+	util.Must(t, ValidateUserPhone("12345678a01") == ErrUserPhoneFormat)
+	util.Must(t, ValidateUserPhone("18701616177") == nil)
 }
 
 func TestValidateRulePattern(t *testing.T) {
-	assert.Ok(t, ValidateRulePattern("") == ErrRulePatternEmpty)
-	assert.Ok(t, ValidateRulePattern("abc efg") == ErrRulePatternContainsSpace)
-	assert.Ok(t, ValidateRulePattern("abc*.s") == ErrRulePatternFormat)
-	assert.Ok(t, ValidateRulePattern("abc.*.s") == nil)
-	assert.Ok(t, ValidateRulePattern("abc.*.*") == nil)
-	assert.Ok(t, ValidateRulePattern("*.abc.*") == nil)
+	util.Must(t, ValidateRulePattern("") == ErrRulePatternEmpty)
+	util.Must(t, ValidateRulePattern("abc efg") == ErrRulePatternContainsSpace)
+	util.Must(t, ValidateRulePattern("abc*.s") == ErrRulePatternFormat)
+	util.Must(t, ValidateRulePattern("abc.*.s") == nil)
+	util.Must(t, ValidateRulePattern("abc.*.*") == nil)
+	util.Must(t, ValidateRulePattern("*.abc.*") == nil)
 }
 
 func TestValidateRuleLevel(t *testing.T) {
-	assert.Ok(t, ValidateRuleLevel(RuleLevelLow) == nil)
-	assert.Ok(t, ValidateRuleLevel(RuleLevelMiddle) == nil)
-	assert.Ok(t, ValidateRuleLevel(RuleLevelHigh) == nil)
-	assert.Ok(t, ValidateRuleLevel(2016) == ErrRuleLevel)
+	util.Must(t, ValidateRuleLevel(RuleLevelLow) == nil)
+	util.Must(t, ValidateRuleLevel(RuleLevelMiddle) == nil)
+	util.Must(t, ValidateRuleLevel(RuleLevelHigh) == nil)
+	util.Must(t, ValidateRuleLevel(2016) == ErrRuleLevel)
 }
 
 func TestValidateMetricName(t *testing.T) {
-	assert.Ok(t, ValidateMetricName("") == ErrMetricNameEmpty)
-	assert.Ok(t, ValidateMetricName(genLongString(MaxMetricNameLen+1)) == ErrMetricNameTooLong)
+	util.Must(t, ValidateMetricName("") == ErrMetricNameEmpty)
+	util.Must(t, ValidateMetricName(genLongString(MaxMetricNameLen+1)) == ErrMetricNameTooLong)
 }
 
 func TestValidateMetricStamp(t *testing.T) {
-	assert.Ok(t, ValidateMetricStamp(123) == ErrMetricStampTooSmall)
+	util.Must(t, ValidateMetricStamp(123) == ErrMetricStampTooSmall)
 }

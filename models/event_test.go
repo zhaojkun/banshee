@@ -3,7 +3,7 @@
 package models
 
 import (
-	"github.com/eleme/banshee/util/assert"
+	"github.com/eleme/banshee/util"
 	"testing"
 )
 
@@ -11,11 +11,11 @@ func TestGenerateID(t *testing.T) {
 	// Metric with the same name but different stamps.
 	ev1 := NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil)
 	ev2 := NewEvent(&Metric{Name: "foo", Stamp: 1456815974}, nil)
-	assert.Ok(t, ev1.ID != ev2.ID)
+	util.Must(t, ev1.ID != ev2.ID)
 	// Metric with the same stamp but different names.
 	ev1 = NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil)
 	ev2 = NewEvent(&Metric{Name: "bar", Stamp: 1456815973}, nil)
-	assert.Ok(t, ev1.ID != ev2.ID)
+	util.Must(t, ev1.ID != ev2.ID)
 }
 
 func TestTranslateRuleComment(t *testing.T) {
@@ -24,7 +24,7 @@ func TestTranslateRuleComment(t *testing.T) {
 	ev := &Event{Metric: m, Rule: r}
 	ev.TranslateRuleComment()
 	excepted := "foo and bar timing"
-	assert.Ok(t, ev.RuleTranslatedComment == excepted)
+	util.Must(t, ev.RuleTranslatedComment == excepted)
 }
 
 func TestTranslateRuleCommentNoVariables(t *testing.T) {
@@ -33,5 +33,5 @@ func TestTranslateRuleCommentNoVariables(t *testing.T) {
 	ev := &Event{Metric: m, Rule: r}
 	ev.TranslateRuleComment()
 	excepted := "no variables"
-	assert.Ok(t, ev.RuleTranslatedComment == excepted)
+	util.Must(t, ev.RuleTranslatedComment == excepted)
 }
