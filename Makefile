@@ -10,7 +10,7 @@ deps:
 	godep get -t ${GO_PKGS}
 	godep save -t ${GO_PKGS}
 
-test:
+test: lint vet
 	go test $(GO_PKGS)
 
 lint:
