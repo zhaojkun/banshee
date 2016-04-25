@@ -16,10 +16,12 @@ package idpool
 import (
 	"math"
 	"math/big"
+	"sync"
 )
 
 // Pool is the id pool.
 type Pool struct {
+	lock  sync.Mutex
 	table *big.Int
 	high  int
 	low   int
@@ -42,6 +44,8 @@ func New(low, high int) *Pool {
 // Allocate an id from the pool.
 // Returns high if no id is available.
 func (p *Pool) Allocate() int {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 	for i := p.low; i < p.high; i++ {
 		if p.table.Bit(i) == 0 {
 			p.table.SetBit(p.table, i, 1)
@@ -53,12 +57,16 @@ func (p *Pool) Allocate() int {
 
 // Reserve an id from the pool.
 func (p *Pool) Reserve(id int) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 	p.table.SetBit(p.table, id, 1)
 }
 
 // Release an id back to the pool.
 // Do nothing if the id is outside of the range.
 func (p *Pool) Release(id int) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 	if id >= p.low && id < p.high {
 		p.table.SetBit(p.table, id, 0)
 	}
