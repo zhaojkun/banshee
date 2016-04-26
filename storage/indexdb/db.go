@@ -4,18 +4,27 @@ package indexdb
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/idpool"
 	"github.com/eleme/banshee/util/log"
-	"github.com/eleme/banshee/util/safemap"
+	"github.com/eleme/banshee/util/trie"
 	"github.com/syndtr/goleveldb/leveldb"
-	"path/filepath"
 )
+
+// delim is the metric name delimeter.
+const delim = "."
+
+// MaxNumIndex is the max value of the number indexes this db can handle.
+// Note that this number has no other meanings, just a limitation of the
+// indexes capacity, it can be larger, theoretically can be MaxUint32.
+const MaxNumIndex = 16 * 1024 * 1024
 
 // DB handles indexes storage.
 type DB struct {
-	// LevelDB
+	// LevelDB.
 	db *leveldb.DB
-	// Cache
-	m *safemap.SafeMap
+	// Cache.
+	tr  *trie.Trie
+	idp *idpool.Pool
 }
 
 // Open a DB by fileName.
@@ -24,10 +33,10 @@ func Open(fileName string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	m := safemap.New()
 	db := new(DB)
 	db.db = ldb
-	db.m = m
+	db.tr = trie.New(delim)
+	db.idp = idpool.New(1, MaxNumIndex) // low is 1 to distinct default 0
 	db.load()
 	return db, nil
 }
@@ -51,25 +60,34 @@ func (db *DB) load() {
 		err := decode(value, idx)
 		if err != nil {
 			// Skip corrupted values
+			log.Warn("corrupted data found, skipping..")
 			continue
 		}
-		db.m.Set(idx.Name, idx)
+		idx.Share()
+		db.tr.Put(idx.Name, idx)
+		db.idp.Reserve(int(idx.Link))
 	}
 }
 
 // get index by name.
 func (db *DB) get(name string) (*models.Index, bool) {
-	v, ok := db.m.Get(name)
-	if ok {
-		return v.(*models.Index), true
+	v := db.tr.Get(name)
+	if v == nil {
+		return nil, false
 	}
-	return nil, false
+	return v.(*models.Index), true
 }
 
 // Operations.
 
 // Put an index into db.
 func (db *DB) Put(idx *models.Index) error {
+	if !db.tr.Has(idx.Name) { // It's new
+		idx.Link = uint32(db.idp.Allocate()) // allocate link
+	}
+	if idx.Link == 0 {
+		return ErrNoLink
+	}
 	// Save to db.
 	key := []byte(idx.Name)
 	value := encode(idx)
@@ -81,7 +99,7 @@ func (db *DB) Put(idx *models.Index) error {
 	idx = idx.Copy()
 	// Add to cache.
 	idx.Share()
-	db.m.Set(idx.Name, idx)
+	db.tr.Put(idx.Name, idx)
 	return nil
 }
 
@@ -96,39 +114,47 @@ func (db *DB) Get(name string) (*models.Index, error) {
 
 // Delete an index by name.
 func (db *DB) Delete(name string) error {
-	if db.m.Has(name) {
-		// Delete in cache.
-		db.m.Delete(name)
+	// Delete in cache.
+	v := db.tr.Pop(name)
+	if v == nil {
+		return ErrNotFound
 	}
+	idx := v.(*models.Index)
+	// Delete from db.
 	key := []byte(name)
-	return db.db.Delete(key, nil)
+	if err := db.db.Delete(key, nil); err != nil {
+		return err
+	}
+	// Release link.
+	db.idp.Release(int(idx.Link))
+	return nil
+}
+
+// Has checks if an index is in db.
+func (db *DB) Has(name string) bool {
+	return db.tr.Has(name)
 }
 
 // Filter indexes by pattern.
 func (db *DB) Filter(pattern string) (l []*models.Index) {
-	m := db.m.Items()
-	for k, v := range m {
+	for _, v := range db.tr.Match(pattern) {
 		idx := v.(*models.Index)
-		name := k.(string)
-		ok, err := filepath.Match(pattern, name)
-		if err == nil && ok {
-			l = append(l, idx.Copy())
-		}
+		l = append(l, idx.Copy())
 	}
-	return l
+	return
 }
 
 // All returns all indexes.
 func (db *DB) All() (l []*models.Index) {
-	m := db.m.Items()
+	m := db.tr.Map()
 	for _, v := range m {
 		idx := v.(*models.Index)
 		l = append(l, idx.Copy())
 	}
-	return l
+	return
 }
 
 // Len returns the number of indexes.
 func (db *DB) Len() int {
-	return db.m.Len()
+	return db.tr.Len()
 }

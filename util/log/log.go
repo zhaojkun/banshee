@@ -46,7 +46,7 @@ var colors = map[string]int{
 
 // levelColors
 var levelColors = map[int]string{
-	DEBUG: "white",
+	DEBUG: "cyan",
 	INFO:  "green",
 	WARN:  "yellow",
 	ERROR: "red",
@@ -143,22 +143,17 @@ func Colored(color string, text string) string {
 func log(l int, msg string) error {
 	if enabled && l >= level {
 		// Caller pkg.
-		_, fileName, _, _ := runtime.Caller(2)
+		_, fileName, line, _ := runtime.Caller(2)
 		pkgName := path.Base(path.Dir(fileName))
+		filepath := path.Join(pkgName, path.Base(fileName))
 		// Datetime and pid.
-		now := time.Now().String()[:23]
+		now := time.Now().String()[:21]
 		// Message
-		var (
-			snow   = now
-			slevel = fmt.Sprintf("%-5s", levelNames[l])
-			sname  = fmt.Sprintf("%s.%s", name, pkgName)
-		)
+		level := levelNames[l]
+		s := fmt.Sprintf("%s %s %s:%d %s", now, level, filepath, line, msg)
 		if colored {
-			snow = Colored("magenta", snow)
-			sname = Colored("blue", sname)
-			slevel = Colored(levelColors[l], slevel)
+			s = Colored(levelColors[l], s)
 		}
-		s := fmt.Sprintf("%s %s %s: %s", snow, slevel, sname, msg)
 		_, err := fmt.Fprintln(w, s)
 		return err
 	}

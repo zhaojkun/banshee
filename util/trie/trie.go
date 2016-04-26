@@ -164,11 +164,13 @@ func (tr *Trie) Match(pattern string) map[string]interface{} {
 func (t *tree) match(delim string, keys []string, parts []string) map[string]interface{} {
 	m := make(map[string]interface{}, 0)
 	t.lock.RLock() // touch root.
-	if len(parts) == 0 && t.value != nil {
-		// Generally, strings.Split() won't give us empty results. And the
-		// empty parts means unprocessed parts are empty, indicates that we
-		// should pick up all processed keys and return.
-		m[strings.Join(keys, delim)] = t.value
+	if len(parts) == 0 {
+		if t.value != nil {
+			// Generally, strings.Split() won't give us empty results. And the
+			// empty parts means unprocessed parts are empty, indicates that we
+			// should pick up all processed keys and return.
+			m[strings.Join(keys, delim)] = t.value
+		}
 		t.lock.RUnlock() // leave root
 		return m
 	}

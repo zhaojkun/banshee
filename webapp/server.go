@@ -72,5 +72,5 @@ func Start(c *config.Config, d *storage.DB, f *filter.Filter) {
 	// Serve
 	addr := fmt.Sprintf("0.0.0.0:%d", cfg.Webapp.Port)
 	log.Infof("webapp is listening and serving on %s..", addr)
-	http.ListenAndServe(addr, router)
+	log.Fatal(http.ListenAndServe(addr, router))
 }

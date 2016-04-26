@@ -63,7 +63,7 @@ func (d *Detector) Start() {
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
-	log.Infof("detector is listening on %s..", addr)
+	log.Infof("detector is listening on tcp://%s", addr)
 	// Accept
 	for {
 		conn, err := ln.Accept()
@@ -209,6 +209,9 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event
 	}
 	// Fill zero?
 	fz := idx != nil && d.shouldFz(m)
+	if idx != nil {
+		m.LinkTo(idx)
+	}
 	// History values.
 	vals, err := d.values(m, fz)
 	if err != nil {
@@ -248,6 +251,7 @@ func (d *Detector) save(m *models.Metric, idx *models.Index) error {
 		return err
 	}
 	// Save metric.
+	m.LinkTo(idx)
 	if err := d.db.Metric.Put(m); err != nil {
 		return err
 	}
@@ -341,7 +345,7 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 		stop := stamp + offset
 		if mp[i] {
 			go func() {
-				ms, err := d.db.Metric.Get(m.Name, start, stop)
+				ms, err := d.db.Metric.Get(m.Name, m.Link, start, stop)
 				ch <- metricGetResult{err, ms, start, stop}
 			}()
 			n++
@@ -463,5 +467,6 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 	f := d.cfg.Detector.TrendingFactor
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average
+	n.Link = idx.Link
 	return n
 }

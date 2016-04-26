@@ -4,6 +4,7 @@ package webapp
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/julienschmidt/httprouter"
 	"math"
 	"net/http"
@@ -41,26 +42,28 @@ func getMetricIndexes(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		projID = 0
 	}
 	pattern := r.URL.Query().Get("pattern")
-	if pattern == "" {
-		pattern = "*"
-	}
 	// Index
 	var idxs []*models.Index
-	if projID > 0 {
-		// Rules
-		var rules []models.Rule
-		if err := db.Admin.DB().Model(&models.Project{ID: projID}).Related(&rules).Error; err != nil {
-			ResponseError(w, NewUnexceptedWebError(err))
-			return
-		}
-		// Filter
-		for i := 0; i < len(rules); i++ {
-			rule := &rules[i]
-			idxs = append(idxs, db.Index.Filter(rule.Pattern)...)
-		}
+	if pattern == "" {
+		// Use all indexes.
+		idxs = db.Index.All()
 	} else {
-		// Filter
-		idxs = db.Index.Filter(pattern)
+		if projID > 0 {
+			// Rules
+			var rules []models.Rule
+			if err := db.Admin.DB().Model(&models.Project{ID: projID}).Related(&rules).Error; err != nil {
+				ResponseError(w, NewUnexceptedWebError(err))
+				return
+			}
+			// Filter
+			for i := 0; i < len(rules); i++ {
+				rule := &rules[i]
+				idxs = append(idxs, db.Index.Filter(rule.Pattern)...)
+			}
+		} else {
+			// Filter
+			idxs = db.Index.Filter(pattern)
+		}
 	}
 	// Sort
 	sort.Sort(indexByScore(idxs))
@@ -104,8 +107,19 @@ func getMetrics(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, ErrBadRequest)
 		return
 	}
+	var metrics []*models.Metric
+	// Get index.
+	idx, err := db.Index.Get(name)
+	if err != nil {
+		if err == indexdb.ErrNotFound {
+			ResponseJSONOK(w, metrics)
+			return
+		}
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
 	// Query
-	metrics, err := db.Metric.Get(name, uint32(start), uint32(stop))
+	metrics, err = db.Metric.Get(name, idx.Link, uint32(start), uint32(stop))
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
 		return

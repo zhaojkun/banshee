@@ -10,7 +10,6 @@ import (
 	"runtime"
 
 	"github.com/eleme/banshee/alerter"
-	"github.com/eleme/banshee/cleaner"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
@@ -75,8 +74,9 @@ func initDB() {
 		panic(errors.New("db require config"))
 	}
 	path := cfg.Storage.Path
+	opts := &storage.Options{Period: cfg.Period, Expiration: cfg.Expiration}
 	var err error
-	db, err = storage.Open(path)
+	db, err = storage.Open(path, opts)
 	if err != nil {
 		log.Fatalf("failed to open %s: %v", path, err)
 	}
@@ -110,9 +110,6 @@ func init() {
 func main() {
 	health.Init(db)
 	go health.Start()
-
-	cleaner := cleaner.New(cfg, db)
-	go cleaner.Start()
 
 	alerter := alerter.New(cfg, db)
 	alerter.Start()

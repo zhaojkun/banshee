@@ -5,49 +5,29 @@ package metricdb
 import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util"
+	"reflect"
 	"testing"
 )
 
-func TestEncodeKey(t *testing.T) {
-	m := &models.Metric{Name: "foo", Stamp: horizon + 0xf}
+func TestEncodingKey(t *testing.T) {
+	m := &models.Metric{
+		Link:  1,
+		Stamp: 1452758773,
+	}
 	key := encodeKey(m)
-	s := "foo000000f"
-	util.Must(t, s == string(key))
+	m1 := &models.Metric{}
+	util.Must(t, nil == decodeKey(key, m1))
+	util.Must(t, reflect.DeepEqual(m, m1))
 }
 
-func TestDecodeKey(t *testing.T) {
-	key := []byte("foo000001f")
-	m := &models.Metric{}
-	err := decodeKey(key, m)
-	util.Must(t, err == nil)
-	util.Must(t, m.Name == "foo")
-	util.Must(t, m.Stamp == 36+0xf+horizon)
-}
-
-func TestStampLenEnoughToUse(t *testing.T) {
-	stamp := uint32(90*365*24*60*60) + horizon
-	m := &models.Metric{Name: "foo", Stamp: stamp}
-	key := encodeKey(m)
-	n := &models.Metric{}
-	err := decodeKey(key, n)
-	util.Must(t, err == nil)
-	util.Must(t, n.Name == m.Name)
-	util.Must(t, n.Stamp == m.Stamp)
-}
-
-func TestEncodeValue(t *testing.T) {
-	m := &models.Metric{Value: 1.23, Score: 0.72, Average: 0.798766}
+func TestEncodingValue(t *testing.T) {
+	m := &models.Metric{
+		Value:   3.1415926,
+		Score:   0.1892,
+		Average: 3.1333333,
+	}
 	value := encodeValue(m)
-	s := "1.23:0.72:0.79877"
-	util.Must(t, s == string(value))
-}
-
-func TestDecodeValue(t *testing.T) {
-	m := &models.Metric{}
-	value := []byte("1.23:0.72:0.79")
-	err := decodeValue(value, m)
-	util.Must(t, err == nil)
-	util.Must(t, m.Value == 1.23)
-	util.Must(t, m.Score == 0.72)
-	util.Must(t, m.Average == 0.79)
+	m1 := &models.Metric{}
+	util.Must(t, nil == decodeValue(value, m1))
+	util.Must(t, reflect.DeepEqual(m, m1))
 }

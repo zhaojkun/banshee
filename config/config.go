@@ -33,10 +33,6 @@ const (
 	DefaultFilterOffset float64 = 0.01
 	// Default filter times to query history metrics.
 	DefaultFilterTimes int = 4
-	// Default cleaner interval.
-	DefaultCleanerInterval uint32 = 3 * Hour
-	// Default cleaner threshold.
-	DefaultCleanerThreshold uint32 = 3 * Day
 	// Default value of alerting interval.
 	DefaultAlerterInterval uint32 = 20 * Minute
 	// Default value of alert times limit in one day for the same metric
@@ -60,8 +56,8 @@ const (
 	MaxFillBlankZerosLen = 8
 	// Min value for the expiration to period.
 	MinExpirationNumToPeriod uint32 = 5
-	// Min value for the cleaner threshold to period.
-	MinCleanerThresholdNumToPeriod uint32 = 2
+	// Min value for the period.
+	MinPeriod uint32 = 1 * Hour // 1h
 )
 
 // WebappSupportedLanguages lists webapp supported languages.
@@ -76,7 +72,6 @@ type Config struct {
 	Detector   configDetector `json:"detector"`
 	Webapp     configWebapp   `json:"webapp"`
 	Alerter    configAlerter  `json:"alerter"`
-	Cleaner    configCleaner  `json:"cleaner"`
 }
 
 type configStorage struct {
@@ -112,11 +107,6 @@ type configAlerter struct {
 	DefaultSilentTimeRange [2]int `json:"defaultSilentTimeRange"`
 }
 
-type configCleaner struct {
-	Interval  uint32 `json:"interval"`
-	Threshold uint32 `json:"threshold"`
-}
-
 // New creates a Config with default values.
 func New() *Config {
 	c := new(Config)
@@ -144,8 +134,6 @@ func New() *Config {
 	c.Alerter.Interval = DefaultAlerterInterval
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
-	c.Cleaner.Interval = DefaultCleanerInterval
-	c.Cleaner.Threshold = DefaultCleanerThreshold
 	return c
 }
 
@@ -190,8 +178,6 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.Interval = c.Alerter.Interval
 	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit
 	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
-	cfg.Cleaner.Interval = c.Cleaner.Interval
-	cfg.Cleaner.Threshold = c.Cleaner.Threshold
 	return cfg
 }
 
@@ -209,9 +195,6 @@ func (c *Config) Validate() error {
 	if err := c.Alerter.validateAlerter(); err != nil {
 		return err
 	}
-	if err := c.Cleaner.validateCleaner(c.Period); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -223,6 +206,14 @@ func (c *Config) validateGlobals() error {
 	// Should: Period >= Interval
 	if c.Interval > c.Period {
 		return ErrPeriod
+	}
+	// Should: Period >= MinPeriod
+	if c.Period < MinPeriod {
+		return ErrPeriodTooSmall
+	}
+	// Should: Expiration/Period = integer.
+	if c.Expiration/c.Period*c.Period != c.Expiration {
+		return ErrExpirationDivPeriodClean
 	}
 	// Should: Expiration >= Period * 5
 	if c.Expiration < c.Period*MinExpirationNumToPeriod {
@@ -306,14 +297,6 @@ func (c *configAlerter) validateAlerter() error {
 	// Should: 0 <= SilentEnd <= 23
 	if c.DefaultSilentTimeRange[1] < 0 || c.DefaultSilentTimeRange[1] > 23 {
 		return ErrAlerterDefaultSilentTimeRange
-	}
-	return nil
-}
-
-func (c *configCleaner) validateCleaner(period uint32) error {
-	// Should: Threshold >= 2 * Period
-	if c.Threshold < period*MinCleanerThresholdNumToPeriod {
-		return ErrCleanerThreshold
 	}
 	return nil
 }
