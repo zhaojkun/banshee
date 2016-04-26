@@ -56,6 +56,8 @@ const (
 	MaxFillBlankZerosLen = 8
 	// Min value for the expiration to period.
 	MinExpirationNumToPeriod uint32 = 5
+	// Min value for the period.
+	MinPeriod uint32 = 1 * Hour // 1h
 )
 
 // WebappSupportedLanguages lists webapp supported languages.
@@ -204,6 +206,14 @@ func (c *Config) validateGlobals() error {
 	// Should: Period >= Interval
 	if c.Interval > c.Period {
 		return ErrPeriod
+	}
+	// Should: Period >= MinPeriod
+	if c.Period < MinPeriod {
+		return ErrPeriodTooSmall
+	}
+	// Should: Expiration/Period = integer.
+	if c.Expiration/c.Period*c.Period != c.Expiration {
+		return ErrExpirationDivPeriodClean
 	}
 	// Should: Expiration >= Period * 5
 	if c.Expiration < c.Period*MinExpirationNumToPeriod {
