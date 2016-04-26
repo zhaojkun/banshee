@@ -42,26 +42,28 @@ func getMetricIndexes(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		projID = 0
 	}
 	pattern := r.URL.Query().Get("pattern")
-	if pattern == "" {
-		pattern = "*"
-	}
 	// Index
 	var idxs []*models.Index
-	if projID > 0 {
-		// Rules
-		var rules []models.Rule
-		if err := db.Admin.DB().Model(&models.Project{ID: projID}).Related(&rules).Error; err != nil {
-			ResponseError(w, NewUnexceptedWebError(err))
-			return
-		}
-		// Filter
-		for i := 0; i < len(rules); i++ {
-			rule := &rules[i]
-			idxs = append(idxs, db.Index.Filter(rule.Pattern)...)
-		}
+	if pattern == "" {
+		// Use all indexes.
+		idxs = db.Index.All()
 	} else {
-		// Filter
-		idxs = db.Index.Filter(pattern)
+		if projID > 0 {
+			// Rules
+			var rules []models.Rule
+			if err := db.Admin.DB().Model(&models.Project{ID: projID}).Related(&rules).Error; err != nil {
+				ResponseError(w, NewUnexceptedWebError(err))
+				return
+			}
+			// Filter
+			for i := 0; i < len(rules); i++ {
+				rule := &rules[i]
+				idxs = append(idxs, db.Index.Filter(rule.Pattern)...)
+			}
+		} else {
+			// Filter
+			idxs = db.Index.Filter(pattern)
+		}
 	}
 	// Sort
 	sort.Sort(indexByScore(idxs))
