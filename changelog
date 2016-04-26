@@ -1,5 +1,7 @@
-pending
--------
+0.1.9
+-----
+
+Not backward compatible.
 
 * Cleaner: Removed. #498
 * Config: Period should be greater than 1 hour. #498
@@ -15,6 +17,7 @@ pending
 * Storage: Metricdb uses link as key, instead of long name. #498
 * Storage: Refactor metricdb file structure. #498
 * Storage: Refactor metricdb expiration mechanism. #498
+* Tool: Deprecated migrate to bell tool. #501
 * Util: Use util.Must instead of assert package. #496
 * Util: Add trie implementation. #498
 * Util: Add id pool implementation. #498
