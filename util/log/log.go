@@ -46,7 +46,7 @@ var colors = map[string]int{
 
 // levelColors
 var levelColors = map[int]string{
-	DEBUG: "white",
+	DEBUG: "cyan",
 	INFO:  "green",
 	WARN:  "yellow",
 	ERROR: "red",
@@ -149,16 +149,13 @@ func log(l int, msg string) error {
 		now := time.Now().String()[:23]
 		// Message
 		var (
-			snow   = now
 			slevel = fmt.Sprintf("%-5s", levelNames[l])
 			sname  = fmt.Sprintf("%s.%s", name, pkgName)
 		)
+		s := fmt.Sprintf("%s %s %s: %s", now, slevel, sname, msg)
 		if colored {
-			snow = Colored("magenta", snow)
-			sname = Colored("blue", sname)
-			slevel = Colored(levelColors[l], slevel)
+			s = Colored(levelColors[l], s)
 		}
-		s := fmt.Sprintf("%s %s %s: %s", snow, slevel, sname, msg)
 		_, err := fmt.Fprintln(w, s)
 		return err
 	}
