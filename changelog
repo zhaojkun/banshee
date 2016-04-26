@@ -1,6 +1,7 @@
 pending
 -------
 
+* Cleaner: Removed. #498
 * Config: Period should be greater than 1 hour. #498
 * Config: Expiration should be divided by period cleanly. #498
 * Logging: Vet friendly logging. #496
@@ -12,6 +13,8 @@ pending
 * Storage: Indexdb uses binary encoding. #498
 * Storage: Indexdb uses link between index and its metrics. #498
 * Storage: Metricdb uses link as key, instead of long name. #498
+* Storage: Refactor metricdb file structure. #498
+* Storage: Refactor metricdb expiration mechanism. #498
 * Util: Use util.Must instead of assert package. #496
 * Util: Add trie implementation. #498
 * Util: Add id pool implementation. #498
