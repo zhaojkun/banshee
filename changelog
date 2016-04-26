@@ -4,6 +4,7 @@ pending
 * Makefile: Add vet and lint to test. #497
 * Util: Use util.Must instead of assert package. #496
 * Log: Vet friendly logging. #496
+* Static: Add timer fields to rule check ok. #500
 
 0.1.8
 -----
