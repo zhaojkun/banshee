@@ -163,16 +163,13 @@ func (db *DB) createStorage(stamp uint32) error {
 	return nil
 }
 
-// expireStorage expire storages for given stamp.
+// expireStorage expire storages.
 // Dose nothing if the pool needs no expiration.
-func (db *DB) expireStorages(stamp uint32) error {
-	if stamp < db.opts.Expiration { // Stamp too small
-		return nil
-	}
+func (db *DB) expireStorages() error {
 	if len(db.pool) == 0 {
 		return nil
 	}
-	id := (stamp - db.opts.Expiration) / db.opts.Period
+	id := db.pool[len(db.pool)-1].id - db.opts.Expiration/db.opts.Period
 	pool := db.pool
 	for i, s := range db.pool {
 		if s.id < id {
@@ -201,7 +198,7 @@ func (db *DB) Put(m *models.Metric) (err error) {
 	if err = db.createStorage(m.Stamp); err != nil {
 		return
 	}
-	if err = db.expireStorages(m.Stamp); err != nil {
+	if err = db.expireStorages(); err != nil {
 		return
 	}
 	// Select a storage.

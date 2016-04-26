@@ -6,7 +6,9 @@ import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util"
 	"os"
+	"path"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -127,6 +129,7 @@ func TestStorageExpire(t *testing.T) {
 	// Force creating 7+1 storages.
 	base := uint32(time.Now().Unix())
 	db.Put(&models.Metric{Link: 1, Stamp: base})                    // 0
+	id := db.pool[0].id                                             // record the id to be deleted
 	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*1}) // 1
 	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*2}) // 2
 	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*3}) // 3
@@ -138,4 +141,7 @@ func TestStorageExpire(t *testing.T) {
 	util.Must(t, len(db.pool) == 8)
 	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*8}) // 8
 	util.Must(t, len(db.pool) == 8)                                 // Full storages: 1,2,3,4,5,6,7
+	// Files must be deleted.
+	deleteFileName := path.Join(fileName, strconv.FormatUint(uint64(id), 10))
+	util.Must(t, !util.IsFileExist(deleteFileName))
 }
