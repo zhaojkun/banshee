@@ -12,7 +12,7 @@ import (
 func TestOpen(t *testing.T) {
 	// Open db.
 	fileName := "storage_test"
-	db, err := Open(fileName)
+	db, err := Open(fileName, nil)
 	util.Must(t, err == nil)
 	util.Must(t, db != nil)
 	// Defer close and remove files.

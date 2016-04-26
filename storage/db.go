@@ -21,6 +21,12 @@ const (
 	metricdbFileName = "metric"
 )
 
+// Options is to open DB.
+type Options struct {
+	Period     uint32
+	Expiration uint32
+}
+
 // DB handles the storage on leveldb.
 type DB struct {
 	// Child db
@@ -30,7 +36,7 @@ type DB struct {
 }
 
 // Open a DB by fileName and options.
-func Open(fileName string) (*DB, error) {
+func Open(fileName string, opts *Options) (*DB, error) {
 	// Create if not exist
 	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
@@ -52,7 +58,14 @@ func Open(fileName string) (*DB, error) {
 		return nil, err
 	}
 	// Metricdb.
-	db.Metric, err = metricdb.Open(path.Join(fileName, metricdbFileName))
+	var options *metricdb.Options
+	if opts != nil {
+		options = &metricdb.Options{
+			Period:     opts.Period,
+			Expiration: opts.Expiration,
+		}
+	}
+	db.Metric, err = metricdb.Open(path.Join(fileName, metricdbFileName), options)
 	if err != nil {
 		return nil, err
 	}
