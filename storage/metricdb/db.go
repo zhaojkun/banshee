@@ -1,106 +1,280 @@
 // Copyright 2015 Eleme Inc. All rights reserved.
 
+/*
+
+Package metricdb handles the metrics storage.
+
+File Structure
+
+Example file structure for period=1day, expiration=7days:
+
+	storage/       (period=1day, expiration=7days)
+	  |- admindb
+	  |- indexdb/
+	  |- metricdb/
+	        |- 16912 -- Outdated
+	        |- 16913 -- -7
+	        |- 16914 -- -6
+	        |- 16915 -- -5
+	        |- 16916 -- -4
+	        |- 16917 -- -3
+	        |- 16918 -- -2
+	        |- 16919 -- -1
+	        |- 16920 -- Active
+
+In the example above, in a word, a new db would be created and
+an old db would be expired every day.
+
+Entry Format
+
+Key-Value design in leveldb:
+
+	|------- Key (8) ------|-------------- Value (24) -----------|
+	+----------+-----------+-----------+-----------+-------------+
+	| Link (4) | Stamp (4) | Value (8) | Score (8) | Average (8) |
+	+----------+-----------+-----------+-----------+-------------+
+
+*/
 package metricdb
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/log"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"io/ioutil"
+	"os"
+	"path"
+	"sort"
+	"strconv"
+	"sync"
 )
 
-// DB handles metrics storage.
-type DB struct {
-	// LevelDB
+// storage is the actual data store handler.
+type storage struct {
+	id uint32
 	db *leveldb.DB
 }
 
-// Open a DB by fileName.
-func Open(fileName string) (*DB, error) {
+const filemode = 0755
+
+// byID implements sort.Interface.
+type byID []*storage
+
+func (b byID) Len() int           { return len(b) }
+func (b byID) Less(i, j int) bool { return b[i].id < b[j].id }
+func (b byID) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
+
+// Options is to open DB.
+type Options struct {
+	Period     uint32
+	Expiration uint32
+}
+
+// DB is the top level metric storage handler.
+type DB struct {
+	name string // dirname
+	opts *Options
+	pool []*storage   // sorted byID
+	lock sync.RWMutex // protects runtime pool
+}
+
+// openStorage opens a storage by filename.
+func openStorage(fileName string) (*storage, error) {
+	base := path.Base(fileName)
+	n, err := strconv.ParseUint(base, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+	id := uint32(n)
 	db, err := leveldb.OpenFile(fileName, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &DB{db}, nil
+	return &storage{id: id, db: db}, nil
+}
+
+// close the storage.
+func (s *storage) close() error { return s.db.Close() }
+
+// Open a DB by filename.
+func Open(fileName string, opts *Options) (*DB, error) {
+	_, err := os.Stat(fileName)
+	if os.IsNotExist(err) {
+		// Create if not exist
+		if err := os.Mkdir(fileName, filemode); err != nil {
+			return nil, err
+		}
+		log.Debugf("dir %s created", fileName)
+	}
+	db := &DB{opts: opts, name: fileName}
+	if err = db.init(); err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+// init opens all storages on DB open.
+func (db *DB) init() error {
+	infos, err := ioutil.ReadDir(db.name)
+	if err != nil {
+		return err
+	}
+	for _, info := range infos {
+		fileName := path.Join(db.name, info.Name())
+		s, err := openStorage(fileName)
+		if err != nil {
+			return err
+		}
+		db.pool = append(db.pool, s)
+		log.Debugf("storage %d opened", s.id)
+	}
+	sort.Sort(byID(db.pool))
+	return nil
 }
 
 // Close the DB.
-func (db *DB) Close() error {
-	return db.db.Close()
+func (db *DB) Close() (err error) {
+	for _, s := range db.pool {
+		if err = s.close(); err != nil {
+			return
+		}
+	}
+	return nil
 }
 
-// Operations
+// createStorage creates a storage for given stamp.
+// Dose nothing if the stamp is not large enough.
+func (db *DB) createStorage(stamp uint32) error {
+	id := stamp / db.opts.Period
+	if len(db.pool) > 0 && id <= db.pool[len(db.pool)-1].id {
+		// stamp is not large enough.
+		return nil
+	}
+	baseName := strconv.FormatUint(uint64(id), 10)
+	fileName := path.Join(db.name, baseName)
+	ldb, err := leveldb.OpenFile(fileName, nil)
+	if err != nil {
+		return err
+	}
+	s := &storage{db: ldb, id: id}
+	db.pool = append(db.pool, s)
+	log.Infof("storage %d created", id)
+	return nil
+}
+
+// expireStorage expire storages for given stamp.
+// Dose nothing if the pool needs no expiration.
+func (db *DB) expireStorages(stamp uint32) error {
+	if stamp < db.opts.Expiration { // Stamp too small
+		return nil
+	}
+	if len(db.pool) == 0 {
+		return nil
+	}
+	id := (stamp - db.opts.Expiration) / db.opts.Period
+	pool := db.pool
+	for i, s := range db.pool {
+		if s.id < id {
+			if err := s.close(); err != nil {
+				return err
+			}
+			baseName := strconv.FormatUint(uint64(s.id), 10)
+			fileName := path.Join(db.name, baseName)
+			if err := os.RemoveAll(fileName); err != nil {
+				return err
+			}
+			pool = db.pool[i+1:]
+			log.Infof("storage %d expired", s.id)
+		}
+	}
+	db.pool = pool
+	return nil
+}
 
 // Put a metric into db.
-func (db *DB) Put(m *models.Metric) error {
+// Returns ErrNoStorage if no storage is available.
+func (db *DB) Put(m *models.Metric) (err error) {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	// Adjust storage pool.
+	if err = db.createStorage(m.Stamp); err != nil {
+		return
+	}
+	if err = db.expireStorages(m.Stamp); err != nil {
+		return
+	}
+	// Select a storage.
+	if len(db.pool) == 0 {
+		return ErrNoStorage
+	}
+	for i := len(db.pool) - 1; i >= 0; i-- {
+		s := db.pool[i]
+		if s.id*db.opts.Period <= m.Stamp && m.Stamp < (s.id+1)*db.opts.Period {
+			return s.put(m)
+		}
+	}
+	return ErrNoStorage
+}
+
+// put a metric into storage.
+// Returns ErrNoLink if given metric has no link.
+func (s *storage) put(m *models.Metric) error {
 	if m.Link == 0 {
 		return ErrNoLink
 	}
 	key := encodeKey(m)
 	value := encodeValue(m)
-	return db.db.Put(key, value, nil)
+	return s.db.Put(key, value, nil)
+}
+
+// get metrics in a timestamp range.
+func (s *storage) get(name string, link, start, end uint32) ([]*models.Metric, error) {
+	startKey := encodeKey(&models.Metric{Link: link, Stamp: start})
+	endKey := encodeKey(&models.Metric{Link: link, Stamp: end})
+	iter := s.db.NewIterator(&util.Range{Start: startKey, Limit: endKey}, nil)
+	var ms []*models.Metric
+	for iter.Next() {
+		m := &models.Metric{Name: name}
+		key := iter.Key()
+		value := iter.Value()
+		if err := decodeKey(key, m); err != nil {
+			return nil, err
+		}
+		if err := decodeValue(value, m); err != nil {
+			return nil, err
+		}
+		ms = append(ms, m)
+	}
+	return ms, nil
 }
 
 // Get metrics in a timestamp range, the range is left open and right closed.
-func (db *DB) Get(name string, link uint32, start, end uint32) ([]*models.Metric, error) {
-	// Key encoding.
-	startMetric := &models.Metric{Link: link, Stamp: start}
-	endMetric := &models.Metric{Link: link, Stamp: end}
-	startKey := encodeKey(startMetric)
-	endKey := encodeKey(endMetric)
-	// Iterate db.
-	iter := db.db.NewIterator(&util.Range{
-		Start: startKey,
-		Limit: endKey,
-	}, nil)
-	var metrics []*models.Metric
-	for iter.Next() {
-		m := &models.Metric{}
-		key := iter.Key()
-		value := iter.Value()
-		// Fill in the link and stamp.
-		err := decodeKey(key, m)
-		if err != nil {
-			return metrics, err
+func (db *DB) Get(name string, link, start, end uint32) ([]*models.Metric, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+	var ms []*models.Metric
+	if len(db.pool) == 0 {
+		return ms, nil
+	}
+	for _, s := range db.pool {
+		min := s.id * db.opts.Period
+		max := (s.id + 1) * db.opts.Period
+		if start >= max || end < min {
+			continue
 		}
-		// Fill in the value, score and average.
-		err = decodeValue(value, m)
-		if err != nil {
-			return metrics, err
+		st, ed := start, end
+		if start < min {
+			st = min
 		}
-		// Fill in the name
-		m.Name = name
-		metrics = append(metrics, m)
+		if end > max {
+			ed = max
+		}
+		l, err := s.get(name, link, st, ed)
+		if err != nil {
+			return nil, err
+		}
+		ms = append(ms, l...)
 	}
-	return metrics, nil
-}
-
-// Delete metrics in a timestamp range, the range is left open and right
-// closed.
-func (db *DB) Delete(link uint32, start, end uint32) (int, error) {
-	// Key encoding.
-	startMetric := &models.Metric{Link: link, Stamp: start}
-	endMetric := &models.Metric{Link: link, Stamp: end}
-	startKey := encodeKey(startMetric)
-	endKey := encodeKey(endMetric)
-	// Iterate db.
-	iter := db.db.NewIterator(&util.Range{
-		Start: startKey,
-		Limit: endKey,
-	}, nil)
-	batch := new(leveldb.Batch)
-	n := 0
-	for iter.Next() {
-		key := iter.Key()
-		batch.Delete(key)
-		n++
-	}
-	if batch.Len() > 0 {
-		return n, db.db.Write(batch, nil)
-	}
-	return n, nil
-}
-
-// DeleteTo deletes metrics ranging to a stamp by link.
-func (db *DB) DeleteTo(link uint32, end uint32) (int, error) {
-	return db.Delete(link, 0, end)
+	return ms, nil
 }

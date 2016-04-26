@@ -8,21 +8,40 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
-func TestOpen(t *testing.T) {
+func TestOpenOptionsNil(t *testing.T) {
 	fileName := "db-testing"
-	db, err := Open(fileName)
+	db, err := Open(fileName, nil)
 	util.Must(t, err == nil)
 	util.Must(t, util.IsFileExist(fileName))
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	util.Must(t, len(db.pool) == 0) // should have nothing in pool..
+}
+
+func TestOpenInit(t *testing.T) {
+	fileName := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, err := Open(fileName, opts)
+	util.Must(t, err == nil)
+	defer os.RemoveAll(fileName)
+	stamp := uint32(time.Now().Unix())
+	db.Put(&models.Metric{Stamp: stamp, Link: 1})
 	db.Close()
-	os.RemoveAll(fileName)
+	// Reopen.
+	db, err = Open(fileName, opts)
+	util.Must(t, err == nil)
+	util.Must(t, len(db.pool) == 1) // should have one storage in pool
+	util.Must(t, db.pool[0].id*db.opts.Period <= stamp)
 }
 
 func TestPut(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Put.
@@ -38,7 +57,7 @@ func TestPut(t *testing.T) {
 	util.Must(t, err == nil)
 	// Must in db
 	key := encodeKey(m)
-	value, err := db.db.Get(key, nil)
+	value, err := db.pool[0].db.Get(key, nil)
 	util.Must(t, err == nil)
 	m1 := &models.Metric{
 		Name:  m.Name,
@@ -53,7 +72,8 @@ func TestPut(t *testing.T) {
 func TestGet(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Nothing.
@@ -74,26 +94,48 @@ func TestGet(t *testing.T) {
 	util.Must(t, m.Value == 1.89 && m.Score == 1.12 && m.Link == 1)
 }
 
-func TestDelete(t *testing.T) {
+func TestGetAcrossStorages(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	opts := &Options{Period: 86400, Expiration: 86400 * 4}
+	db, _ := Open(fileName, opts)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
-	// Nothing.
-	n, err := db.Delete(1222222, 0, 1452758773)
-	util.Must(t, err == nil && n == 0)
-	// Put some.
-	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758723})
-	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758733})
-	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758743})
-	db.Put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758753})
-	// Delete again
-	n, err = db.Delete(1, 1452758733, 1452758753)
-	util.Must(t, err == nil && n == 2)
+	// Force creating 4+1 storages.
+	base := uint32(time.Now().Unix())
+	db.Put(&models.Metric{Link: 1, Stamp: base})                    // 0
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*1}) // 1
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*2}) // 2
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*3}) // 3
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*4}) // 4
 	// Get
-	ms, err := db.Get("foo", 1, 1452758723, 1452758763)
-	util.Must(t, len(ms) == 2)
-	util.Must(t, ms[0].Stamp == 1452758723)
-	util.Must(t, ms[1].Stamp == 1452758753)
+	ms, err := db.Get("whatever", 1, base, base+db.opts.Period*3)
+	util.Must(t, err == nil)
+	util.Must(t, len(ms) == 3)
+	util.Must(t, ms[0].Stamp == base)
+	util.Must(t, ms[1].Stamp == base+db.opts.Period*1)
+	util.Must(t, ms[2].Stamp == base+db.opts.Period*2)
+}
+
+func TestStorageExpire(t *testing.T) {
+	// Open db.
+	fileName := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	// Force creating 7+1 storages.
+	base := uint32(time.Now().Unix())
+	db.Put(&models.Metric{Link: 1, Stamp: base})                    // 0
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*1}) // 1
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*2}) // 2
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*3}) // 3
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*4}) // 4
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*5}) // 5
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*6}) // 6
+	util.Must(t, len(db.pool) == 7)
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*7}) // 7
+	util.Must(t, len(db.pool) == 8)
+	db.Put(&models.Metric{Link: 1, Stamp: base + db.opts.Period*8}) // 8
+	util.Must(t, len(db.pool) == 8)                                 // Full storages: 1,2,3,4,5,6,7
 }
