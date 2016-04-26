@@ -63,8 +63,22 @@ module.exports = function () {
       return 1; // Graphite name.
     }
     if (!exports.startsWith(rule.pattern, 'timer.count_ps.') &&
+        !exports.startsWith(rule.pattern, 'timer.mean.') &&
         !exports.startsWith(rule.pattern, 'timer.mean_90.') &&
+        !exports.startsWith(rule.pattern, 'timer.mean_95.') &&
+        !exports.startsWith(rule.pattern, 'timer.upper.') &&
         !exports.startsWith(rule.pattern, 'timer.upper_90.') &&
+        !exports.startsWith(rule.pattern, 'timer.upper_95.') &&
+        !exports.startsWith(rule.pattern, 'timer.count.') &&
+        !exports.startsWith(rule.pattern, 'timer.count_90.') &&
+        !exports.startsWith(rule.pattern, 'timer.count_95.') &&
+        !exports.startsWith(rule.pattern, 'timer.median.') &&
+        !exports.startsWith(rule.pattern, 'timer.std.') &&
+        !exports.startsWith(rule.pattern, 'timer.sum.') &&
+        !exports.startsWith(rule.pattern, 'timer.sum_90.') &&
+        !exports.startsWith(rule.pattern, 'timer.sum_95.') &&
+        !exports.startsWith(rule.pattern, 'timer.sum_suqares.') &&
+        !exports.startsWith(rule.pattern, 'timer.lower.') &&
         !exports.startsWith(rule.pattern, 'counter.') &&
         !exports.startsWith(rule.pattern, 'gauge.')
        ) {
