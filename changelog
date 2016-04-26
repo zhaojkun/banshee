@@ -1,6 +1,8 @@
 pending
 -------
 
+* Config: Period should be greater than 1 hour. #498
+* Config: Expiration should be divided by period cleanly. #498
 * Logging: Vet friendly logging. #496
 * Makefile: Add vet and lint to test. #497
 * Models: Add models.Index new field `Link`. #498
