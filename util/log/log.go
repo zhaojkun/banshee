@@ -143,16 +143,14 @@ func Colored(color string, text string) string {
 func log(l int, msg string) error {
 	if enabled && l >= level {
 		// Caller pkg.
-		_, fileName, _, _ := runtime.Caller(2)
+		_, fileName, line, _ := runtime.Caller(2)
 		pkgName := path.Base(path.Dir(fileName))
+		filepath := path.Join(pkgName, path.Base(fileName))
 		// Datetime and pid.
-		now := time.Now().String()[:23]
+		now := time.Now().String()[:21]
 		// Message
-		var (
-			slevel = fmt.Sprintf("%-5s", levelNames[l])
-			sname  = fmt.Sprintf("%s.%s", name, pkgName)
-		)
-		s := fmt.Sprintf("%s %s %s: %s", now, slevel, sname, msg)
+		level := levelNames[l]
+		s := fmt.Sprintf("%s %s %s:%d %s", now, level, filepath, line, msg)
 		if colored {
 			s = Colored(levelColors[l], s)
 		}
