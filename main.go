@@ -74,8 +74,9 @@ func initDB() {
 		panic(errors.New("db require config"))
 	}
 	path := cfg.Storage.Path
+	opts := &storage.Options{Period: cfg.Period, Expiration: cfg.Expiration}
 	var err error
-	db, err = storage.Open(path)
+	db, err = storage.Open(path, opts)
 	if err != nil {
 		log.Fatalf("failed to open %s: %v", path, err)
 	}
