@@ -63,7 +63,7 @@ func (d *Detector) Start() {
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
-	log.Infof("detector is listening on %s..", addr)
+	log.Infof("detector is listening on tcp://%s", addr)
 	// Accept
 	for {
 		conn, err := ln.Accept()
