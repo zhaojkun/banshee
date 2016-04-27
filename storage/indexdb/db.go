@@ -1,5 +1,28 @@
 // Copyright 2015 Eleme Inc. All rights reserved.
 
+/*
+
+Package indexdb handles the indexes storage.
+
+Design
+
+The DB is a leveldb instance, and the key-value format is:
+
+	|--- Key --|------------------ Value (24) -------------------|
+	+----------+-----------+-----------+-----------+-------------+
+	| Name (X) |  Link (4) | Stamp (4) | Score (8) | Average (8) |
+	+----------+-----------+-----------+-----------+-------------+
+
+Cache
+
+To access indexes faster, indexes are cached in memory, in a trie with
+goroutine safety.
+
+Read operations are in cache.
+
+Write operations are to persistence and cache.
+
+*/
 package indexdb
 
 import (

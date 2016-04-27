@@ -4,6 +4,9 @@
 
 Package metricdb handles the metrics storage.
 
+The DB contains multiple leveldb instances, a new leveldb instance would be
+created and also an old instance would be expired every day.
+
 File Structure
 
 Example file structure for period=1day, expiration=7days:
@@ -22,8 +25,6 @@ Example file structure for period=1day, expiration=7days:
 	        |- 16919 -- -1
 	        |- 16920 -- Active
 
-In the example above, in a word, a new db would be created and
-an old db would be expired every day.
 
 Entry Format
 

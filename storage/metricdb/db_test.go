@@ -145,3 +145,54 @@ func TestStorageExpire(t *testing.T) {
 	deleteFileName := path.Join(fileName, strconv.FormatUint(uint64(id), 10))
 	util.Must(t, !util.IsFileExist(deleteFileName))
 }
+
+func BenchmarkPut(b *testing.B) {
+	// Open db.
+	fileName := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	base := uint32(time.Now().Unix())
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		db.Put(&models.Metric{Link: 1, Stamp: base + uint32(i)*7, Value: float64(i)})
+	}
+}
+
+func BenchmarkPutX10(b *testing.B) {
+	// Open db.
+	fileName := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	base := uint32(time.Now().Unix())
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 10; j++ {
+			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i)*7, Value: float64(i)})
+		}
+	}
+}
+
+func BenchmarkGet100K(b *testing.B) {
+	// Open db.
+	fileName := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(fileName, opts)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	// Put suite
+	base := uint32(time.Now().Unix())
+	for i := 0; i < 1024*100; i++ {
+		for j := 0; j < 10; j++ {
+			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i)*7, Value: float64(i)})
+		}
+	}
+	// Benchmark.
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		db.Get("whatever", uint32(i%10), base, base+100)
+	}
+}
