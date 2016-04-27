@@ -156,7 +156,7 @@ func BenchmarkPut(b *testing.B) {
 	base := uint32(time.Now().Unix())
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		db.Put(&models.Metric{Link: 1, Stamp: base + uint32(i), Value: float64(i)})
+		db.Put(&models.Metric{Link: 1, Stamp: base + uint32(i)*7, Value: float64(i)})
 	}
 }
 
@@ -171,7 +171,7 @@ func BenchmarkPutX10(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < 10; j++ {
-			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i), Value: float64(i)})
+			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i)*7, Value: float64(i)})
 		}
 	}
 }
@@ -187,7 +187,7 @@ func BenchmarkGet100K(b *testing.B) {
 	base := uint32(time.Now().Unix())
 	for i := 0; i < 1024*100; i++ {
 		for j := 0; j < 10; j++ {
-			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i), Value: float64(i)})
+			db.Put(&models.Metric{Link: uint32(j), Stamp: base + uint32(i)*7, Value: float64(i)})
 		}
 	}
 	// Benchmark.

@@ -7,6 +7,7 @@ import (
 	"github.com/eleme/banshee/util"
 	"github.com/syndtr/goleveldb/leveldb"
 	"os"
+	"strconv"
 	"testing"
 )
 
@@ -152,4 +153,33 @@ func TestLen(t *testing.T) {
 	db.Put(&models.Index{Name: "fgh"})
 	// Len
 	util.Must(t, db.Len() == 3)
+}
+
+func BenchmarkGet10K(b *testing.B) {
+	// Open db.
+	fileName := "db-testing"
+	db, _ := Open(fileName)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	// Suite
+	for i := 0; i < 10*1024; i++ {
+		db.Put(&models.Index{Name: strconv.FormatInt(int64(i), 2)})
+	}
+	// Benchmark
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		db.Get(strconv.FormatInt(int64(i), 2))
+	}
+}
+
+func BenchmarkPut(b *testing.B) {
+	// Open db.
+	fileName := "db-testing"
+	db, _ := Open(fileName)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		db.Put(&models.Index{Name: strconv.FormatInt(int64(i), 2)})
+	}
 }
