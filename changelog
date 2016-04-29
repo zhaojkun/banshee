@@ -1,12 +1,12 @@
-pending
--------
+0.2.0
+-----
 
 Not backward compatible.
 
-* Config: Update default alert one day limit to 10 from 5.
-* Config: Update default storage path to ./data.
-* Config: Use yaml instead of json.
-* Detector: Use latest history data instead of random.
+* Config: Update default alert one day limit to 10 from 5. #505 
+* Config: Update default storage path to ./data. #505
+* Config: Use yaml instead of json. #505
+* Detector: Use latest history data instead of random. #506
 
 0.1.9
 -----
