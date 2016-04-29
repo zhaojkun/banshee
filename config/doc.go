@@ -36,7 +36,7 @@ Configuration is in JSON file, for example:
 	    "command": "",
 	    "workers": 4,
 	    "interval": 1200,
-	    "oneDayLimit": 5,
+	    "oneDayLimit": 10,
 	    "defaultSilentTimeRange": [0, 6]
 	  }
 	}
@@ -70,7 +70,7 @@ The documents for each configuration item with default values:
 	alerter.command                // Alerter command or script to execute on anomalies found. default: ""
 	alerter.workers                // Number of workers to consume command execution jobs. default: 4
 	alerter.interval               // Minimal interval (in seconds) between two alerting message for one metric. default: 1200
-	alerter.oneDayLimit            // Limitation for number of alerting times for one metric in a day. default: 5
+	alerter.oneDayLimit            // Limitation for number of alerting times for one metric in a day. default: 10
 	alerter.defaultSilentTimeRange // Default silent time range if the project silent is disabled. default: [0, 6] (00:00~06:00)
 
 */

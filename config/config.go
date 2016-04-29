@@ -36,7 +36,7 @@ const (
 	// Default value of alerting interval.
 	DefaultAlerterInterval uint32 = 20 * Minute
 	// Default value of alert times limit in one day for the same metric
-	DefaultAlerterOneDayLimit uint32 = 5
+	DefaultAlerterOneDayLimit uint32 = 10
 	// Default value of least count.
 	DefaultLeastCount uint32 = 5 * Minute / DefaultInterval
 	// Default alerting silent time range.
