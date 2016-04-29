@@ -1,0 +1,96 @@
+# Metrics incoming time interval, in seconds. default: 10
+# Currently,aAll metrics uses the same interval.
+interval: 10
+
+# Metrics period, in seconds, default: 86400 (1 day)
+# Currently, All metrics uses the same period.
+period: 86400
+
+# Metric expiration, in seconds, default: 604800 (7 days)
+# Banshee only stores datapoints for a certain time, history datapoints
+# are persist on disk to detect incoming datapoints.
+# This value should be divided by period cleanly.
+expiration: 604800
+
+storage:
+    # Storage data directory path, default: ./data
+    # If the configured path dose not exist, banshee would create one with
+    # this name.
+    path: ./data
+
+detector:
+    # Port for detector tcp server, default: 2015
+    port: 2015
+    # Detection weighted moving average factor, should be a number between
+    # 0 and 1, default: 0.1
+    # This value larger, the timeliness better, but more noise. We are using
+    # the default setting.
+    trending_factor: 0.1
+    # Percentage of the filter history offset to period, should be a number
+    # between 0 and 1, default: 0.01
+    # The time span to filter in a single period is: filter_offset * period,
+    # so setting this value arger means more history datapoints would be quried,
+    # detection would be slower but preciser.
+    filter_offset: 0.01
+    # Number of times to filter history metrics, default: 4
+    # Setting this value larger, also, the detection would be slower but preciser.
+    filter_times: 4
+    # Least count of datapoints to start detection for a single metric,
+    # default: 30
+    # We are using the default value, the first 30 incoming datapoints for
+    # every metric would be trusted by detector.
+    least_count: 30
+    # A list of wildcard patterns to refuse metrics by name, default: []
+    # Example: ["statsd.*"]
+    blacklist: []
+    # Limitation of incoming datapoints for a single rule in an interval,
+    # default: 100.
+    # This setting is to prevent rules matching too many metrics.
+    interval_hit_limit: 100
+    # Default values of thresholdMaxs, the thresholdMax is the maximum value
+    # to trigger an alert rule. default: {}
+    # Example: {"counter.*": 10}, which means trending up counters below 10
+    # never trigger alerts for rules without thresholdMax.
+    # Note that this setting has no effect on trending down metric events.
+    default_threshold_maxs: {}
+    # Default values of thresholdMins, the thresholdMin is the minimum value
+    # to trigger an alert rule. default: {}
+    # Example: {"counter.*": 10}, which means trending down counters above 10
+    # never trigger alerts for rules without thresholdMin.
+    # Note that this setting has no effect on trending up metric events.
+    default_threshold_mins: {}
+    # A list of wildcard patterns, for any matched metrics, banshee would fill
+    # the blank gaps by zeros in detection. default: []
+    # Example: ["counter.*"].
+    fill_blank_zeros: []
+
+webapp:
+    # Port for webapp http server, default: 2016
+    port: 2016
+    # Website basic auth username and password, default: [admin, admin]
+    auth: [admin, admin]
+    # Static files directory path, default: static/dist
+    static: static/dist
+    # Website default language to use, should be one of "en" and "zh",
+    # default: en.
+    language: en
+    # Private url of the document about the monitor. default: ""
+    private_doc_url: ""
+
+alerter:
+    # Command to be executed to send alert messages, default: ""
+    # Example: "python sender.py"
+    # Reference: https://godoc.org/github.com/eleme/banshee/alerter
+    command: ""
+    # Number of workers to send alert messages by executing the alerter
+    # command. default: 4
+    # We use a certain count of workers to execute command but not executing
+    # right after an alert event occurs, mainly to prevent forking too many
+    # processes to execute the command at the same time.
+    workers: 4
+    # Minimum time interval to send messages for a single metric, default: 1200 (20min)
+    interval: 1200
+    # Maximum number of alert times for a single metric in one day, default: 10
+    one_day_limit: 10
+    # Default silent time range, default: [0, 6] (means 00:00 ~ 06:00)
+    default_silent_time_range: [0, 6]

@@ -23,7 +23,7 @@ import (
 var (
 	// Arguments
 	debug       = flag.Bool("d", false, "debug mode")
-	fileName    = flag.String("c", "config.json", "config file path")
+	fileName    = flag.String("c", "config.yaml", "config file path")
 	showVersion = flag.Bool("v", false, "show version")
 	// Variables
 	cfg = config.New()
@@ -56,7 +56,7 @@ func initConfig() {
 		log.Warnf("no config specified, using default..")
 	} else {
 		// Update config.
-		err := cfg.UpdateWithJSONFile(*fileName)
+		err := cfg.UpdateWithYamlFile(*fileName)
 		if err != nil {
 			log.Fatalf("failed to load %s, %s", *fileName, err)
 		}
