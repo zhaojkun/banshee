@@ -6,6 +6,7 @@ Not backward compatible.
 * Config: Update default alert one day limit to 10 from 5.
 * Config: Update default storage path to ./data.
 * Config: Use yaml instead of json.
+* Detector: Use latest history data instead of random.
 
 0.1.9
 -----
