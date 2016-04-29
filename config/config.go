@@ -1,10 +1,11 @@
 // Copyright 2015 Eleme Inc. All rights reserved.
 
+// Package config handles configuration parsing.
 package config
 
 import (
-	"encoding/json"
 	"github.com/eleme/banshee/util/log"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
 
@@ -65,46 +66,46 @@ var WebappSupportedLanguages = []string{"en", "zh"}
 
 // Config is the configuration container.
 type Config struct {
-	Interval   uint32         `json:"interval"`
-	Period     uint32         `json:"period"`
-	Expiration uint32         `json:"expiration"`
-	Storage    configStorage  `json:"storage"`
-	Detector   configDetector `json:"detector"`
-	Webapp     configWebapp   `json:"webapp"`
-	Alerter    configAlerter  `json:"alerter"`
+	Interval   uint32         `json:"interval" yaml:"interval"`
+	Period     uint32         `json:"period" yaml:"period"`
+	Expiration uint32         `json:"expiration" yaml:"expiration"`
+	Storage    configStorage  `json:"storage" yaml:"storage"`
+	Detector   configDetector `json:"detector" yaml:"detector"`
+	Webapp     configWebapp   `json:"webapp" yaml:"webapp"`
+	Alerter    configAlerter  `json:"alerter" yaml:"alerter"`
 }
 
 type configStorage struct {
-	Path string `json:"path"`
+	Path string `json:"path" yaml:"path"`
 }
 
 type configDetector struct {
-	Port                 int                `json:"port"`
-	TrendingFactor       float64            `json:"trendingFactor"`
-	FilterOffset         float64            `json:"filterOffset"`
-	FilterTimes          int                `json:"filterTimes"`
-	LeastCount           uint32             `json:"leastCount"`
-	BlackList            []string           `json:"blackList"`
-	IntervalHitLimit     int                `json:"intervalHitLimit"`
-	DefaultThresholdMaxs map[string]float64 `json:"defaultThresholdMaxs"`
-	DefaultThresholdMins map[string]float64 `json:"defaultThresholdMins"`
-	FillBlankZeros       []string           `json:"fillBlankZeros"`
+	Port                 int                `json:"port" yaml:"port"`
+	TrendingFactor       float64            `json:"trendingFactor" yaml:"trending_factor"`
+	FilterOffset         float64            `json:"filterOffset" yaml:"filter_offset"`
+	FilterTimes          int                `json:"filterTimes" yaml:"filter_times"`
+	LeastCount           uint32             `json:"leastCount" yaml:"least_count"`
+	BlackList            []string           `json:"blackList" yaml:"blacklist"`
+	IntervalHitLimit     int                `json:"intervalHitLimit" yaml:"interval_hit_limit"`
+	DefaultThresholdMaxs map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
+	DefaultThresholdMins map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
+	FillBlankZeros       []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
 }
 
 type configWebapp struct {
-	Port          int       `json:"port"`
-	Auth          [2]string `json:"auth"`
-	Static        string    `json:"static"`
-	Language      string    `json:"language"`
-	PrivateDocURL string    `json:"privateDocUrl"`
+	Port          int      `json:"port" yaml:"port"`
+	Auth          []string `json:"auth" yaml:"auth"`
+	Static        string   `json:"static" yaml:"static"`
+	Language      string   `json:"language" yaml:"language"`
+	PrivateDocURL string   `json:"privateDocUrl" yaml:"private_doc_url"`
 }
 
 type configAlerter struct {
-	Command                string `json:"command"`
-	Workers                int    `json:"workers"`
-	Interval               uint32 `json:"inteval"`
-	OneDayLimit            uint32 `json:"oneDayLimit"`
-	DefaultSilentTimeRange [2]int `json:"defaultSilentTimeRange"`
+	Command                string `json:"command" yaml:"command"`
+	Workers                int    `json:"workers" yaml:"workers"`
+	Interval               uint32 `json:"interval" yaml:"interval"`
+	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
+	DefaultSilentTimeRange []int  `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
 }
 
 // New creates a Config with default values.
@@ -113,7 +114,7 @@ func New() *Config {
 	c.Interval = DefaultInterval
 	c.Period = DefaultPeriod
 	c.Expiration = DefaultExpiration
-	c.Storage.Path = "storage/"
+	c.Storage.Path = "./data"
 	c.Detector.Port = 2015
 	c.Detector.TrendingFactor = DefaultTrendingFactor
 	c.Detector.FilterOffset = DefaultFilterOffset
@@ -125,7 +126,7 @@ func New() *Config {
 	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
 	c.Detector.FillBlankZeros = []string{}
 	c.Webapp.Port = 2016
-	c.Webapp.Auth = [2]string{"admin", "admin"}
+	c.Webapp.Auth = []string{"admin", "admin"}
 	c.Webapp.Static = "static/dist"
 	c.Webapp.Language = DefaultWebappLanguage
 	c.Webapp.PrivateDocURL = ""
@@ -133,18 +134,18 @@ func New() *Config {
 	c.Alerter.Workers = 4
 	c.Alerter.Interval = DefaultAlerterInterval
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
-	c.Alerter.DefaultSilentTimeRange = [2]int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Alerter.DefaultSilentTimeRange = []int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
 	return c
 }
 
-// UpdateWithJSONFile update the config from a json file.
-func (c *Config) UpdateWithJSONFile(fileName string) error {
+// UpdateWithYamlFile updates the config from a yaml file.
+func (c *Config) UpdateWithYamlFile(fileName string) error {
 	log.Debugf("read config from %s..", fileName)
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, c)
+	err = yaml.Unmarshal(b, c)
 	if err != nil {
 		return err
 	}

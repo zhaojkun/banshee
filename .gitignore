@@ -5,8 +5,6 @@ storage/state-*x*
 storage/metric
 storage/index
 storage/admin
-test-config.json
-test-storage
 *.tar.gz
 # front-end
 static/node_modules
@@ -21,3 +19,5 @@ static/public/node_modules
 static/jshint-output.html
 # Mr.Dev
 test-statsd
+test-config.yaml
+data
