@@ -1,6 +1,29 @@
 {
 	"ImportPath": "github.com/eleme/banshee",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v62",
+	"Packages": [
+		"github.com/eleme/banshee",
+		"github.com/eleme/banshee/alerter",
+		"github.com/eleme/banshee/alerter/exampleCommand",
+		"github.com/eleme/banshee/config",
+		"github.com/eleme/banshee/detector",
+		"github.com/eleme/banshee/filter",
+		"github.com/eleme/banshee/health",
+		"github.com/eleme/banshee/models",
+		"github.com/eleme/banshee/storage",
+		"github.com/eleme/banshee/storage/admindb",
+		"github.com/eleme/banshee/storage/indexdb",
+		"github.com/eleme/banshee/storage/metricdb",
+		"github.com/eleme/banshee/util",
+		"github.com/eleme/banshee/util/idpool",
+		"github.com/eleme/banshee/util/log",
+		"github.com/eleme/banshee/util/mathutil",
+		"github.com/eleme/banshee/util/safemap",
+		"github.com/eleme/banshee/util/trie",
+		"github.com/eleme/banshee/version",
+		"github.com/eleme/banshee/webapp"
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/golang/snappy",
@@ -76,6 +99,10 @@
 		{
 			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
 			"Rev": "5acacf6e72d3aeaf26dd3d3f163c635d3ef1e6e6"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "7ad95dd0798a40da1ccdff6dff35fd177b5edf40"
 		}
 	]
 }
