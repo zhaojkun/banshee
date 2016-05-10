@@ -41,6 +41,8 @@ type Rule struct {
 	Level int `json:"level"`
 	// Disabled
 	Disabled bool `sql:"default:false" json:"disabled"`
+	// FillZero
+	NeverFillZero bool `sql:"default:false" json:"neverFillZero"`
 }
 
 // Copy the rule.
