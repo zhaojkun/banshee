@@ -14,14 +14,15 @@ import (
 
 // createRule request
 type createRuleRequest struct {
-	Pattern      string  `json:"pattern"`
-	TrendUp      bool    `json:"trendUp"`
-	TrendDown    bool    `json:"trendDown"`
-	ThresholdMax float64 `json:"thresholdMax"`
-	ThresholdMin float64 `json:"thresholdMin"`
-	Comment      string  `json:"comment"`
-	Level        int     `json:"level"`
-	Disabled     bool    `json:"disabled"`
+	Pattern       string  `json:"pattern"`
+	TrendUp       bool    `json:"trendUp"`
+	TrendDown     bool    `json:"trendDown"`
+	ThresholdMax  float64 `json:"thresholdMax"`
+	ThresholdMin  float64 `json:"thresholdMin"`
+	Comment       string  `json:"comment"`
+	Level         int     `json:"level"`
+	Disabled      bool    `json:"disabled"`
+	NeverFillZero bool    `json:"neverFillZero"`
 }
 
 // createRule creates a rule.
@@ -73,15 +74,16 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	// Create rule.
 	rule := &models.Rule{
-		ProjectID:    projectID,
-		Pattern:      req.Pattern,
-		TrendUp:      req.TrendUp,
-		TrendDown:    req.TrendDown,
-		ThresholdMax: req.ThresholdMax,
-		ThresholdMin: req.ThresholdMin,
-		Comment:      req.Comment,
-		Level:        req.Level,
-		Disabled:     req.Disabled,
+		ProjectID:     projectID,
+		Pattern:       req.Pattern,
+		TrendUp:       req.TrendUp,
+		TrendDown:     req.TrendDown,
+		ThresholdMax:  req.ThresholdMax,
+		ThresholdMin:  req.ThresholdMin,
+		Comment:       req.Comment,
+		Level:         req.Level,
+		Disabled:      req.Disabled,
+		NeverFillZero: req.NeverFillZero,
 	}
 	if err := db.Admin.DB().Create(rule).Error; err != nil {
 		// Write errors.
@@ -176,6 +178,7 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rule.ThresholdMax = req.ThresholdMax
 	rule.ThresholdMin = req.ThresholdMin
 	rule.Disabled = req.Disabled
+	rule.NeverFillZero = req.NeverFillZero
 
 	if db.Admin.DB().Save(rule).Error != nil {
 		ResponseError(w, ErrRuleUpdateFailed)

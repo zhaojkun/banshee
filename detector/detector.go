@@ -206,7 +206,7 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event
 		}
 	}
 	// Fill zero?
-	fz := idx != nil && d.shouldFz(m)
+	fz := idx != nil && d.shouldFz(m, rules)
 	if idx != nil {
 		m.LinkTo(idx)
 	}
@@ -258,7 +258,7 @@ func (d *Detector) save(m *models.Metric, idx *models.Index) error {
 
 // Test whether a metric need to fill blank with zeros to its history
 // values.
-func (d *Detector) shouldFz(m *models.Metric) bool {
+func (d *Detector) shouldFz(m *models.Metric, rules []*models.Rule) bool {
 	for _, p := range d.cfg.Detector.FillBlankZeros {
 		ok, err := filepath.Match(p, m.Name)
 		if err != nil {
@@ -267,6 +267,12 @@ func (d *Detector) shouldFz(m *models.Metric) bool {
 			continue
 		}
 		if ok {
+			// Matched the fill zeros patterns, then check its rules.
+			for _, rule := range rules {
+				if rule.NeverFillZero {
+					return false
+				}
+			}
 			// Ok.
 			return true
 		}
