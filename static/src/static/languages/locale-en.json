@@ -123,6 +123,7 @@
   "ADMIN_RULE_DISABLE": "Disable",
   "ADMIN_RULE_DISABLED": "Rule is disabled",
   "ADMIN_RULE_DISABLED_WARN": "its metrics will still income, but related alertings will be muted",
+  "ADMIN_RULE_NEVER_FILL_ZERO": "Never fill zeros",
   "ADMIN_RULE_ADD_TEXT": "Add Rule",
   "ADMIN_RULE_EDIT_TEXT": "Edit Rule",
   "ADMIN_RULE_DELETE_TEXT": "Delete Rule",
