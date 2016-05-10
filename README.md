@@ -72,6 +72,7 @@ Authors
 - [@facesea](https://github.com/facesea)
 - [@nrzipher](https://github.com/nrzipher)
 - [@hit9](https://github.com/hit9)
+- [@zhaojkun](https://github.com/zhaojkun)
 
 License
 -------

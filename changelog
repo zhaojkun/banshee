@@ -1,8 +1,9 @@
 pending
 -------
 
+* Detector: Future data should not fill zero. #511
 * Models: Add new field NeverFillZero to Rule. #510
-* Deetctor: Never fill zeros if the NeverFillZero is true. #510
+* Detector: Never fill zeros if the NeverFillZero is true. #510
 * Webapp: Add NeverFillZero to createRule and editRule. #510
 * Static: Add NeverFillZero edit/create to panel. #510
 
