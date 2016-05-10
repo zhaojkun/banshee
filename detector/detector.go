@@ -340,6 +340,10 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 	for stamp := m.Stamp; stamp+expiration > m.Stamp; stamp -= period {
 		start := stamp - offset
 		stop := stamp + offset
+		// Range (m.Stamp,m.Stamp+offset) has no data as it is the future
+		if stamp == m.Stamp {
+			stop = m.Stamp
+		}
 		go func() {
 			ms, err := d.db.Metric.Get(m.Name, m.Link, start, stop)
 			ch <- metricGetResult{err, ms, start, stop}
