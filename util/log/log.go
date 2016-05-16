@@ -46,7 +46,7 @@ var colors = map[string]int{
 
 // levelColors
 var levelColors = map[int]string{
-	DEBUG: "cyan",
+	DEBUG: "blue",
 	INFO:  "green",
 	WARN:  "yellow",
 	ERROR: "red",
@@ -147,14 +147,11 @@ func log(l int, msg string) error {
 		pkgName := path.Base(path.Dir(fileName))
 		filepath := path.Join(pkgName, path.Base(fileName))
 		// Datetime and pid.
-		now := time.Now().String()[:21]
+		now := time.Now().String()[:19]
 		// Message
 		level := levelNames[l]
-		s := fmt.Sprintf("%s %s %s:%d %s", now, level, filepath, line, msg)
-		if colored {
-			s = Colored(levelColors[l], s)
-		}
-		_, err := fmt.Fprintln(w, s)
+		header := Colored(levelColors[l], fmt.Sprintf("%s %s %s:%d", level, now, filepath, line))
+		_, err := fmt.Fprintf(w, "%s %s\n", header, msg)
 		return err
 	}
 	return nil
