@@ -23,7 +23,7 @@ const (
 	// Default time interval for all metrics in seconds.
 	DefaultInterval uint32 = 10 * Second
 	// Default hit limit to a rule in an interval
-	DefaultIntervalHitLimit int = 100
+	DefaultIntervalHitLimit uint32 = 100
 	// Default period for all metrics in seconds.
 	DefaultPeriod uint32 = 1 * Day
 	// Default metric expiration.
@@ -87,7 +87,7 @@ type configDetector struct {
 	LeastCount             uint32             `json:"leastCount" yaml:"least_count"`
 	BlackList              []string           `json:"blackList" yaml:"blacklist"`
 	EnableIntervalHitLimit bool               `json:"enableIntervalHitLimit" yaml:"enable_interval_hit_limit"`
-	IntervalHitLimit       int                `json:"intervalHitLimit" yaml:"interval_hit_limit"`
+	IntervalHitLimit       uint32             `json:"intervalHitLimit" yaml:"interval_hit_limit"`
 	DefaultThresholdMaxs   map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
 	DefaultThresholdMins   map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
 	FillBlankZeros         []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
