@@ -17,14 +17,13 @@ const delim = "."
 type tree struct {
 	value    interface{}
 	children map[string]*tree
-	lock     sync.RWMutex // protects value, children
 }
 
 // Trie is the trie tree.
 type Trie struct {
 	root   *tree // root tree, won't be rewritten
 	length int
-	lock   sync.RWMutex // protects length
+	lock   sync.RWMutex // protects the whole trie
 }
 
 // newTree creates a new tree.
@@ -49,55 +48,46 @@ func (tr *Trie) Len() int {
 }
 
 // Put an item to the trie.
+// Replace if the key conflicts.
 func (tr *Trie) Put(key string, value interface{}) {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
 	parts := strings.Split(key, delim)
 	t := tr.root
-	if len(parts) > 0 {
-		t.lock.Lock() // touch root
-	}
 	for i, part := range parts {
 		child, ok := t.children[part]
 		if !ok {
 			child = newTree()
 			t.children[part] = child
 		}
-		t.lock.Unlock()   // leave parent
-		child.lock.Lock() // touch child
 		if i == len(parts)-1 {
 			if child.value == nil {
-				tr.lock.Lock()
 				tr.length++
-				tr.lock.Unlock()
 			}
 			child.value = value
-			child.lock.Unlock() // leave child
 			return
 		}
-		t = child // child as next parent
+		t = child
 	}
 	return
 }
 
 // Get an item from the trie.
+// Returns nil if not found.
 func (tr *Trie) Get(key string) interface{} {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
 	parts := strings.Split(key, delim)
 	t := tr.root
-	if len(parts) > 0 {
-		t.lock.RLock() // touch root
-	}
 	for i, part := range parts {
 		child, ok := t.children[part]
 		if !ok {
-			t.lock.RUnlock() // leave parent.
 			return nil
 		}
-		t.lock.RUnlock()   // leave parent
-		child.lock.RLock() // touch child
 		if i == len(parts)-1 {
-			child.lock.RUnlock() // leave child
 			return child.value
 		}
-		t = child // child as next parent
+		t = child
 	}
 	return nil
 }
@@ -111,19 +101,15 @@ func (tr *Trie) Has(key string) bool {
 // Pop an item from the trie.
 // Returns nil if the given key is not in the trie.
 func (tr *Trie) Pop(key string) interface{} {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
 	parts := strings.Split(key, delim)
 	t := tr.root
-	if len(parts) > 0 {
-		t.lock.Lock() // touch root
-	}
 	for i, part := range parts {
 		child, ok := t.children[part]
 		if !ok {
-			t.lock.Unlock() // leave parent
 			return nil
 		}
-		t.lock.Unlock()   // leave parent
-		child.lock.Lock() // touch child
 		if i == len(parts)-1 {
 			if len(child.children) == 0 {
 				delete(t.children, part)
@@ -131,11 +117,8 @@ func (tr *Trie) Pop(key string) interface{} {
 			value := child.value
 			child.value = nil
 			if value != nil {
-				tr.lock.Lock()
 				tr.length--
-				tr.lock.Unlock()
 			}
-			child.lock.Unlock() // leave child
 			return value
 		}
 		t = child
@@ -145,26 +128,23 @@ func (tr *Trie) Pop(key string) interface{} {
 
 // Clear the trie.
 func (tr *Trie) Clear() {
-	// Why not just tr.lock = newTree(): we don't want to rewrite the tr.root,
-	// otherwise, accessing the tr.root requires a RWMutex.
-	tr.root.lock.Lock()
-	defer tr.root.lock.Unlock()
-	tr.root.children = make(map[string]*tree, 0)
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
+	tr.root = newTree() // gc
 	tr.length = 0
 }
 
 // Match a wildcard like pattern in the trie, the pattern is not a traditional
 // wildcard, only "*" is supported.
 func (tr *Trie) Match(pattern string) map[string]interface{} {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
 	return tr.root.match(nil, strings.Split(pattern, delim))
 }
 
 // match keys in the tree recursively.
 func (t *tree) match(keys []string, parts []string) map[string]interface{} {
 	m := make(map[string]interface{}, 0)
-	t.lock.RLock() // touch root.
 	if len(parts) == 0 {
 		if t.value != nil {
 			// Generally, strings.Split() won't give us empty results. And the
@@ -172,7 +152,6 @@ func (t *tree) match(keys []string, parts []string) map[string]interface{} {
 			// should pick up all processed keys and return.
 			m[strings.Join(keys, delim)] = t.value
 		}
-		t.lock.RUnlock() // leave root
 		return m
 	}
 	for i, part := range parts {
@@ -183,22 +162,17 @@ func (t *tree) match(keys []string, parts []string) map[string]interface{} {
 					m[key] = value
 				}
 			}
-			t.lock.RUnlock() // leave parent
 			return m
 		}
 		child, ok := t.children[part]
 		if !ok {
-			t.lock.RUnlock() // leave parent
 			return m
 		}
-		t.lock.RUnlock()   // leave parent
-		child.lock.RLock() // touch child
 		keys = append(keys, part)
 		if i == len(parts)-1 { // last part
 			if child.value != nil {
 				m[strings.Join(keys, delim)] = child.value
 			}
-			child.lock.RUnlock() // leave child
 			return m
 		}
 		t = child // child as parent
@@ -208,13 +182,14 @@ func (t *tree) match(keys []string, parts []string) map[string]interface{} {
 
 // Map returns the full trie as a map.
 func (tr *Trie) Map() map[string]interface{} {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
 	return tr.root._map(nil)
 }
 
 // map returns the full tree as a map.
 func (t *tree) _map(keys []string) map[string]interface{} {
 	m := make(map[string]interface{}, 0)
-	t.lock.RLock() // touch root
 	// Check current tree.
 	if t.value != nil {
 		m[strings.Join(keys, delim)] = t.value
@@ -226,6 +201,5 @@ func (t *tree) _map(keys []string) map[string]interface{} {
 			m[key] = value
 		}
 	}
-	t.lock.RUnlock()
 	return m
 }
