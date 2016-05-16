@@ -1,6 +1,7 @@
 pending
 -------
 
+* Filter: Use util/trie in filter. #516
 * Detector: Future data should not fill zero. #511
 * Models: Add new field NeverFillZero to Rule. #510
 * Detector: Never fill zeros if the NeverFillZero is true. #510
