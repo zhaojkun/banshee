@@ -14,7 +14,9 @@ import (
 
 func TestSimple(t *testing.T) {
 	// New and add rules.
-	filter := New()
+	cfg := config.New()
+	cfg.Detector.EnableIntervalHitLimit = false
+	filter := New(cfg)
 	rule1 := &models.Rule{Pattern: "a.*.c.d"}
 	rule2 := &models.Rule{Pattern: "a.b.c.*"}
 	filter.addRule(rule1)
@@ -39,25 +41,26 @@ func TestHitLimit(t *testing.T) {
 	// Currently disable logging
 	log.Disable()
 	defer log.Enable()
-	//New and add rules.
-	config := config.New()
-	config.Interval = 1
+	// New and add rules.
+	cfg := config.New()
+	cfg.Interval = 1
+	cfg.Detector.EnableIntervalHitLimit = true
+	cfg.Detector.IntervalHitLimit = 100
 	rule1 := &models.Rule{Pattern: "a.*.c.d"}
-	filter := New()
+	filter := New(cfg)
+	filter.initRuleHitReseter()
 	filter.addRule(rule1)
-	filter.SetHitLimit(config)
 
-	for i := 0; i < config.Detector.IntervalHitLimit; i++ {
-		//hit rule when counter < intervalHitLimit
+	for i := uint32(0); i < cfg.Detector.IntervalHitLimit; i++ {
+		// hit rule when counter < intervalHitLimit
 		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
 		util.Must(t, 1 == len(rules))
 
 	}
-	//counter over limit, matched rules = 0
 	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
 	util.Must(t, 0 == len(rules))
 	time.Sleep(time.Second * 2)
-	//after interval counter is cleared, matched rules = 1
+	// after interval counter is cleared, matched rules = 1
 	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
 	util.Must(t, 1 == len(rules))
 }
@@ -76,12 +79,12 @@ func BenchmarkRules1KNativeBest(b *testing.B) {
 }
 
 func BenchmarkRules1kBest(b *testing.B) {
-	filter := New()
+	cfg := config.New()
+	cfg.Detector.EnableIntervalHitLimit = false
+	filter := New(cfg)
 	for i := 0; i < 1024; i++ {
 		filter.addRule(&models.Rule{Pattern: "a.*.c." + string(i)})
 	}
-	filter.DisableHitLimit()
-	defer filter.EnableHitLimit()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		filter.MatchedRules(&models.Metric{Name: "x.b.c." + string(i&1024)})
@@ -89,12 +92,12 @@ func BenchmarkRules1kBest(b *testing.B) {
 }
 
 func BenchmarkRules1kWorst(b *testing.B) {
-	filter := New()
+	cfg := config.New()
+	cfg.Detector.EnableIntervalHitLimit = false
+	filter := New(cfg)
 	for i := 0; i < 1024; i++ {
 		filter.addRule(&models.Rule{Pattern: "a.*.c." + string(i)})
 	}
-	filter.DisableHitLimit()
-	defer filter.EnableHitLimit()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&1024)})
@@ -102,12 +105,12 @@ func BenchmarkRules1kWorst(b *testing.B) {
 }
 
 func BenchmarkRules2kWorst(b *testing.B) {
-	filter := New()
+	cfg := config.New()
+	cfg.Detector.EnableIntervalHitLimit = false
+	filter := New(cfg)
 	for i := 0; i < 1024*2; i++ {
 		filter.addRule(&models.Rule{Pattern: "a.*.c." + string(i)})
 	}
-	filter.DisableHitLimit()
-	defer filter.EnableHitLimit()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&65535)})
