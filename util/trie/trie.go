@@ -10,6 +10,9 @@ import (
 	"sync"
 )
 
+// delim is the metric name delimeter, in banshee is a single dot.
+const delim = "."
+
 // tree is the internal tree.
 type tree struct {
 	value    interface{}
@@ -20,7 +23,6 @@ type tree struct {
 // Trie is the trie tree.
 type Trie struct {
 	root   *tree // root tree, won't be rewritten
-	delim  string
 	length int
 	lock   sync.RWMutex // protects length
 }
@@ -33,10 +35,9 @@ func newTree() *tree {
 }
 
 // New creates a new Trie.
-func New(delim string) *Trie {
+func New() *Trie {
 	return &Trie{
-		root:  newTree(),
-		delim: delim,
+		root: newTree(),
 	}
 }
 
@@ -49,7 +50,7 @@ func (tr *Trie) Len() int {
 
 // Put an item to the trie.
 func (tr *Trie) Put(key string, value interface{}) {
-	parts := strings.Split(key, tr.delim)
+	parts := strings.Split(key, delim)
 	t := tr.root
 	if len(parts) > 0 {
 		t.lock.Lock() // touch root
@@ -79,7 +80,7 @@ func (tr *Trie) Put(key string, value interface{}) {
 
 // Get an item from the trie.
 func (tr *Trie) Get(key string) interface{} {
-	parts := strings.Split(key, tr.delim)
+	parts := strings.Split(key, delim)
 	t := tr.root
 	if len(parts) > 0 {
 		t.lock.RLock() // touch root
@@ -110,7 +111,7 @@ func (tr *Trie) Has(key string) bool {
 // Pop an item from the trie.
 // Returns nil if the given key is not in the trie.
 func (tr *Trie) Pop(key string) interface{} {
-	parts := strings.Split(key, tr.delim)
+	parts := strings.Split(key, delim)
 	t := tr.root
 	if len(parts) > 0 {
 		t.lock.Lock() // touch root
@@ -157,11 +158,11 @@ func (tr *Trie) Clear() {
 // Match a wildcard like pattern in the trie, the pattern is not a traditional
 // wildcard, only "*" is supported.
 func (tr *Trie) Match(pattern string) map[string]interface{} {
-	return tr.root.match(tr.delim, nil, strings.Split(pattern, tr.delim))
+	return tr.root.match(nil, strings.Split(pattern, delim))
 }
 
 // match keys in the tree recursively.
-func (t *tree) match(delim string, keys []string, parts []string) map[string]interface{} {
+func (t *tree) match(keys []string, parts []string) map[string]interface{} {
 	m := make(map[string]interface{}, 0)
 	t.lock.RLock() // touch root.
 	if len(parts) == 0 {
@@ -177,7 +178,7 @@ func (t *tree) match(delim string, keys []string, parts []string) map[string]int
 	for i, part := range parts {
 		if part == "*" {
 			for segment, child := range t.children {
-				v := child.match(delim, append(keys, segment), parts[i+1:])
+				v := child.match(append(keys, segment), parts[i+1:])
 				for key, value := range v {
 					m[key] = value
 				}
@@ -207,11 +208,11 @@ func (t *tree) match(delim string, keys []string, parts []string) map[string]int
 
 // Map returns the full trie as a map.
 func (tr *Trie) Map() map[string]interface{} {
-	return tr.root._map(tr.delim, nil)
+	return tr.root._map(nil)
 }
 
 // map returns the full tree as a map.
-func (t *tree) _map(delim string, keys []string) map[string]interface{} {
+func (t *tree) _map(keys []string) map[string]interface{} {
 	m := make(map[string]interface{}, 0)
 	t.lock.RLock() // touch root
 	// Check current tree.
@@ -220,7 +221,7 @@ func (t *tree) _map(delim string, keys []string) map[string]interface{} {
 	}
 	// Check children.
 	for segment, child := range t.children {
-		d := child._map(delim, append(keys, segment))
+		d := child._map(append(keys, segment))
 		for key, value := range d {
 			m[key] = value
 		}
