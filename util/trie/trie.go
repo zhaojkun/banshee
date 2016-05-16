@@ -134,8 +134,10 @@ func (tr *Trie) Clear() {
 	tr.length = 0
 }
 
-// Match a wildcard like pattern in the trie, the pattern is not a traditional
-// wildcard, only "*" is supported.
+// Match trie items by a wildcard like pattern, the pattern is not a
+// traditional wildcard, only "*" is supported, a sinle "*" represents a single
+// word.
+// Returns an empty map if the given pattern matches no items.
 func (tr *Trie) Match(pattern string) map[string]interface{} {
 	tr.lock.RLock()
 	defer tr.lock.RUnlock()
@@ -144,7 +146,7 @@ func (tr *Trie) Match(pattern string) map[string]interface{} {
 
 // match keys in the tree recursively.
 func (t *tree) match(keys []string, parts []string) map[string]interface{} {
-	m := make(map[string]interface{}, 0)
+	m := make(map[string]interface{})
 	if len(parts) == 0 {
 		if t.value != nil {
 			// Generally, strings.Split() won't give us empty results. And the
@@ -189,7 +191,7 @@ func (tr *Trie) Map() map[string]interface{} {
 
 // map returns the full tree as a map.
 func (t *tree) _map(keys []string) map[string]interface{} {
-	m := make(map[string]interface{}, 0)
+	m := make(map[string]interface{})
 	// Check current tree.
 	if t.value != nil {
 		m[strings.Join(keys, delim)] = t.value
@@ -199,6 +201,37 @@ func (t *tree) _map(keys []string) map[string]interface{} {
 		d := child._map(append(keys, segment))
 		for key, value := range d {
 			m[key] = value
+		}
+	}
+	return m
+}
+
+// Matched uses the trie items as the wildcard like patterns, filters out the
+// items matches the given string.
+// Returns an empty map if the given strings matches no patterns.
+func (tr *Trie) Matched(s string) map[string]interface{} {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
+	return tr.root.matched(nil, strings.Split(s, delim))
+}
+
+// matched returns the patterns matched the given string.
+func (t *tree) matched(keys, parts []string) map[string]interface{} {
+	m := make(map[string]interface{})
+	if len(parts) == 0 && t.value != nil {
+		m[strings.Join(keys, delim)] = t.value
+		return m
+	}
+	if len(parts) > 0 {
+		if child, ok := t.children["*"]; ok {
+			for k, v := range child.matched(append(keys, "*"), parts[1:]) {
+				m[k] = v
+			}
+		}
+		if child, ok := t.children[parts[0]]; ok {
+			for k, v := range child.matched(append(keys, parts[0]), parts[1:]) {
+				m[k] = v
+			}
 		}
 	}
 	return m
