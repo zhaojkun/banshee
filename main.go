@@ -28,7 +28,7 @@ var (
 	// Variables
 	cfg = config.New()
 	db  *storage.DB
-	flt = filter.New()
+	flt *filter.Filter
 )
 
 func usage() {
@@ -88,8 +88,8 @@ func initFilter() {
 		panic(errors.New("filter require db and config"))
 	}
 	// Init filter
+	flt = filter.New(cfg)
 	flt.Init(db)
-	flt.SetHitLimit(cfg)
 }
 
 func init() {
