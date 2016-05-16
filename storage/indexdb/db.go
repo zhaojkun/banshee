@@ -33,9 +33,6 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// delim is the metric name delimeter.
-const delim = "."
-
 // MaxNumIndex is the max value of the number indexes this db can handle.
 // Note that this number has no other meanings, just a limitation of the
 // indexes capacity, it can be larger, theoretically can be MaxUint32.
@@ -58,7 +55,7 @@ func Open(fileName string) (*DB, error) {
 	}
 	db := new(DB)
 	db.db = ldb
-	db.tr = trie.New(delim)
+	db.tr = trie.New()
 	db.idp = idpool.New(1, MaxNumIndex) // low is 1 to distinct default 0
 	db.load()
 	return db, nil

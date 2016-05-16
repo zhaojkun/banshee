@@ -43,9 +43,11 @@ detector:
     # A list of wildcard patterns to refuse metrics by name, default: []
     # Example: ["statsd.*"]
     blacklist: []
+    # Whether enable the filter interval hit limit, default: true
+    enable_interval_hit_limit: true
     # Limitation of incoming datapoints for a single rule in an interval,
     # default: 100.
-    # This setting is to prevent rules matching too many metrics.
+    # This setting is to prevent a single rule matching too many metrics.
     interval_hit_limit: 100
     # Default values of thresholdMaxs, the thresholdMax is the maximum value
     # to trigger an alert rule. default: {}

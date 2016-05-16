@@ -27,7 +27,7 @@ func randKey(n int) string {
 }
 
 func TestPut(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case simple
 	tr.Put("a.b.c.d", 4)
 	tr.Put("a.b.c.d", 99) // case reset
@@ -51,7 +51,7 @@ func TestPut(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case not found.
 	util.Must(t, tr.Get("not.exist") == nil)
 	// Case simple.
@@ -68,7 +68,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case not found.
 	util.Must(t, tr.Pop("not.exist") == nil)
 	util.Must(t, tr.Len() == 0)
@@ -88,7 +88,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case simple.
 	tr.Put("a.b.c.d", 4)
 	tr.Put("a.b.c.d.e", 5)
@@ -100,7 +100,7 @@ func TestClear(t *testing.T) {
 }
 
 func TestMatch(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case simple.
 	tr.Put("a.b.c.d", 4)
 	tr.Put("a.b.c.f", 9)
@@ -140,7 +140,7 @@ func TestMatch(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	tr := New(".")
+	tr := New()
 	// Case empty.
 	util.Must(t, len(tr.Map()) == 0)
 	// Case simple.
@@ -154,8 +154,45 @@ func TestMap(t *testing.T) {
 	util.Must(t, m["a.b.c.d.e.f"].(int) == 61)
 }
 
+func TestMatched(t *testing.T) {
+	tr := New()
+
+	p1 := "a.b.c.d.e.f"
+	p2 := "a.b.c.d.*.f"
+	p3 := "*.b.c.d.*.f"
+	p4 := "*.b.c.d.*"
+	p5 := "*"
+	p6 := ""
+
+	tr.Put(p1, 1)
+	tr.Put(p2, 2)
+	tr.Put(p3, 3)
+	tr.Put(p4, 4)
+	tr.Put(p5, 5)
+	tr.Put(p6, 6)
+
+	var m map[string]interface{}
+
+	m = tr.Matched("a.b.c.d.e.f")
+	util.Must(t, len(m) == 3)
+	util.Must(t, m[p1].(int) == 1)
+	util.Must(t, m[p2].(int) == 2)
+	util.Must(t, m[p3].(int) == 3)
+
+	m = tr.Matched("a.b.c.d.e")
+	util.Must(t, len(m) == 1)
+	util.Must(t, m[p4].(int) == 4)
+
+	m = tr.Matched("a")
+	util.Must(t, len(m) == 1)
+	util.Must(t, m[p5].(int) == 5)
+
+	m = tr.Matched("not.matched")
+	util.Must(t, len(m) == 0)
+}
+
 func BenchmarkPutRandKeys(b *testing.B) {
-	tr := New(".")
+	tr := New()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tr.Put(randKey(128), i)
@@ -163,7 +200,7 @@ func BenchmarkPutRandKeys(b *testing.B) {
 }
 
 func BenchmarkPutPrefixedKeys(b *testing.B) {
-	tr := New(".")
+	tr := New()
 	m := 63
 	n := 16
 	prefix := randKey(m)
@@ -177,7 +214,7 @@ func BenchmarkPutPrefixedKeys(b *testing.B) {
 	}
 }
 func BenchmarkPutAndGetRandKeys(b *testing.B) {
-	tr := New(".")
+	tr := New()
 	for i := 0; i < b.N; i++ {
 		tr.Put(randKey(128), i)
 		tr.Get(randKey(128))
@@ -185,7 +222,7 @@ func BenchmarkPutAndGetRandKeys(b *testing.B) {
 }
 
 func BenchmarkPutAndGetPrefixedKeys(b *testing.B) {
-	tr := New(".")
+	tr := New()
 	m := 63
 	n := 16
 	prefix := randKey(m)

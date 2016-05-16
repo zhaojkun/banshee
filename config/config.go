@@ -23,7 +23,7 @@ const (
 	// Default time interval for all metrics in seconds.
 	DefaultInterval uint32 = 10 * Second
 	// Default hit limit to a rule in an interval
-	DefaultIntervalHitLimit int = 100
+	DefaultIntervalHitLimit uint32 = 100
 	// Default period for all metrics in seconds.
 	DefaultPeriod uint32 = 1 * Day
 	// Default metric expiration.
@@ -80,16 +80,17 @@ type configStorage struct {
 }
 
 type configDetector struct {
-	Port                 int                `json:"port" yaml:"port"`
-	TrendingFactor       float64            `json:"trendingFactor" yaml:"trending_factor"`
-	FilterOffset         float64            `json:"filterOffset" yaml:"filter_offset"`
-	FilterTimes          int                `json:"filterTimes" yaml:"filter_times"`
-	LeastCount           uint32             `json:"leastCount" yaml:"least_count"`
-	BlackList            []string           `json:"blackList" yaml:"blacklist"`
-	IntervalHitLimit     int                `json:"intervalHitLimit" yaml:"interval_hit_limit"`
-	DefaultThresholdMaxs map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
-	DefaultThresholdMins map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
-	FillBlankZeros       []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
+	Port                   int                `json:"port" yaml:"port"`
+	TrendingFactor         float64            `json:"trendingFactor" yaml:"trending_factor"`
+	FilterOffset           float64            `json:"filterOffset" yaml:"filter_offset"`
+	FilterTimes            int                `json:"filterTimes" yaml:"filter_times"`
+	LeastCount             uint32             `json:"leastCount" yaml:"least_count"`
+	BlackList              []string           `json:"blackList" yaml:"blacklist"`
+	EnableIntervalHitLimit bool               `json:"enableIntervalHitLimit" yaml:"enable_interval_hit_limit"`
+	IntervalHitLimit       uint32             `json:"intervalHitLimit" yaml:"interval_hit_limit"`
+	DefaultThresholdMaxs   map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
+	DefaultThresholdMins   map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
+	FillBlankZeros         []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
 }
 
 type configWebapp struct {
@@ -121,6 +122,7 @@ func New() *Config {
 	c.Detector.FilterTimes = DefaultFilterTimes
 	c.Detector.LeastCount = DefaultLeastCount
 	c.Detector.BlackList = []string{}
+	c.Detector.EnableIntervalHitLimit = true
 	c.Detector.IntervalHitLimit = DefaultIntervalHitLimit
 	c.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
 	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
