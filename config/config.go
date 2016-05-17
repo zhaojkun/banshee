@@ -76,10 +76,9 @@ type Config struct {
 }
 
 type configStorage struct {
-	Path                  string   `json:"path" yaml:"path"`
-	EnableMetricCache     bool     `json:"enableMetricCache" yaml:"enable_metric_cache"`
-	MetricCacheList       []string `json:"metricCacheList" yaml:"metric_cache_list"`
-	MetricCachePercentage float64  `json:"metricCachePercentage" yaml:"metric_cache_percentage"`
+	Path                  string  `json:"path" yaml:"path"`
+	EnableMetricCache     bool    `json:"enableMetricCache" yaml:"enable_metric_cache"`
+	MetricCachePercentage float64 `json:"metricCachePercentage" yaml:"metric_cache_percentage"`
 }
 
 type configDetector struct {
@@ -120,7 +119,6 @@ func New() *Config {
 	c.Expiration = DefaultExpiration
 	c.Storage.Path = "./data"
 	c.Storage.EnableMetricCache = true
-	c.Storage.MetricCacheList = []string{}
 	c.Storage.MetricCachePercentage = 1.0
 	c.Detector.Port = 2015
 	c.Detector.TrendingFactor = DefaultTrendingFactor
@@ -168,7 +166,6 @@ func (c *Config) Copy() *Config {
 	cfg.Expiration = c.Expiration
 	cfg.Storage.Path = c.Storage.Path
 	cfg.Storage.EnableMetricCache = c.Storage.EnableMetricCache
-	cfg.Storage.MetricCacheList = c.Storage.MetricCacheList
 	cfg.Storage.MetricCachePercentage = c.Storage.MetricCachePercentage
 	cfg.Detector.Port = c.Detector.Port
 	cfg.Detector.TrendingFactor = c.Detector.TrendingFactor
