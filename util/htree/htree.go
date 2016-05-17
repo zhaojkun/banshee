@@ -270,6 +270,9 @@ func (t *HTree) Get(item Item) Item {
 	return t.get(t.root, item)
 }
 
+// Has returns true if given item is in the htree.
+func (t *HTree) Has(item Item) bool { return t.Get(item) != nil }
+
 // Put item into htree and returns the item. If the item already in the
 /// tree, return it, else new a node with the given item and return this
 // item. If the depth overflows, nil is returned.
