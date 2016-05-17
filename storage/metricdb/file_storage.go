@@ -1,4 +1,4 @@
-// Copyright 2015 Eleme Inc. All rights reserved.
+// Copyright 2016 Eleme Inc. All rights reserved.
 
 package metricdb
 
@@ -6,6 +6,7 @@ import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util/log"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/util"
 	"io/ioutil"
 	"os"
 	"path"
@@ -34,204 +35,193 @@ import (
 // filemode is the file mode to open a new storage.
 const filemode = 0755
 
-// storage is the leveldb.DB wrapper with an id.
-type storage struct {
-	id uint32
-	db *leveldb.DB
+// fileStorage is the file based storage.
+type fileStorage struct {
+	id  uint32
+	ldb *leveldb.DB
 }
 
-// byID implements sort.Interface for a slice of storages.
-type byID []*storage
+// close the file storage.
+func (s *fileStorage) close() error { return s.ldb.Close() }
 
-func (b byID) Len() int           { return len(b) }
-func (b byID) Less(i, j int) bool { return b[i].id < b[j].id }
-func (b byID) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
-
-// openStorage opens a storage by filename.
-func openStorage(fileName string) (*storage, error) {
-	base := path.Base(fileName)
-	n, err := strconv.ParseUint(base, 10, 32)
-	if err != nil {
-		return nil, err
-	}
-	id := uint32(n)
-	db, err := leveldb.OpenFile(fileName, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &storage{id: id, db: db}, nil
-}
-
-// close the storage.
-func (s *storage) close() error { return s.db.Close() }
-
-// put a metric into storage.
-// Returns ErrNoLink if given metric has no link.
-func (s *storage) put(m *models.Metric) error {
+// put a metric into the file storage.
+func (s *fileStorage) put(m *models.Metric) error {
 	if m.Link == 0 {
 		return ErrNoLink
 	}
-	key := encodeKey(m)
-	value := encodeValue(m)
-	return s.db.Put(key, value, nil)
+	return s.ldb.Put(encodeKey(m), encodeValue(m), nil)
 }
 
-// get metrics in a timestamp range from the storage.
-func (s *storage) get(name string, link, start, end uint32) ([]*models.Metric, error) {
+// get metrics in a stamp range.
+func (s *fileStorage) get(name string, link, start, end uint32) (ms []*models.Metric, err error) {
 	startKey := encodeKey(&models.Metric{Link: link, Stamp: start})
 	endKey := encodeKey(&models.Metric{Link: link, Stamp: end})
-	iter := s.db.NewIterator(&util.Range{Start: startKey, Limit: endKey}, nil)
-	var ms []*models.Metric
+	iter := s.ldb.NewIterator(&util.Range{Start: startKey, Limit: endKey}, nil)
 	for iter.Next() {
 		m := &models.Metric{Name: name}
-		key := iter.Key()
-		value := iter.Value()
-		if err := decodeKey(key, m); err != nil {
-			return nil, err
+		if err = decodeKey(iter.Key(), m); err != nil {
+			return
 		}
-		if err := decodeValue(value, m); err != nil {
-			return nil, err
+		if err = decodeValue(iter.Value(), m); err != nil {
+			return
 		}
 		ms = append(ms, m)
 	}
-	return ms, nil
+	return
 }
 
-// storageManager is the storage manager.
-type storageManager struct {
-	opts *Options     // *Options ref
-	name string       // dirname
-	pool []*storage   // storages
-	lock sync.RWMutex // protects pool
+// openFileStorage opens a fileStorage by filename.
+func openFileStorage(fileName string) (*fileStorage, error) {
+	n, err := strconv.ParseUint(path.Base(fileName), 10, 32)
+	if err != nil {
+		return nil, err
+	}
+	ldb, err := leveldb.OpenFile(fileName, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &fileStorage{uint32(n), ldb}, nil
 }
 
-// openStorageManager opens a storageManager by filename.
-func openStorageManager(fileName string, opts *Options) (*storageManager, error) {
-	_, err := os.Stat(fileName)
+// fileStoragesByID implements sort.Interface for a slice of storages.
+type fileStoragesByID []*fileStorage
+
+func (b fileStoragesByID) Len() int           { return len(b) }
+func (b fileStoragesByID) Less(i, j int) bool { return b[i].id < b[j].id }
+func (b fileStoragesByID) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
+
+// fileStoragePool is the file storage pool.
+type fileStoragePool struct {
+	opts *Options
+	name string
+	pool []*fileStorage
+	lock sync.RWMutex // protects the pool
+}
+
+// openFileStoragePool opens a fileStoragePool for given filename.
+func openFileStoragePool(fileName string, opts *Options) (p *fileStoragePool, err error) {
+	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) { // Create if not exist
-		if err := os.Mkdir(fileName, filemode); err != nil {
-			return nil, err
+		if err = os.Mkdir(fileName, filemode); err != nil {
+			return
 		}
 		log.Debugf("dir %s created", fileName)
 	}
-	smgr := &storageManager{opts: opts, name: name}
-	if err := smgr.init(); err != nil {
-		return nil, err
+	p = &fileStoragePool{opts: opts, name: fileName}
+	if err = p.init(); err != nil {
+		return
 	}
-	return smgr, nil
+	return
 }
 
-// init opens all storages on storageManager open.
-func (smgr *storageManager) init() error {
-	infos, err := ioutil.ReadDir(smgr.name)
+// init all file storages.
+func (p *fileStoragePool) init() error {
+	infs, err := ioutil.ReadDir(p.name)
 	if err != nil {
 		return err
 	}
-	for _, info := range infos {
-		fileName := path.Join(smgr.name, info.Name())
-		s, err := openStorage(fileName)
+	for _, info := range infs {
+		fileName := path.Join(p.name, info.Name())
+		s, err := openFileStorage(fileName)
 		if err != nil {
 			return err
 		}
-		smgr.pool = append(smgr.pool, s)
-		log.Debugf("storage %d opened", s.id)
+		p.pool = append(p.pool, s)
+		log.Debugf("file storage %d opened", s.id)
 	}
-	sort.Sort(byID(smgr.pool))
+	sort.Sort(fileStoragesByID(p.pool))
 	return nil
 }
 
-// close the storageManager.
-func (smgr *storageManager) close() (err error) {
-	for _, s := range smgr.pool {
+// close the pool.
+func (p *fileStoragePool) close() (err error) {
+	for _, s := range p.pool {
 		if err = s.close(); err != nil {
 			return
 		}
 	}
-	return nil
+	return
 }
 
-// createStorage creates a storage for given stamp.
-// Dose nothing if the stamp is not large enough.
-func (smgr *storageManager) createStorage(stamp uint32) error {
-	id := stamp / smgr.opts.Period
-	if len(smgr.pool) > 0 && id <= smgr.pool[len(smgr.pool)-1].id {
-		// stamp is not large enough.
-		return nil
+// create a file storage for given stamp.
+func (p *fileStoragePool) create(stamp uint32) error {
+	id := stamp / p.opts.Period
+	if len(p.pool) > 0 && id <= p.pool[len(p.pool)-1].id {
+		return nil // Not large enough
 	}
-	baseName := strconv.FormatUint(uint64(id), 10)
-	fileName := path.Join(smgr.name, baseName)
+	fileName := path.Join(p.name, strconv.FormatUint(uint64(id), 10))
 	ldb, err := leveldb.OpenFile(fileName, nil)
 	if err != nil {
 		return err
 	}
-	s := &storage{db: ldb, id: id}
-	smgr.pool = append(smgr.pool, s)
-	log.Infof("storage %d created", id)
+	p.pool = append(p.pool, &fileStorage{id, ldb})
+	log.Infof("file storage %d created", id)
 	return nil
 }
 
-// expireStorage expires storages.
-// Dose nothing if the pool needs no expiration.
-func (smgr *storageManager) expireStorages() error {
-	if len(smgr.pool) == 0 {
+// expire oudated file storages.
+func (p *fileStoragePool) expire() (err error) {
+	if len(p.pool) == 0 {
 		return nil
 	}
-	id := smgr.pool[len(smgr.pool)-1].id - smgr.opts.Expiration/smgr.opts.Period
-	pool := smgr.pool
-	for i, s := range smgr.pool {
+	id := p.pool[len(p.pool)-1].id - p.opts.Expiration/p.opts.Period
+	for i, s := range p.pool {
 		if s.id < id {
-			if err := s.close(); err != nil {
-				return err
+			if err = s.close(); err != nil {
+				return
 			}
-			baseName := strconv.FormatUint(uint64(s.id), 10)
-			fileName := path.Join(smgr.name, baseName)
-			if err := os.RemoveAll(fileName); err != nil {
-				return err
+			fileName := path.Join(p.name, strconv.FormatUint(uint64(s.id), 10))
+			if err = os.RemoveAll(fileName); err != nil {
+				return
 			}
-			pool = smgr.pool[i+1:]
-			log.Infof("storage %d expired", s.id)
+			p.pool = p.pool[i+1:]
+			log.Infof("file storage %d expired", s.id)
 		}
 	}
-	smgr.pool = pool
-	return nil
+	return
 }
 
-// put a metric into storageManager.
-// Returns ErrNoStorage if no storage is available.
-func (smgr *storageManager) put(m *models.Metric) (err error) {
-	smgr.lock.Lock()
-	defer smgr.lock.Unlock()
-	// Adjust storage pool.
-	if err = smgr.createStorage(m.Stamp); err != nil {
+// adjust the pool.
+func (p *fileStoragePool) adjust(stamp uint32) (err error) {
+	if err = p.create(stamp); err != nil {
 		return
 	}
-	if err = smgr.expireStorages(); err != nil {
+	if err = p.expire(); err != nil {
 		return
 	}
-	// Select a storage.
-	if len(smgr.pool) == 0 {
-		return ErrNoStorage
+	return
+}
+
+// put a metric into pool.
+// Returns ErrNoFileStorage if no storage is available.
+func (p *fileStoragePool) put(m *models.Metric) (err error) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	if err = p.adjust(m.Stamp); err != nil {
+		return
 	}
-	for i := len(smgr.pool) - 1; i >= 0; i-- {
-		s := smgr.pool[i]
-		if s.id*smgr.opts.Period <= m.Stamp && m.Stamp < (s.id+1)*smgr.opts.Period {
+	if len(p.pool) == 0 {
+		return ErrNoFileStorage
+	}
+	for i := len(p.pool) - 1; i >= 0; i-- {
+		s := p.pool[i]
+		if s.id*p.opts.Period <= m.Stamp && m.Stamp < (s.id+1)*p.opts.Period {
 			return s.put(m)
 		}
 	}
-	return ErrNoStorage
+	return
 }
 
-// get metrics in a timestamp range, the range is left open and right closed.
-func (smgr *storageManager) get(name string, link, start, end uint32) ([]*models.Metric, error) {
-	smgr.lock.RLock()
-	defer smgr.lock.RUnlock()
-	var ms []*models.Metric
-	if len(smgr.pool) == 0 {
-		return ms, nil
+// get metrics in a stamp range, the range is left open and right closed.
+func (p *fileStoragePool) get(name string, link, start, end uint32) (ms []*models.Metric, err error) {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	if len(p.pool) == 0 {
+		return
 	}
-	for _, s := range smgr.pool {
-		min := s.id * smgr.opts.Period
-		max := (s.id + 1) * smgr.opts.Period
+	for _, s := range p.pool {
+		min := s.id * p.opts.Period
+		max := (s.id + 1) * p.opts.Period
 		if start >= max || end < min {
 			continue
 		}
@@ -248,5 +238,5 @@ func (smgr *storageManager) get(name string, link, start, end uint32) ([]*models
 		}
 		ms = append(ms, l...)
 	}
-	return ms, nil
+	return
 }
