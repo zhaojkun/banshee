@@ -22,6 +22,15 @@ func TestPut(t *testing.T) {
 	}
 }
 
+func TestPutnx(t *testing.T) {
+	sl := New(7)
+	sl.Put(Int(1))
+	sl.Put(Int(2))
+	sl.Put(Int(3))
+	sl.Putnx(Int(2))
+	util.Must(t, sl.Len() == 3)
+}
+
 func TestGet(t *testing.T) {
 	sl := New(16)
 	n := 1024 * 10

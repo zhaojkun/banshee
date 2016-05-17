@@ -157,10 +157,8 @@ func (sl *SkipList) randLevel() int {
 	return sl.maxLevel
 }
 
-// Put adds an item to the skiplist. O(logN)
-func (sl *SkipList) Put(item Item) {
-	sl.lock.Lock()
-	defer sl.lock.Unlock()
+// put is the internal put.
+func (sl *SkipList) put(item Item) {
 	// Make the update array and find the node.
 	update := make([]*node, sl.maxLevel)
 	n := sl.head
@@ -187,10 +185,8 @@ func (sl *SkipList) Put(item Item) {
 	sl.length++
 }
 
-// Get an item from the skiplist, nil on not found. O(logN)
-func (sl *SkipList) Get(item Item) Item {
-	sl.lock.RLock()
-	defer sl.lock.RUnlock()
+// get is the internal get.
+func (sl *SkipList) get(item Item) Item {
 	n := sl.head
 	for i := sl.level - 1; i >= 0; i-- {
 		for n.forwards[i] != nil && n.forwards[i].item.Less(item) {
@@ -202,6 +198,29 @@ func (sl *SkipList) Get(item Item) Item {
 		return n.item
 	}
 	return nil
+}
+
+// Put adds an item to the skiplist. O(logN)
+func (sl *SkipList) Put(item Item) {
+	sl.lock.Lock()
+	defer sl.lock.Unlock()
+	sl.put(item)
+}
+
+// Putnx puts an item if not exist. O(logN)
+func (sl *SkipList) Putnx(item Item) {
+	sl.lock.Lock()
+	defer sl.lock.Unlock()
+	if sl.get(item) == nil {
+		sl.put(item)
+	}
+}
+
+// Get an item from the skiplist, nil on not found. O(logN)
+func (sl *SkipList) Get(item Item) Item {
+	sl.lock.RLock()
+	defer sl.lock.RUnlock()
+	return sl.get(item)
 }
 
 // Has tests whether skiplist contains an item. O(logN)
