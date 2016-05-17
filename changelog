@@ -1,6 +1,7 @@
 pending
 -------
 
+* Webapp: Fix webapp api getIndexes for project. #517
 * Filter: Use util/trie in filter. #516
 * Detector: Future data should not fill zero. #511
 * Models: Add new field NeverFillZero to Rule. #510
