@@ -68,7 +68,7 @@ func Open(fileName string, idxs []*models.Index, opts *Options) (db *DB, err err
 	if db.fp, err = openFileStoragePool(fileName, opts); err != nil {
 		return
 	}
-	if opts.EnableCache {
+	if opts != nil && opts.EnableCache {
 		db.mp = newMemStoragePool(opts)
 		go db.mp.init(db.fp, idxs)
 	}
@@ -83,7 +83,7 @@ func (db *DB) Put(m *models.Metric) (err error) {
 	if err = db.fp.put(m); err != nil {
 		return
 	}
-	if db.opts.EnableCache && !db.mp.isInitErr() {
+	if db.opts != nil && db.opts.EnableCache && !db.mp.isInitErr() {
 		if db.mp.has(m.Link) || rand.Float64() < db.opts.CachePercentage {
 			if err = db.mp.put(m); err != nil {
 				return
@@ -95,7 +95,7 @@ func (db *DB) Put(m *models.Metric) (err error) {
 
 // Get metrics in a stamp range.
 func (db *DB) Get(name string, link, start, end uint32) (ms []*models.Metric, err error) {
-	if db.opts.EnableCache && db.mp.isInitOK() && db.mp.has(link) {
+	if db.opts != nil && db.opts.EnableCache && db.mp.isInitOK() && db.mp.has(link) {
 		return db.mp.get(link, start, end), nil
 	}
 	return db.fp.get(name, link, start, end)
