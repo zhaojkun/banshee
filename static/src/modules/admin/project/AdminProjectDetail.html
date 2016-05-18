@@ -59,7 +59,10 @@
                       </td>
                       <td>
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
-                          <kbd ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold'}"></kbd>
+                          <kbd ng-if="rule.numMetrics<=config.detector.intervalHitLimit" ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold'}"></kbd>
+                          <kbd ng-if="rule.numMetrics>config.detector.intervalHitLimit" ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold', 'color': 'red'}">
+                            <md-tooltip md-autohide>{{ translateRuleNumMetricsWarn() }}</md-tooltip>
+                          </kbd>
                         </a>
                       </td>
                       <td>

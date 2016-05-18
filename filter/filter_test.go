@@ -58,6 +58,7 @@ func TestHitLimit(t *testing.T) {
 
 	}
 	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
+	util.Must(t, 0 == len(rules))
 	time.Sleep(time.Second * 2)
 	// after interval counter is cleared, matched rules = 1
 	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
