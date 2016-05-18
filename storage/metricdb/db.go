@@ -70,7 +70,7 @@ func Open(fileName string, idxs []*models.Index, opts *Options) (db *DB, err err
 	}
 	if opts != nil && opts.EnableCache {
 		db.mp = newMemStoragePool(opts)
-		go db.mp.init(db.fp, idxs)
+		go db.mp.init(db.fp, idxs) // Must async
 	}
 	return
 }
@@ -109,4 +109,9 @@ func (db *DB) CacheInitOK() bool {
 // CacheInitErr returns true if the cache init error.
 func (db *DB) CacheInitErr() bool {
 	return db.opts != nil && db.opts.EnableCache && db.mp.isInitErr()
+}
+
+// CacheInitCost returns the init cost in ms.
+func (db *DB) CacheInitCost() float64 {
+	return db.mp.getInitCost()
 }
