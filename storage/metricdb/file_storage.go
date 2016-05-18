@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 // File structure: period=1day, expiration=7days
@@ -37,12 +38,21 @@ const filemode = 0755
 
 // fileStorage is the file based storage.
 type fileStorage struct {
-	id  uint32
-	ldb *leveldb.DB
+	id    uint32
+	ldb   *leveldb.DB
+	alive int32
 }
 
 // close the file storage.
-func (s *fileStorage) close() error { return s.ldb.Close() }
+func (s *fileStorage) close() error {
+	atomic.StoreInt32(&s.alive, 0)
+	return s.ldb.Close()
+}
+
+// active returns true if the file storage is alive.
+func (s *fileStorage) active() bool {
+	return atomic.LoadInt32(&s.alive) == 1
+}
 
 // put a metric into the file storage.
 func (s *fileStorage) put(m *models.Metric) error {
@@ -80,7 +90,7 @@ func openFileStorage(fileName string) (*fileStorage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &fileStorage{uint32(n), ldb}, nil
+	return &fileStorage{uint32(n), ldb, 1}, nil
 }
 
 // fileStoragesByID implements sort.Interface for a slice of storages.
@@ -154,7 +164,7 @@ func (p *fileStoragePool) create(stamp uint32) error {
 	if err != nil {
 		return err
 	}
-	p.pool = append(p.pool, &fileStorage{id, ldb})
+	p.pool = append(p.pool, &fileStorage{id, ldb, 1})
 	log.Infof("file storage %d created", id)
 	return nil
 }
