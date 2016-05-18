@@ -16,8 +16,6 @@ type Metric struct {
 	Average float64 `json:"average"`
 	// Link between index and metric.
 	Link uint32 `json:"link"`
-	// Matched rules
-	TestedRules []*Rule `json:"-"`
 }
 
 // LinkTo links the metric to an index.

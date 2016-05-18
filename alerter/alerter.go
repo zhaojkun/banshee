@@ -153,7 +153,7 @@ func (al *Alerter) work() {
 			log.Errorf("get universal users: %v, skiping..", err)
 			continue
 		}
-		for _, rule := range ev.Metric.TestedRules {
+		for _, rule := range ev.TestedRules {
 			ev.Rule = rule
 			ev.TranslateRuleComment()
 			// Project

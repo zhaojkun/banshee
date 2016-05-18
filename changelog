@@ -1,13 +1,21 @@
 pending
 -------
 
-* Webapp: Fix webapp api getIndexes for project. #517
-* Filter: Use util/trie in filter. #516
+* Config: Add config item storage.enable_metric_cache. #518
 * Detector: Future data should not fill zero. #511
-* Models: Add new field NeverFillZero to Rule. #510
 * Detector: Never fill zeros if the NeverFillZero is true. #510
-* Webapp: Add NeverFillZero to createRule and editRule. #510
+* Filter: Use util/trie in filter. #516
+* Filter: Fix hit interval limit. #520
+* Health: Add mem storage cache init states. #521
+* Models: Add new field NeverFillZero to Rule. #510
+* Models: Bind TestedRules to event from metric. #521
 * Static: Add NeverFillZero edit/create to panel. #510
+* Storage: Split metricdb into memory storage and file storage. #518
+* Storage: Cache metrics in skiplist. #518
+* Webapp: Fix webapp api getIndexes for project. #517
+* Webapp: Add NeverFillZero to createRule and editRule. #510
+* Util: Add util skiplist. #518
+* Util: Add util htree. #518
 
 0.2.0
 -----
