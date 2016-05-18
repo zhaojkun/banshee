@@ -100,3 +100,13 @@ func (db *DB) Get(name string, link, start, end uint32) (ms []*models.Metric, er
 	}
 	return db.fp.get(name, link, start, end)
 }
+
+// CacheInitOK returns true if the cache init ok.
+func (db *DB) CacheInitOK() bool {
+	return db.opts != nil && db.opts.EnableCache && db.mp.isInitOK()
+}
+
+// CacheInitErr returns true if the cache init error.
+func (db *DB) CacheInitErr() bool {
+	return db.opts != nil && db.opts.EnableCache && db.mp.isInitErr()
+}
