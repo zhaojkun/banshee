@@ -53,9 +53,9 @@ detector:
     # Whether enable the filter interval hit limit, default: true
     enable_interval_hit_limit: true
     # Limitation of incoming datapoints for a single rule in an interval,
-    # default: 100.
+    # default: 512.
     # This setting is to prevent a single rule matching too many metrics.
-    interval_hit_limit: 100
+    interval_hit_limit: 512
     # Default values of thresholdMaxs, the thresholdMax is the maximum value
     # to trigger an alert rule. default: {}
     # Example: {"counter.*": 10}, which means trending up counters below 10

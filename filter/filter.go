@@ -114,7 +114,6 @@ func (f *Filter) MatchedRules(m *models.Metric) (rules []*models.Rule) {
 	d := f.trie.Matched(m.Name)
 	for _, v := range d {
 		n := v.(*node)
-		atomic.AddUint32(&n.hits, 1)
 		if f.cfg.Detector.EnableIntervalHitLimit {
 			hits := atomic.LoadUint32(&n.hits)
 			if hits > f.cfg.Detector.IntervalHitLimit {
@@ -123,6 +122,7 @@ func (f *Filter) MatchedRules(m *models.Metric) (rules []*models.Rule) {
 			}
 		}
 		rules = append(rules, n.rule)
+		atomic.AddUint32(&n.hits, 1)
 	}
 	return
 }
