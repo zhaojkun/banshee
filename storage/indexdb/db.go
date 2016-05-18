@@ -164,6 +164,11 @@ func (db *DB) Filter(pattern string) (l []*models.Index) {
 	return
 }
 
+// NumFilter filters the number of indexes by pattern.
+func (db *DB) NumFilter(pattern string) int {
+	return db.tr.NumMatch(pattern)
+}
+
 // All returns all indexes.
 func (db *DB) All() (l []*models.Index) {
 	m := db.tr.Map()

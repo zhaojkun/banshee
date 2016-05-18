@@ -115,28 +115,35 @@ func TestMatch(t *testing.T) {
 	util.Must(t, len(m) == 2)
 	util.Must(t, m["a.b.c.d"].(int) == 4)
 	util.Must(t, m["a.b.c.f"].(int) == 9)
+	util.Must(t, tr.NumMatch("a.b.*.*") == len(m))
 	// Case x
 	m = tr.Match("a.b.c.d")
 	util.Must(t, len(m) == 1)
 	util.Must(t, m["a.b.c.d"].(int) == 4)
+	util.Must(t, tr.NumMatch("a.b.c.d") == len(m))
 	// Case ""
 	m = tr.Match("")
 	util.Must(t, len(m) == 0)
+	util.Must(t, tr.NumMatch("") == len(m))
 	// Case *.x
 	m = tr.Match("*.n.o.p")
 	util.Must(t, len(m) == 1)
 	util.Must(t, m["m.n.o.p"].(int) == 43)
+	util.Must(t, tr.NumMatch("*.n.o.p") == len(m))
 	// Case *.*
 	m = tr.Match("*.b.c.*")
 	util.Must(t, len(m) == 2)
 	util.Must(t, m["a.b.c.d"].(int) == 4)
 	util.Must(t, m["a.b.c.f"].(int) == 9)
+	util.Must(t, tr.NumMatch("*.b.c.*") == len(m))
 	// Case *...*
 	m = tr.Match("*.*.*.*")
 	util.Must(t, len(m) == 3)
+	util.Must(t, tr.NumMatch("*.*.*.*") == len(m))
 	// Case x.*.x
 	m = tr.Match("a.*.*.d")
 	util.Must(t, len(m) == 1)
+	util.Must(t, tr.NumMatch("a.*.*.d") == len(m))
 }
 
 func TestMap(t *testing.T) {
