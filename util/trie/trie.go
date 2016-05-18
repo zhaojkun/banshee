@@ -236,3 +236,41 @@ func (t *tree) matched(keys, parts []string) map[string]interface{} {
 	}
 	return m
 }
+
+// NumMatch returns the number of items matching given pattern.
+// Better than len(tr.Match(pattern)).
+func (tr *Trie) NumMatch(pattern string) int {
+	tr.lock.RLock()
+	defer tr.lock.RUnlock()
+	return tr.root.numMatch(strings.Split(pattern, delim))
+}
+
+// numMatch returns the number of items matching given pattern.
+func (t *tree) numMatch(parts []string) (n int) {
+	if len(parts) == 0 {
+		if t.value != nil {
+			n++
+		}
+		return
+	}
+	for i, part := range parts {
+		if part == "*" {
+			for _, child := range t.children {
+				n += child.numMatch(parts[i+1:])
+			}
+			return
+		}
+		child, ok := t.children[part]
+		if !ok {
+			return
+		}
+		if i == len(parts)-1 { // last part
+			if child.value != nil {
+				n++
+			}
+			return
+		}
+		t = child // child as parent
+	}
+	return
+}
