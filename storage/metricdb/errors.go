@@ -14,7 +14,7 @@ var (
 	// ErrNoFileStorage is returned when no file storage is able to serve,
 	// which indicates that given stamp or stamp range may be invalid.
 	ErrNoFileStorage = errors.New("metricdb: no storage")
-	// ErrNoMemeStorage is returned when no mem storage is able to serve,
+	// ErrNoMemStorage is returned when no mem storage is able to serve,
 	// which indicates that given stamp or stamp range may be invalid.
 	ErrNoMemStorage = errors.New("metricdb: no storage")
 )
