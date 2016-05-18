@@ -141,7 +141,7 @@ func TestFileStorageExpire(t *testing.T) {
 	util.Must(t, !util.IsFileExist(deleteFileName))
 }
 
-func BenchmarkPut(b *testing.B) {
+func BenchmarkFileStoragePut(b *testing.B) {
 	// Open file storage pool.
 	fileName := "db-testing"
 	opts := &Options{Period: 86400, Expiration: 86400 * 7}
@@ -156,7 +156,7 @@ func BenchmarkPut(b *testing.B) {
 	}
 }
 
-func BenchmarkPutX10(b *testing.B) {
+func BenchmarkFileStoragePutX10(b *testing.B) {
 	// Open file storage pool.
 	fileName := "db-testing"
 	opts := &Options{Period: 86400, Expiration: 86400 * 7}
@@ -173,7 +173,7 @@ func BenchmarkPutX10(b *testing.B) {
 	}
 }
 
-func BenchmarkGet100K(b *testing.B) {
+func BenchmarkFileStorageGet100K(b *testing.B) {
 	// Open file storage pool.
 	fileName := "db-testing"
 	opts := &Options{Period: 86400, Expiration: 86400 * 7}
@@ -190,6 +190,6 @@ func BenchmarkGet100K(b *testing.B) {
 	// Benchmark.
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fp.get("whatever", uint32(i%10), base, base+100)
+		fp.get("whatever", uint32(i%10), base, base+100*10)
 	}
 }
