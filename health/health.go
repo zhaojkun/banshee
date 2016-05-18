@@ -26,12 +26,13 @@ const maxQueryCostsLen = 100 * 1024
 type Info struct {
 	lock sync.RWMutex
 	// Total
-	AggregationInterval int   `json:"aggregationInterval"`
-	NumIndexTotal       int   `json:"numIndexTotal"`
-	NumClients          int64 `json:"numClients"`
-	NumRules            int   `json:"numRules"`
-	MetricCacheInitOK   bool  `json:"metricCacheInitOK"`
-	MetricCacheInitErr  bool  `json:"metricCacheInitErr"`
+	AggregationInterval int     `json:"aggregationInterval"`
+	NumIndexTotal       int     `json:"numIndexTotal"`
+	NumClients          int64   `json:"numClients"`
+	NumRules            int     `json:"numRules"`
+	MetricCacheInitOK   bool    `json:"metricCacheInitOK"`
+	MetricCacheInitErr  bool    `json:"metricCacheInitErr"`
+	MetricCacheInitCost float64 `json:"metricCacheInitCost"`
 	// Aggregation
 	DetectionCost     float64 `json:"detectionCost"` // ms
 	FilterCost        float64 `json:"filterCost"`    // ms
@@ -52,6 +53,7 @@ func (info *Info) copy() *Info {
 		NumRules:            info.NumRules,
 		MetricCacheInitOK:   info.MetricCacheInitOK,
 		MetricCacheInitErr:  info.MetricCacheInitErr,
+		MetricCacheInitCost: info.MetricCacheInitCost,
 		DetectionCost:       info.DetectionCost,
 		FilterCost:          info.FilterCost,
 		QueryCost:           info.QueryCost,
@@ -144,6 +146,13 @@ func IncrNumMetricDetected(n int64) {
 // IncrNumAlertingEvents increments NumAlertingsEvents by n.
 func IncrNumAlertingEvents(n int64) {
 	atomic.AddInt64(&h.numAlertingEvents, n)
+}
+
+// SetMetricCacheInitCost sets MetricCacheInitCost.
+func SetMetricCacheInitCost(n float64) {
+	h.info.lock.Lock()
+	defer h.info.lock.Unlock()
+	h.info.MetricCacheInitCost = n
 }
 
 // Refresh NumIndexTotal.
