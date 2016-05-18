@@ -23,7 +23,7 @@ const (
 	// Default time interval for all metrics in seconds.
 	DefaultInterval uint32 = 10 * Second
 	// Default hit limit to a rule in an interval
-	DefaultIntervalHitLimit uint32 = 100
+	DefaultIntervalHitLimit uint32 = 512
 	// Default period for all metrics in seconds.
 	DefaultPeriod uint32 = 1 * Day
 	// Default metric expiration.
