@@ -117,7 +117,7 @@ func (f *Filter) MatchedRules(m *models.Metric) (rules []*models.Rule) {
 		if f.cfg.Detector.EnableIntervalHitLimit {
 			hits := atomic.AddUint32(&n.hits, 1)
 			if hits > f.cfg.Detector.IntervalHitLimit {
-				log.Warnf("%s hits over interval hit limit", n.rule.Pattern)
+				log.Debugf("%s hits over interval hit limit", n.rule.Pattern)
 				return []*models.Rule{}
 			}
 		}
