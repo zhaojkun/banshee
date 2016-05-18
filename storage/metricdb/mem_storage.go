@@ -13,6 +13,14 @@ import (
 	"sync/atomic"
 )
 
+// Memory structure
+//
+//	memStorage -+- 16931 (htree) -+- m1 (skiplist)
+//	            |- 16932          |- ....
+//	            |- ...
+//	            |- 16939
+//
+
 // slMaxLevel is the skiplist max level.
 const slMaxLevel = 32
 
