@@ -9,6 +9,7 @@ import (
 	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/skiplist"
 	"math/rand"
+	"sort"
 	"sync"
 	"sync/atomic"
 )
@@ -123,13 +124,24 @@ func (p *memStoragePool) isInitErr() bool {
 }
 
 // create a mem storage for given stamp.
-func (p *memStoragePool) create(stamp uint32) {
+func (p *memStoragePool) create(stamp uint32, force bool) {
 	id := stamp / p.opts.Period
-	if len(p.pool) > 0 && id <= p.pool[len(p.pool)-1].id {
-		return // Not large enough
+	if !force {
+		if len(p.pool) > 0 && id <= p.pool[len(p.pool)-1].id {
+			return
+		}
+		p.pool = append(p.pool, newMemStorage(id))
+		log.Infof("mem storage %d created", id)
+		return
+	}
+	for _, s := range p.pool {
+		if s.id == id { // Distinct
+			return
+		}
 	}
 	p.pool = append(p.pool, newMemStorage(id))
-	log.Infof("mem storage %d created", id)
+	sort.Sort(memStoragesByID(p.pool))
+	log.Infof("mem storage %d created forcely", id)
 	return
 }
 
@@ -149,16 +161,13 @@ func (p *memStoragePool) expire() {
 }
 
 // adjust the pool.
-func (p *memStoragePool) adjust(stamp uint32) {
-	p.create(stamp)
+func (p *memStoragePool) adjust(stamp uint32, force bool) {
+	p.create(stamp, force)
 	p.expire()
 }
 
-// put a metric into pool.
-func (p *memStoragePool) put(m *models.Metric) (err error) {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-	p.adjust(m.Stamp)
+// put0 is the put without adjust.
+func (p *memStoragePool) put0(m *models.Metric) (err error) {
 	if len(p.pool) == 0 {
 		return ErrNoMemStorage
 	}
@@ -169,6 +178,22 @@ func (p *memStoragePool) put(m *models.Metric) (err error) {
 		}
 	}
 	return
+}
+
+// put a metric into pool.
+func (p *memStoragePool) put(m *models.Metric) (err error) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.adjust(m.Stamp, false)
+	return p.put0(m)
+}
+
+// putf is the put with adjust force=true.
+func (p *memStoragePool) putf(m *models.Metric) (err error) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.adjust(m.Stamp, true)
+	return p.put0(m)
 }
 
 // get metrics in a stamp range, the range is left open and right closed.
@@ -243,7 +268,7 @@ func (p *memStoragePool) init(fp *fileStoragePool, idxs []*models.Index) (err er
 						return
 					}
 					for _, m := range ms {
-						if err = p.put(m); err != nil {
+						if err = p.putf(m); err != nil {
 							atomic.StoreInt32(&p.initErr, 1)
 							log.Errorf("mem storage init fail: %v", err)
 							return
