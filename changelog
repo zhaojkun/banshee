@@ -6,6 +6,7 @@ pending
 * Detector: Never fill zeros if the NeverFillZero is true. #510
 * Filter: Use util/trie in filter. #516
 * Filter: Fix hit interval limit. #520
+* Health: Add mem storage cache init states. #521
 * Models: Add new field NeverFillZero to Rule. #510
 * Models: Bind TestedRules to event from metric. #521
 * Static: Add NeverFillZero edit/create to panel. #510
