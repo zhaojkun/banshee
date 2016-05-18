@@ -18,11 +18,12 @@ type Event struct {
 	Index                 *Index   `json:"index"`
 	Metric                *Metric  `json:"metric"`
 	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
+	TestedRules           []*Rule  `json:"testedRules"`
 }
 
 // NewEvent returns a new event from metric and index.
-func NewEvent(m *Metric, idx *Index) *Event {
-	ev := &Event{Metric: m, Index: idx}
+func NewEvent(m *Metric, idx *Index, testedRules []*Rule) *Event {
+	ev := &Event{Metric: m, Index: idx, TestedRules: testedRules}
 	ev.generateID()
 	return ev
 }

@@ -220,26 +220,25 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event
 	// New index.
 	idx = d.nextIdx(idx, m)
 	// Test with rules.
-	d.test(m, idx, rules)
+	testedRules := d.test(m, idx, rules)
 	// Save
 	err = d.save(m, idx)
-	if len(m.TestedRules) > 0 {
+	if len(testedRules) > 0 {
 		// Test ok.
-		ev := models.NewEvent(m, idx)
+		ev := models.NewEvent(m, idx, testedRules)
 		return ev, err
 	}
 	return nil, err
 }
 
 // Test metric and index with rules.
-// The following function will fill the m.TestedRules.
-func (d *Detector) test(m *models.Metric, idx *models.Index, rules []*models.Rule) {
+func (d *Detector) test(m *models.Metric, idx *models.Index, rules []*models.Rule) (testedRules []*models.Rule) {
 	for _, rule := range rules {
 		if rule.Test(m, idx, d.cfg) {
-			// Add tested ok rules.
-			m.TestedRules = append(m.TestedRules, rule)
+			testedRules = append(testedRules, rule)
 		}
 	}
+	return
 }
 
 // Save metric and index into db.
