@@ -4,10 +4,10 @@ package metricdb
 
 import (
 	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util"
 	"github.com/eleme/banshee/util/htree"
 	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/skiplist"
-	"math"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -99,41 +99,17 @@ func (b memStoragesByID) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 
 // memStoragePool is the memory storage pool.
 type memStoragePool struct {
-	opts    *Options
-	pool    []*memStorage
-	initOK  int32
-	initErr int32
-	lock    sync.RWMutex // protects the pool
+	opts     *Options
+	pool     []*memStorage
+	initOK   int32
+	initErr  int32
+	initCost float64      // stat
+	lock     sync.RWMutex // protects the pool
 }
 
 // newMemStoragePool creates a new memStoragePool.
 func newMemStoragePool(opts *Options) *memStoragePool {
 	return &memStoragePool{opts: opts, initOK: 0, initErr: 0}
-}
-
-// init all mem storages.
-// Note: init dose not require to be blocking.
-func (p *memStoragePool) init(fp *fileStoragePool, idxs []*models.Index) (err error) {
-	for _, idx := range idxs {
-		if rand.Float64() < p.opts.CachePercentage {
-			var ms []*models.Metric
-			if ms, err = fp.get(idx.Name, idx.Link, 0, math.MaxUint32); err != nil {
-				atomic.StoreInt32(&p.initErr, 1)
-				log.Errorf("failed to load metrics to memory: %v", err)
-				return
-			}
-			for _, m := range ms {
-				if err = p.put(m); err != nil {
-					atomic.StoreInt32(&p.initErr, 1)
-					log.Errorf("failed to load metrics to memory: %v", err)
-					return
-				}
-			}
-		}
-	}
-	atomic.StoreInt32(&p.initOK, 1)
-	log.Infof("mem storage pool init done")
-	return
 }
 
 // isInitOK returns true if the init ok.
@@ -230,4 +206,57 @@ func (p *memStoragePool) has(link uint32) bool {
 		}
 	}
 	return false
+}
+
+// getInitCost returns the init cost.
+func (p *memStoragePool) getInitCost() float64 {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.initCost
+}
+
+// setInitCost sets the init cost.
+func (p *memStoragePool) setInitCost(n float64) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.initCost = n
+}
+
+// init all mem storages.
+func (p *memStoragePool) init(fp *fileStoragePool, idxs []*models.Index) (err error) {
+	var wg sync.WaitGroup
+	timer := util.NewTimer()
+	fp.lock.RLock()
+	for _, fs := range fp.pool {
+		wg.Add(1)
+		go func(s *fileStorage) {
+			defer wg.Done()
+			for _, idx := range idxs {
+				if !s.active() {
+					continue
+				}
+				if p.has(idx.Link) || rand.Float64() < p.opts.CachePercentage {
+					var ms []*models.Metric
+					if ms, err = s.get(idx.Name, idx.Link, 0, idx.Stamp+1); err != nil {
+						atomic.StoreInt32(&p.initErr, 1)
+						log.Errorf("mem storage init fail: %v", err)
+						return
+					}
+					for _, m := range ms {
+						if err = p.put(m); err != nil {
+							atomic.StoreInt32(&p.initErr, 1)
+							log.Errorf("mem storage init fail: %v", err)
+							return
+						}
+					}
+				}
+			}
+		}(fs)
+	}
+	fp.lock.RUnlock()
+	atomic.StoreInt32(&p.initOK, 1)
+	wg.Wait() // Wait the init complete.
+	log.Infof("mem storage pool init done")
+	p.setInitCost(timer.Elapsed())
+	return
 }
