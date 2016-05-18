@@ -254,9 +254,9 @@ func (p *memStoragePool) init(fp *fileStoragePool, idxs []*models.Index) (err er
 		}(fs)
 	}
 	fp.lock.RUnlock()
-	atomic.StoreInt32(&p.initOK, 1)
 	wg.Wait() // Wait the init complete.
-	log.Infof("mem storage pool init done")
+	atomic.StoreInt32(&p.initOK, 1)
 	p.setInitCost(timer.Elapsed())
+	log.Infof("mem storage pool init done")
 	return
 }
