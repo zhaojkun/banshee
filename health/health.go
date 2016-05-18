@@ -148,13 +148,6 @@ func IncrNumAlertingEvents(n int64) {
 	atomic.AddInt64(&h.numAlertingEvents, n)
 }
 
-// SetMetricCacheInitCost sets MetricCacheInitCost.
-func SetMetricCacheInitCost(n float64) {
-	h.info.lock.Lock()
-	defer h.info.lock.Unlock()
-	h.info.MetricCacheInitCost = n
-}
-
 // Refresh NumIndexTotal.
 func refreshNumIndexTotal() {
 	h.info.lock.Lock()
@@ -188,6 +181,13 @@ func refreshMetricCacheInitErr() {
 	h.info.lock.Lock()
 	defer h.info.lock.Unlock()
 	h.info.MetricCacheInitErr = h.db.Metric.CacheInitErr()
+}
+
+// Refresh MetricCacheInitCost.
+func refreshMetricCacheInitCost() {
+	h.info.lock.Lock()
+	defer h.info.lock.Unlock()
+	h.info.MetricCacheInitCost = h.db.Metric.CacheInitCost()
 }
 
 // Aggregate DetectionCost.
@@ -254,6 +254,7 @@ func Start() {
 		refreshNumRules()
 		refreshMetricCacheInitOK()
 		refreshMetricCacheInitErr()
+		refreshMetricCacheInitCost()
 		aggregateDetectionCost()
 		aggregateNumMetricIncomed()
 		aggregateNumMetricDetected()
