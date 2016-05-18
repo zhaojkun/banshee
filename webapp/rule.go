@@ -108,7 +108,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Cache
 	db.Admin.RulesCache.Put(rule)
 	// Response
-	rule.SetNumMetrics(len(db.Index.Filter(rule.Pattern)))
+	rule.SetNumMetrics(db.Index.NumFilter(rule.Pattern))
 	ResponseJSONOK(w, rule)
 }
 
@@ -187,6 +187,6 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Cache
 	db.Admin.RulesCache.Delete(id)
 	db.Admin.RulesCache.Put(rule)
-	rule.SetNumMetrics(len(db.Index.Filter(rule.Pattern)))
+	rule.SetNumMetrics(db.Index.NumFilter(rule.Pattern))
 	ResponseJSONOK(w, rule)
 }
