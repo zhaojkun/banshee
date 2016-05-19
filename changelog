@@ -5,6 +5,7 @@ pending
 * Webapp: Add disabledFor to webapp in createRule and editRule. #539
 * Static: Support disable rule for a while in frontend. #539
 * Config: Add config item detector.warning_timeout.
+* Config: Add config item alerter.exec_command_timeout.
 
 0.2.1
 -----

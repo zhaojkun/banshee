@@ -47,6 +47,8 @@ const (
 	DefaultWebappLanguage string = "en"
 	// Default detection warning timeout, in ms.
 	DefaultDetectionWarningTimeout = 300
+	// Default alert command execution timeout, in seconds.
+	DefaultAlertExecCommandTimeout = 5
 )
 
 // Limitations
@@ -106,6 +108,7 @@ type configWebapp struct {
 
 type configAlerter struct {
 	Command                string `json:"command" yaml:"command"`
+	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
 	Workers                int    `json:"workers" yaml:"workers"`
 	Interval               uint32 `json:"interval" yaml:"interval"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
@@ -137,6 +140,7 @@ func New() *Config {
 	c.Webapp.Language = DefaultWebappLanguage
 	c.Webapp.PrivateDocURL = ""
 	c.Alerter.Command = ""
+	c.Alerter.ExecCommandTimeout = DefaultAlertExecCommandTimeout
 	c.Alerter.Workers = 4
 	c.Alerter.Interval = DefaultAlerterInterval
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
@@ -183,6 +187,7 @@ func (c *Config) Copy() *Config {
 	cfg.Webapp.Language = c.Webapp.Language
 	cfg.Webapp.PrivateDocURL = c.Webapp.PrivateDocURL
 	cfg.Alerter.Command = c.Alerter.Command
+	cfg.Alerter.ExecCommandTimeout = c.Alerter.ExecCommandTimeout
 	cfg.Alerter.Workers = c.Alerter.Workers
 	cfg.Alerter.Interval = c.Alerter.Interval
 	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit

@@ -86,6 +86,9 @@ alerter:
     # Example: "python sender.py"
     # Reference: https://godoc.org/github.com/eleme/banshee/alerter
     command: ""
+    # Command execution timeout in seconds, default: 5
+    # If the alert command execution exceeds timed out, it would be killed.
+    exec_command_time_out: 5
     # Number of workers to send alert messages by executing the alerter
     # command. default: 4
     # We use a certain count of workers to execute command but not executing
