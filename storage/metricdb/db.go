@@ -96,7 +96,7 @@ func (db *DB) Put(m *models.Metric) (err error) {
 // Get metrics in a stamp range.
 func (db *DB) Get(name string, link, start, end uint32) (ms []*models.Metric, err error) {
 	if db.opts != nil && db.opts.EnableCache && db.mp.isInitOK() && db.mp.has(link) {
-		return db.mp.get(link, start, end), nil
+		return db.mp.get(name, link, start, end), nil
 	}
 	return db.fp.get(name, link, start, end)
 }
