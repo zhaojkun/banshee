@@ -1,5 +1,7 @@
 // Copyright 2015 Eleme Inc. All rights reserved.
 
+// Banshee is a real-time anomalies or outliers detection system for periodic
+// metrics.
 package main
 
 import (
@@ -7,7 +9,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/eleme/banshee/alerter"
 	"github.com/eleme/banshee/config"
@@ -31,31 +32,27 @@ var (
 	flt *filter.Filter
 )
 
+// usage prints command line usage to stderr.
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: banshee [-c config] [-d] [-v]\n")
-	flag.PrintDefaults()
-	fmt.Fprintf(os.Stderr, "copyright eleme https://github.com/eleme/banshee.\n")
+	fmt.Fprintf(os.Stderr, "Usage:\n")
+	fmt.Fprintf(os.Stderr, "  ./banshee -c filename [-d]\n")
+	fmt.Fprintf(os.Stderr, "  ./banshee -v\n")
+	fmt.Fprintf(os.Stderr, "%s@%s %s\n", version.Product, version.Version, version.Website)
 	os.Exit(2)
 }
 
+// initLog initializes logging.
 func initLog() {
-	log.SetName("banshee")
 	if *debug {
 		log.SetLevel(log.DEBUG)
 	}
-	goVs := runtime.Version()
-	nCPU := runtime.GOMAXPROCS(-1)
-	vers := version.Version
-	log.Debugf("banshee%s %s %d cpu", vers, goVs, nCPU)
 }
 
 func initConfig() {
 	// Config parsing.
-	if flag.NFlag() == 0 || (flag.NFlag() == 1 && *debug) {
-		// Case ./program [-d]
+	if flag.NFlag() == 0 || (flag.NFlag() == 1 && *debug) { // Case ./program [-d]
 		log.Warnf("no config specified, using default..")
-	} else {
-		// Update config.
+	} else { // Case ./program -c filename
 		err := cfg.UpdateWithYamlFile(*fileName)
 		if err != nil {
 			log.Fatalf("failed to load %s, %s", *fileName, err)

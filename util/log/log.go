@@ -25,7 +25,6 @@ var levelNames = [4]string{"DEBUG", "INFO", "WARN", "ERROR"}
 
 // Logging runtime
 var (
-	name    string
 	level             = INFO
 	w       io.Writer = os.Stderr
 	colored           = true
@@ -55,11 +54,6 @@ var levelColors = map[int]string{
 // SetColored sets the color enability.
 func SetColored(b bool) {
 	colored = b
-}
-
-// SetName sets the logging name.
-func SetName(s string) {
-	name = s
 }
 
 // SetLevel sets the logging level.
