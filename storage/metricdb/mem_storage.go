@@ -23,7 +23,7 @@ import (
 //
 
 // slMaxLevel is the skiplist max level.
-const slMaxLevel = 32
+const slMaxLevel = 12
 
 // node is the htree node.
 type node struct {
@@ -35,11 +35,16 @@ type node struct {
 func (n *node) Key() uint32 { return n.link }
 
 // metricWrapper is a metric wrapper.
-type metricWrapper struct{ m *models.Metric }
+type metricWrapper struct {
+	stamp   uint32
+	value   float64
+	score   float64
+	average float64
+}
 
 // Less implements interface skiplist.Item.
 func (w *metricWrapper) Less(than skiplist.Item) bool {
-	return w.m.Stamp < than.(*metricWrapper).m.Stamp
+	return w.stamp < than.(*metricWrapper).stamp
 }
 
 // memStorage is the memory based storage.
@@ -68,25 +73,33 @@ func (s *memStorage) put(m *models.Metric) error {
 	if n.sl == nil {
 		n.sl = skiplist.New(slMaxLevel)
 	}
-	n.sl.Putnx(&metricWrapper{m})
+	n.sl.Putnx(&metricWrapper{m.Stamp, m.Value, m.Score, m.Average})
 	return nil
 }
 
 // get metrics in a stamp range, the range is left open and right closed.
-func (s *memStorage) get(link, start, end uint32) (ms []*models.Metric) {
+func (s *memStorage) get(name string, link, start, end uint32) (ms []*models.Metric) {
 	item := s.htree.Get(&node{link: link})
 	if item == nil {
 		return
 	}
 	n := item.(*node)
-	iter := n.sl.NewIterator(&metricWrapper{&models.Metric{Stamp: start}})
+	iter := n.sl.NewIterator(&metricWrapper{stamp: start})
 	for iter.Next() {
 		item := iter.Item()
 		w := item.(*metricWrapper)
-		if w.m.Stamp >= end {
+		if w.stamp >= end {
 			break
 		}
-		ms = append(ms, w.m)
+		m := &models.Metric{
+			Name:    name,
+			Stamp:   w.stamp,
+			Value:   w.value,
+			Score:   w.score,
+			Average: w.average,
+			Link:    link,
+		}
+		ms = append(ms, m)
 	}
 	return
 }
@@ -197,7 +210,7 @@ func (p *memStoragePool) putf(m *models.Metric) (err error) {
 }
 
 // get metrics in a stamp range, the range is left open and right closed.
-func (p *memStoragePool) get(link, start, end uint32) (ms []*models.Metric) {
+func (p *memStoragePool) get(name string, link, start, end uint32) (ms []*models.Metric) {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 	if len(p.pool) == 0 {
@@ -216,7 +229,7 @@ func (p *memStoragePool) get(link, start, end uint32) (ms []*models.Metric) {
 		if end > max {
 			ed = max
 		}
-		ms = append(ms, s.get(link, st, ed)...)
+		ms = append(ms, s.get(name, link, st, ed)...)
 	}
 	return
 }

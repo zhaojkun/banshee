@@ -35,12 +35,13 @@ func TestMemStoragePut(t *testing.T) {
 	// Must in pool.
 	util.Must(t, mp.has(m.Link))
 	util.Must(t, len(mp.pool) == 1)
-	util.Must(t, len(mp.pool[0].get(m.Link, 0, m.Stamp+1)) == 1)
+	util.Must(t, len(mp.pool[0].get(m.Name, m.Link, 0, m.Stamp+1)) == 1)
 	// Must in the skiplist.
 	sl := mp.pool[0].htree.Get(&node{link: m.Link}).(*node).sl
-	util.Must(t, sl.Has(&metricWrapper{m}))
+	util.Must(t, sl.Has(&metricWrapper{stamp: m.Stamp}))
 	// Must the same value
-	m1 := sl.Get(&metricWrapper{m}).(*metricWrapper).m
+	w := sl.Get(&metricWrapper{stamp: m.Stamp}).(*metricWrapper)
+	m1 := &models.Metric{Name: m.Name, Stamp: w.stamp, Value: w.value, Score: w.score, Average: w.average, Link: m.Link}
 	util.Must(t, reflect.DeepEqual(m, m1))
 }
 
@@ -48,14 +49,14 @@ func TestMemStorageGet(t *testing.T) {
 	opts := &Options{Period: 86400, Expiration: 86400 * 7}
 	mp := newMemStoragePool(opts)
 	// Nothing.
-	util.Must(t, 0 == len(mp.get(23333, 1234, 12345)))
+	util.Must(t, 0 == len(mp.get("not-found", 23333, 1234, 12345)))
 	// Put some
 	mp.put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758723})
 	mp.put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758733, Value: 1.89, Score: 1.12, Average: 1.72})
 	mp.put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758743})
 	mp.put(&models.Metric{Name: "foo", Link: 1, Stamp: 1452758753})
 	// Get again.
-	ms := mp.get(1, 1452758733, 1452758753)
+	ms := mp.get("foo", 1, 1452758733, 1452758753)
 	util.Must(t, len(ms) == 2)
 	// Test the value.
 	m := ms[0]
@@ -73,7 +74,7 @@ func TestMemStorageGetAcrossStorages(t *testing.T) {
 	mp.put(&models.Metric{Link: 1, Stamp: base + mp.opts.Period*3}) // 3
 	mp.put(&models.Metric{Link: 1, Stamp: base + mp.opts.Period*4}) // 4
 	// Get
-	ms := mp.get(1, base, base+mp.opts.Period*3)
+	ms := mp.get("whatever", 1, base, base+mp.opts.Period*3)
 	util.Must(t, len(ms) == 3)
 	util.Must(t, ms[0].Stamp == base)
 	util.Must(t, ms[1].Stamp == base+mp.opts.Period*1)
@@ -138,6 +139,6 @@ func BenchmarkMemStorageGet100K(b *testing.B) {
 	// Benchmark.
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		mp.get(uint32(i%10), base, base+100*10)
+		mp.get("whatever", uint32(i%10), base, base+100*10)
 	}
 }
