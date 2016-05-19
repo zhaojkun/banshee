@@ -11,10 +11,7 @@ var (
 	ErrCorrupted = errors.New("metricdb: corrupted data found")
 	// ErrNoLink is returned when the metric to put has no link.
 	ErrNoLink = errors.New("metricdb: no link")
-	// ErrNoFileStorage is returned when no file storage is able to serve,
-	// which indicates that given stamp or stamp range may be invalid.
-	ErrNoFileStorage = errors.New("metricdb: no storage")
-	// ErrNoMemStorage is returned when no mem storage is able to serve,
-	// which indicates that given stamp or stamp range may be invalid.
-	ErrNoMemStorage = errors.New("metricdb: no storage")
+	// ErrNoStorage is returned when no storage is able to serve, which
+	// indicates that given stamp or stamp range may be invalid.
+	ErrNoStorage = errors.New("metricdb: no storage")
 )

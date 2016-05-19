@@ -26,13 +26,10 @@ const maxQueryCostsLen = 100 * 1024
 type Info struct {
 	lock sync.RWMutex
 	// Total
-	AggregationInterval int     `json:"aggregationInterval"`
-	NumIndexTotal       int     `json:"numIndexTotal"`
-	NumClients          int64   `json:"numClients"`
-	NumRules            int     `json:"numRules"`
-	MetricCacheInitOK   bool    `json:"metricCacheInitOK"`
-	MetricCacheInitErr  bool    `json:"metricCacheInitErr"`
-	MetricCacheInitCost float64 `json:"metricCacheInitCost"`
+	AggregationInterval int   `json:"aggregationInterval"`
+	NumIndexTotal       int   `json:"numIndexTotal"`
+	NumClients          int64 `json:"numClients"`
+	NumRules            int   `json:"numRules"`
 	// Aggregation
 	DetectionCost     float64 `json:"detectionCost"` // ms
 	FilterCost        float64 `json:"filterCost"`    // ms
@@ -51,9 +48,6 @@ func (info *Info) copy() *Info {
 		NumIndexTotal:       info.NumIndexTotal,
 		NumClients:          info.NumClients,
 		NumRules:            info.NumRules,
-		MetricCacheInitOK:   info.MetricCacheInitOK,
-		MetricCacheInitErr:  info.MetricCacheInitErr,
-		MetricCacheInitCost: info.MetricCacheInitCost,
 		DetectionCost:       info.DetectionCost,
 		FilterCost:          info.FilterCost,
 		QueryCost:           info.QueryCost,
@@ -169,27 +163,6 @@ func refreshNumRules() {
 	h.info.NumRules = h.db.Admin.RulesCache.Len()
 }
 
-// Refresh MetricCacheInitOK.
-func refreshMetricCacheInitOK() {
-	h.info.lock.Lock()
-	defer h.info.lock.Unlock()
-	h.info.MetricCacheInitOK = h.db.Metric.CacheInitOK()
-}
-
-// Refresh MetricCacheInitErr.
-func refreshMetricCacheInitErr() {
-	h.info.lock.Lock()
-	defer h.info.lock.Unlock()
-	h.info.MetricCacheInitErr = h.db.Metric.CacheInitErr()
-}
-
-// Refresh MetricCacheInitCost.
-func refreshMetricCacheInitCost() {
-	h.info.lock.Lock()
-	defer h.info.lock.Unlock()
-	h.info.MetricCacheInitCost = h.db.Metric.CacheInitCost()
-}
-
 // Aggregate DetectionCost.
 func aggregateDetectionCost() {
 	h.info.lock.Lock()
@@ -252,9 +225,6 @@ func Start() {
 		refreshNumIndexTotal()
 		refreshNumClients()
 		refreshNumRules()
-		refreshMetricCacheInitOK()
-		refreshMetricCacheInitErr()
-		refreshMetricCacheInitCost()
 		aggregateDetectionCost()
 		aggregateNumMetricIncomed()
 		aggregateNumMetricDetected()

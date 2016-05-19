@@ -17,13 +17,6 @@ storage:
     # If the configured path dose not exist, banshee would create one with
     # this name.
     path: ./data
-    # Whether enable metrics cache, default: true
-    # Settings this value to true means some metrics will be cached in memory
-    # to improve detector performance.
-    enable_metric_cache: true
-    # Percentage of metrics to cache, should be a number between 0 and 1, 
-    # default: 1.0
-    metric_cache_percentage: 1.0
 
 detector:
     # Port for detector tcp server, default: 2015
