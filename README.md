@@ -127,6 +127,18 @@ But how do you really analyze the anomalous metrics? Via 3-sigma:
 
 For further implementation introduction, please checkout [intro.md](intro.md).
 
+Network Protocol
+----------------
+
+If you are using [statsd](https://github.com/etsy/statsd) as banshee client, please
+checkout [statsd-banshee](https://www.npmjs.com/package/statsd-banshee).
+
+The network protocol is line based:
+
+```
+<NAME> <STAMP> <VALUE> '\n'
+```
+
 Authors
 -------
 
