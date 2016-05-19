@@ -108,6 +108,9 @@ func (al *Alerter) execCommand(ev *models.Event) error {
 	timeout := time.After(execCommandTimeout)
 	select {
 	case <-timeout:
+		if cmd.Process == nil {
+			return errors.New("command may already exit")
+		}
 		err := cmd.Process.Kill()
 		if err == nil {
 			err = errors.New("command timed out, killed")
