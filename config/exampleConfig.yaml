@@ -65,6 +65,8 @@ detector:
     # the blank gaps by zeros in detection. default: []
     # Example: ["counter.*"].
     fill_blank_zeros: []
+    # Detection warning timeout in millseconds, default: 300
+    warning_timeout: 300
 
 webapp:
     # Port for webapp http server, default: 2016
