@@ -48,7 +48,7 @@ Usage
 -----
 
 ```bash
-$ ./banshee -c filename
+$ ./banshee -c <config-filename>
 ```
 
 Example configuration file is [config/exampleConfig.yaml](config/exampleConfig.yaml).
