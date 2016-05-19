@@ -23,10 +23,8 @@ const (
 
 // Options is to open DB.
 type Options struct {
-	Period                uint32
-	Expiration            uint32
-	EnableMetricCache     bool
-	MetricCachePercentage float64
+	Period     uint32
+	Expiration uint32
 }
 
 // DB handles the storage on leveldb.
@@ -63,13 +61,11 @@ func Open(fileName string, opts *Options) (*DB, error) {
 	var options *metricdb.Options
 	if opts != nil {
 		options = &metricdb.Options{
-			Period:          opts.Period,
-			Expiration:      opts.Expiration,
-			EnableCache:     opts.EnableMetricCache,
-			CachePercentage: opts.MetricCachePercentage,
+			Period:     opts.Period,
+			Expiration: opts.Expiration,
 		}
 	}
-	db.Metric, err = metricdb.Open(path.Join(fileName, metricdbFileName), db.Index.All(), options)
+	db.Metric, err = metricdb.Open(path.Join(fileName, metricdbFileName), options)
 	if err != nil {
 		return nil, err
 	}

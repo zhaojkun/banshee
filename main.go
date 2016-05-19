@@ -75,10 +75,8 @@ func initDB() {
 	}
 	path := cfg.Storage.Path
 	opts := &storage.Options{
-		Period:                cfg.Period,
-		Expiration:            cfg.Expiration,
-		EnableMetricCache:     cfg.Storage.EnableMetricCache,
-		MetricCachePercentage: cfg.Storage.MetricCachePercentage,
+		Period:     cfg.Period,
+		Expiration: cfg.Expiration,
 	}
 	var err error
 	db, err = storage.Open(path, opts)
