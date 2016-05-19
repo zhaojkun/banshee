@@ -51,7 +51,7 @@ Usage
 $ ./banshee -c filename
 ```
 
-Example configuration file is [config/exampleconfig.yaml](config/exampleconfig.yaml).
+Example configuration file is [config/exampleConfig.yaml](config/exampleConfig.yaml).
 
 Statsd Integration
 ------------------
