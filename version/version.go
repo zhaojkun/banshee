@@ -2,5 +2,10 @@
 
 package version
 
-// Version exports
-const Version = "0.2.1"
+// Version
+const (
+	Version = "0.2.1"
+	Product = "banshee"
+	Website = "https://github.com/eleme/banshee"
+	License = "Copyright MIT, Eleme Inc."
+)
