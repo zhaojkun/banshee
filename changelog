@@ -1,5 +1,5 @@
-pending
--------
+0.2.1
+-----
 
 * ~~~Config: Add config item storage.enable_metric_cache. #518~~~
 * Detector: Future data should not fill zero. #511
