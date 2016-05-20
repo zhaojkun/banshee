@@ -5,6 +5,8 @@ pending
 * Webapp: Add disabledFor to webapp in createRule and editRule. #539
 * Static: Support disable rule for a while in frontend. #539
 * Alerter: Refactor alerter.
+* Detector: Non trend related metrics should not enter the analyzation.
+* Detector: Bind a single tested rule to event instead of multiple.
 * Config: Add config item detector.warning_timeout.
 * Config: Add config item alerter.exec_command_timeout.
 * Models: Add rule.IsTrendRelated().
