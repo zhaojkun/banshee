@@ -95,6 +95,13 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.DisabledFor == rule.DisabledFor)
 }
 
+// IsTrendRelated returns true if any trend options is set.
+func (rule *Rule) IsTrendRelated() bool {
+	rule.RLock()
+	defer rule.RUnlock()
+	return rule.TrendUp || rule.TrendDown
+}
+
 // Test if a metric hits this rule.
 //
 //	1. For trend related conditions, index.Score will be used.
