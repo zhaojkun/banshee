@@ -77,7 +77,7 @@ Statsd Integration
 Deployment
 ----------
 
-Banshee is a single-host program, its detection is faster enough in our case,
+Banshee is a single-host program, its detection is fast enough in our case,
 we don't have a plan to expand it now.
 
 We are using a Python script ([deploy.py](deploy.py) via [fabric](http://www.fabfile.org/))
@@ -90,8 +90,8 @@ python deploy.py -u hit9 -H remote-host:22 --remote-path "/service/banshee"
 Upgrade
 -------
 
-Just pull the latest tag realse. *Please don't use master branch directly, checkout
-to a tag instead.*
+Just pull the latest [tag release](https://github.com/eleme/banshee/releases).
+*Please don't use master branch directly, checkout to a tag instead.*
 
 Generally we won't release not-backward-compatiable versions, if any, related notes
 would be added to the [changelog](changelog).
