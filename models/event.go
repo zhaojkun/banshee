@@ -9,21 +9,17 @@ import (
 	"strings"
 )
 
-// Event is the alerting event.
+// Event is the alert event.
 type Event struct {
-	ID                    string   `json:"id"`
-	Project               *Project `json:"project"`
-	User                  *User    `json:"user"`
-	Rule                  *Rule    `json:"rule"`
-	Index                 *Index   `json:"index"`
-	Metric                *Metric  `json:"metric"`
-	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
-	TestedRules           []*Rule  `json:"testedRules"`
+	ID     string  `json:"id"`
+	Index  *Index  `json:"index"`
+	Metric *Metric `json:"metric"`
+	Rule   *Rule   `json:"rule"`
 }
 
 // NewEvent returns a new event from metric and index.
-func NewEvent(m *Metric, idx *Index, testedRules []*Rule) *Event {
-	ev := &Event{Metric: m, Index: idx, TestedRules: testedRules}
+func NewEvent(m *Metric, idx *Index, rule *Rule) *Event {
+	ev := &Event{Metric: m, Index: idx, Rule: rule}
 	ev.generateID()
 	return ev
 }
@@ -36,6 +32,19 @@ func (ev *Event) generateID() {
 	ev.ID = hex.EncodeToString(hash.Sum(nil))
 }
 
+// EventWrapper is a wrapper of Event for tmp usage.
+type EventWrapper struct {
+	*Event
+	Project               *Project `json:"project"`
+	User                  *User    `json:"user"`
+	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
+}
+
+// NewWrapperOfEvent creates an event wrapper from given event.
+func NewWrapperOfEvent(ev *Event) *EventWrapper {
+	return &EventWrapper{Event: ev}
+}
+
 // TranslateRuleComment translates rule comment variables with metric name and
 // rule pattern.
 //
@@ -44,15 +53,15 @@ func (ev *Event) generateID() {
 //	ev := &Event{Metric:m, Rule:r}
 //	ev.TranslateRuleComment()  // ev.RuleTranslatedComment => "foo timing"
 //
-func (ev *Event) TranslateRuleComment() {
-	patternParts := strings.Split(ev.Rule.Pattern, ".")
-	metricParts := strings.Split(ev.Metric.Name, ".")
+func (ew *EventWrapper) TranslateRuleComment() {
+	patternParts := strings.Split(ew.Rule.Pattern, ".")
+	metricParts := strings.Split(ew.Metric.Name, ".")
 	if len(patternParts) != len(metricParts) { // Unexcepted input metric and pattern.
-		ev.RuleTranslatedComment = ev.Rule.Comment // Use original comment
+		ew.RuleTranslatedComment = ew.Rule.Comment // Use original comment
 		return
 	}
 	i := 0
-	s := ev.Rule.Comment
+	s := ew.Rule.Comment
 	for j, patternPart := range patternParts {
 		if patternPart == "*" {
 			i++
@@ -60,5 +69,5 @@ func (ev *Event) TranslateRuleComment() {
 			s = strings.Replace(s, repl, metricParts[j], 1)
 		}
 	}
-	ev.RuleTranslatedComment = s
+	ew.RuleTranslatedComment = s
 }

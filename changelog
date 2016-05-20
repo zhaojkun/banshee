@@ -8,6 +8,7 @@ pending
 * Config: Add config item alerter.exec_command_timeout.
 * Models: Add rule.IsTrendRelated().
 * Models: Add metric.Validate().
+* Models: Split events out a wrapper.
 
 0.2.1
 -----
