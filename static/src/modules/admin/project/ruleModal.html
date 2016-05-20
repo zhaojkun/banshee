@@ -96,21 +96,39 @@
           </md-input-container>
         </div>
         <div layout="row" flex="100">
-          <md-input-container>
-          <md-checkbox ng-if="!isEdit" ng-model="rule.disabled" ng-init='rule.disabled=false' class="md-warn">
+          <md-input-container flex="25">
+            <md-checkbox ng-if="!isEdit" ng-model="rule.disabled" ng-init='rule.disabled=false' class="md-warn">
             {{ 'ADMIN_RULE_DISABLE' | translate }}
-            <span ng-if="rule.disabled" ng-style="{'color': 'saddlebrown'}">
-              {{ 'ADMIN_RULE_DISABLED_WARN' | translate }}
-            </span>
-          </md-checkbox>
-          <md-checkbox ng-if="isEdit" ng-model="rule.disabled" class="md-warn">
+            </md-checkbox>
+            <md-checkbox ng-if="isEdit" ng-model="rule.disabled" class="md-warn">
             {{ 'ADMIN_RULE_DISABLE' | translate }}
-            <span ng-if="rule.disabled" ng-style="{'color': 'saddlebrown'}">
-              {{ 'ADMIN_RULE_DISABLED_WARN' | translate }}
-            </span>
-          </md-checkbox>
+            </md-checkbox>
+          </md-input-container>
+          <md-input-container flex="30">
+            <label> {{ 'ADMIN_RULE_DISABLED_FOR' | translate }} </label>
+            <input type="number" step="any" name="disabledFor"
+            ng-change="disabledForChanged()" ng-model="rule.disabledFor">
+          </md-input-container>
+          <md-input-container flex="45">
+            <label ng-if="rule.disabled&&rule.disabledFor<=0">
+              {{ 'ADMIN_RULE_DISABLED_NEVER_EXPIRED' | translate }}
+              <span ng-if="disabledForUnSaved">({{ 'UNSAVED' |translate }})</span>
+            </label>
+            <label ng-if="rule.disabled&&rule.disabledFor>0&&disabledExpireMins(rule)<=0">
+              {{ 'ADMIN_RULE_DISABLED_EXPIRED' | translate }}
+              <span ng-if="disabledForUnSaved">({{ 'UNSAVED' | translate}})</span>
+            </label>
+            <label ng-if="rule.disabled&&rule.disabledFor>0&&disabledExpireMins(rule)>0">
+            {{ 'ADMIN_RULE_DISABLED_TO_EXPIRE_PREFIX' | translate }}
+            {{ disabledExpireMins(rule).toFixed(1) }}
+            {{ 'ADMIN_RULE_DISABLED_TO_EXPIRE_SUFFIX' | translate }}
+            <span ng-if="disabledForUnSaved">({{ 'UNSAVED' |translate}})</span>
+            </label>
           </md-input-container>
         </div>
+        <span ng-if="rule.disabled" ng-style="{'color': 'saddlebrown'}" flex="100">
+          {{ 'ADMIN_RULE_DISABLED_WARN' | translate }}
+        </span>
         <div layout="row" flex="100">
           <md-input-container>
           <md-checkbox ng-model="rule.neverFillZero">

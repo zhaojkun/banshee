@@ -40,21 +40,21 @@
                     <tr ng-if="!rules || !rules.length">
                       <td colspan="3">{{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
                     </tr>
-                    <tr ng-repeat="rule in rules" ng-style="rule.disabled?{'background-color': '#eee'}:{}">
+                    <tr ng-repeat="rule in rules" ng-style="isRuleDisabledWorksNow(rule)?{'background-color': '#eee'}:{}">
                       <td class="padding-left-16" ng-bind="$index+1"></td>
                       <td>
                         <a ui-sref="banshee.main({pattern: rule.pattern})">
-                          <kbd ng-if="!rule.disabled" ng-bind="rule.pattern" ng-style="{'font-weight': 'bold'}"></kbd>
-                          <kbd ng-if="rule.disabled" ng-bind="rule.pattern" class="del" ng-style="{'color': '#ddd'}"></kbd>
+                          <kbd ng-if="!isRuleDisabledWorksNow(rule)" ng-bind="rule.pattern" ng-style="{'font-weight': 'bold'}"></kbd>
+                          <kbd ng-if="isRuleDisabledWorksNow(rule)" ng-bind="rule.pattern" class="del" ng-style="{'color': '#ddd'}"></kbd>
                         </a>
-                        <md-tooltip ng-if="rule.disabled" md-autohide>{{ 'ADMIN_RULE_DISABLED' | translate }}</md-tooltip>
+                        <md-tooltip ng-if="isRuleDisabledWorksNow(rule)" md-autohide>{{ 'ADMIN_RULE_DISABLED' | translate }}</md-tooltip>
                       </td>
                       <td>
-                        <span ng-class="{del: rule.disabled}" ng-bind="rule.comment"></span>
+                        <span ng-class="{del: isRuleDisabledWorksNow(rule)}" ng-bind="rule.comment"></span>
                       </td>
                       <td>
-                        <code ng-if="!rule.disabled" ng-bind="buildRepr(rule)"></code>
-                        <code ng-if="rule.disabled"  class="del" ng-bind="buildRepr(rule)" ng-style="{'color': '#999'}"></code>
+                        <code ng-if="!isRuleDisabledWorksNow(rule)" ng-bind="buildRepr(rule)"></code>
+                        <code ng-if="isRuleDisabledWorksNow(rule)"  class="del" ng-bind="buildRepr(rule)" ng-style="{'color': '#999'}"></code>
                         <md-tooltip md-autohide>{{ translateRuleRepr(rule) }}</md-tooltip>
                       </td>
                       <td>

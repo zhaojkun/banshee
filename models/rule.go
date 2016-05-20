@@ -5,6 +5,7 @@ package models
 import (
 	"github.com/eleme/banshee/config"
 	"path/filepath"
+	"time"
 )
 
 // Rule Levels
@@ -41,6 +42,10 @@ type Rule struct {
 	Level int `json:"level"`
 	// Disabled
 	Disabled bool `sql:"default:false" json:"disabled"`
+	// DisabledFor
+	DisabledFor int `json:"disabledFor"`
+	// DisabledAt
+	DisabledAt time.Time `sql:"default:current_timestamp" json:"disabledAt"`
 	// FillZero
 	NeverFillZero bool `sql:"default:false" json:"neverFillZero"`
 }
@@ -68,6 +73,7 @@ func (rule *Rule) CopyTo(r *Rule) {
 	r.Comment = rule.Comment
 	r.Level = rule.Level
 	r.Disabled = rule.Disabled
+	r.DisabledFor = rule.DisabledFor
 }
 
 // Equal tests rule equality
@@ -85,7 +91,8 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.ThresholdMin == rule.ThresholdMin &&
 		r.Comment == rule.Comment &&
 		r.Level == rule.Level &&
-		r.Disabled == rule.Disabled)
+		r.Disabled == rule.Disabled &&
+		r.DisabledFor == rule.DisabledFor)
 }
 
 // Test if a metric hits this rule.
@@ -97,9 +104,14 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 	// RLock if shared.
 	rule.RLock()
 	defer rule.RUnlock()
-	if rule.Disabled {
-		// Tmp disabled
-		return false
+	if rule.Disabled { // Disable for a while
+		if rule.DisabledFor <= 0 { // Disable forever
+			return false
+		}
+		disabledBefore := rule.DisabledAt.Add(time.Duration(rule.DisabledFor) * time.Minute)
+		if time.Now().Before(disabledBefore) { // Disabled for a while
+			return false
+		}
 	}
 	// Default thresholds.
 	var defaultThresholdMax float64

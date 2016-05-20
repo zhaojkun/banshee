@@ -6,6 +6,7 @@ import (
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/util"
 	"testing"
+	"time"
 )
 
 func TestRuleTest(t *testing.T) {
@@ -59,6 +60,19 @@ func TestRuleTest(t *testing.T) {
 	cfg.Detector.DefaultThresholdMaxs["fo*"] = 10
 	rule = &Rule{TrendDown: true}
 	util.Must(t, !rule.Test(&Metric{Value: 19, Name: "foo"}, &Index{Score: 0.37}, cfg))
+}
+
+func TestRuleDisabled(t *testing.T) {
+	var rule *Rule
+	// Forever disabled
+	rule = &Rule{Disabled: true, DisabledFor: 0}
+	util.Must(t, !rule.Test(&Metric{}, nil, nil))
+	// Tmp disabled
+	rule = &Rule{Disabled: true, DisabledFor: 1}
+	util.Must(t, !rule.Test(&Metric{}, nil, nil))
+	// Don't disabled.
+	rule = &Rule{Disabled: true, DisabledFor: 1, DisabledAt: time.Now().Add(time.Minute * -1), ThresholdMax: 1}
+	util.Must(t, rule.Test(&Metric{Value: 2}, nil, nil))
 }
 
 func BenchmarkRuleTest(b *testing.B) {

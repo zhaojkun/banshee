@@ -1,64 +1,53 @@
 /*@ngInject*/
-module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, Rule, Util, Config) {
+module.exports = function($scope, $mdDialog, $stateParams, $translate, toastr,
+                          Rule, Util, Config) {
   $scope.isEdit = false;
   $scope.interval = null;
+  $scope.disabledForUnSaved = false;
 
   $scope.loadData = function() {
     // get interval
-    Config.getInterval().$promise
-      .then(function (res) {
-        $scope.interval = res.interval;
-        $scope.config = res;
-      });
+    Config.getInterval().$promise.then(function(res) {
+      $scope.interval = res.interval;
+      $scope.config = res;
+    });
   };
 
-  if(this.rule){
+  if (this.rule) {
     $scope.isEdit = true;
   }
 
   $scope.rule = this.rule || {};
 
-  $scope.cancel = function() {
-    $mdDialog.cancel();
-  };
+  $scope.cancel = function() { $mdDialog.cancel(); };
 
   $scope.submit = function() {
     var params = angular.copy($scope.rule);
     if ($scope.isEdit) {
-      Rule.update(params).$promise
-        .then(function(res) {
-          $mdDialog.hide(res);
-        })
-        .catch(function(err) {
-          toastr.error(err.msg);
-        });
+      Rule.update(params).$promise.then(function(res) {
+        $mdDialog.hide(res);
+      }).catch (function(err) { toastr.error(err.msg); });
     } else {
       params.projectId = $stateParams.id;
-      Rule.save(params).$promise
-        .then(function(res) {
-          $mdDialog.hide(res);
-          var ruleCheckResult = Util.ruleCheck(res);
-          if (ruleCheckResult !== 0) {
-            var key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT';
-            if (ruleCheckResult === 1) {
-              key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_GRAPHITE_NAME_TEXT';
-            } else if (ruleCheckResult === 2) {
-              key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_UNSUPPORTED_METRIC_TEXT';
-            }
-            toastr.warning(
-              $translate.instant(key, {'Interval': $scope.interval}),
-              {timeOut: 10 * 1000}
-            );
-          } else {
-            toastr.success(
-              $translate.instant('ADMIN_RULE_POST_ADD_TEXT', {'Interval': $scope.interval}),
-              {timeOut: 10 * 1000}
-            );
+      Rule.save(params).$promise.then(function(res) {
+        $mdDialog.hide(res);
+        var ruleCheckResult = Util.ruleCheck(res);
+        if (ruleCheckResult !== 0) {
+          var key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_TEXT';
+          if (ruleCheckResult === 1) {
+            key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_GRAPHITE_NAME_TEXT';
+          } else if (ruleCheckResult === 2) {
+            key = 'ADMIN_RULE_POST_ADD_CHECK_FAILED_UNSUPPORTED_METRIC_TEXT';
           }
-        })
-        .catch(function(err) {
-          toastr.error(err.msg);
-        });
+          toastr.warning(
+              $translate.instant(key, {'Interval': $scope.interval}),
+              {timeOut: 10 * 1000});
+        } else {
+          toastr.success($translate.instant('ADMIN_RULE_POST_ADD_TEXT',
+                                            {'Interval': $scope.interval}),
+                         {timeOut: 10 * 1000});
+        }
+      }).catch (function(err) { toastr.error(err.msg); });
     }
   };
 
@@ -67,6 +56,23 @@ module.exports = function ($scope, $mdDialog, $stateParams, $translate, toastr, 
   $scope.translateGraphiteName = Util.translateGraphiteName;
   $scope.translateRuleRepr = function(rule) {
     return Util.translateRuleRepr(rule, $scope.config, $translate);
+  };
+  $scope.translateDate = Util.translateDate;
+  $scope.translateNow = Util.translateNow;
+  $scope.translateGoDate = Util.translateGoDate;
+  $scope.disabledExpireMins = function(rule) {
+    return (+new Date(rule.disabledAt) / 1000 + rule.disabledFor * 60 -
+            new Date() / 1000) /
+           60;
+  };
+  $scope.isDisabledNow = function(rule) {
+    return rule.disabled &&
+           (rule.disabledFor > 0 && $scope.disabledExpireMins(rule) > 0 ||
+            rule.disabledFor <= 0);
+  };
+  $scope.disabledForChanged = function() {
+    $scope.rule.disabledAt = +new Date();
+    $scope.disabledForUnSaved = true;
   };
   $scope.loadData();
 };
