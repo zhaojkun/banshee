@@ -73,6 +73,9 @@ func TestRuleDisabled(t *testing.T) {
 	// Don't disabled.
 	rule = &Rule{Disabled: true, DisabledFor: 1, DisabledAt: time.Now().Add(time.Minute * -1), ThresholdMax: 1}
 	util.Must(t, rule.Test(&Metric{Value: 2}, nil, nil))
+	// Default
+	rule = &Rule{Disabled: true, DisabledFor: 1, DisabledAt: time.Time{}, ThresholdMax: 2}
+	util.Must(t, rule.Test(&Metric{Value: 3}, nil, nil))
 }
 
 func BenchmarkRuleTest(b *testing.B) {
