@@ -5,6 +5,7 @@ package webapp
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
@@ -22,6 +23,7 @@ type createRuleRequest struct {
 	Comment       string  `json:"comment"`
 	Level         int     `json:"level"`
 	Disabled      bool    `json:"disabled"`
+	DisabledFor   int     `json:"disabledFor"` // in Minute
 	NeverFillZero bool    `json:"neverFillZero"`
 }
 
@@ -83,6 +85,8 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Comment:       req.Comment,
 		Level:         req.Level,
 		Disabled:      req.Disabled,
+		DisabledFor:   req.DisabledFor,
+		DisabledAt:    time.Now(),
 		NeverFillZero: req.NeverFillZero,
 	}
 	if err := db.Admin.DB().Create(rule).Error; err != nil {
@@ -178,6 +182,8 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rule.ThresholdMax = req.ThresholdMax
 	rule.ThresholdMin = req.ThresholdMin
 	rule.Disabled = req.Disabled
+	rule.DisabledFor = req.DisabledFor
+	rule.DisabledAt = time.Now()
 	rule.NeverFillZero = req.NeverFillZero
 
 	if db.Admin.DB().Save(rule).Error != nil {
