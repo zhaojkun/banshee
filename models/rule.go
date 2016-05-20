@@ -45,7 +45,7 @@ type Rule struct {
 	// DisabledFor
 	DisabledFor int `json:"disabledFor"`
 	// DisabledAt
-	DisabledAt time.Time `sql:"default:current_timestamp" json:"disabledAt"`
+	DisabledAt time.Time `json:"disabledAt"`
 	// FillZero
 	NeverFillZero bool `sql:"default:false" json:"neverFillZero"`
 }
