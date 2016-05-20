@@ -5,7 +5,6 @@ package alerter
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os/exec"
 	"sync/atomic"
 	"time"
@@ -18,56 +17,53 @@ import (
 	"github.com/eleme/banshee/util/safemap"
 )
 
-const (
-	// Limit for buffered detected metric results, further results will be dropped
-	// if this limit is reached.
-	bufferedMetricResultsLimit = 10 * 1024
-	// Exec command timeout in second
-	execCommandTimeout = 5 * time.Second
-)
+// bufferedEventsLimit is the limitation of the number of events waiting to be
+// processed by alerter.
+const bufferedEventsLimit = 10 * 1024 // 10k
 
-// Alerter alerts on anomalies detected.
+// Alerter is the alert service abstraction.
 type Alerter struct {
-	// Storage
-	db *storage.DB
-	// Config
-	cfg *config.Config
-	// Input
-	In chan *models.Event
-	// Alertings stamps
-	m *safemap.SafeMap
-	// Alertings counters
-	c *safemap.SafeMap
+	cfg       *config.Config
+	db        *storage.DB
+	In        chan *models.Event
+	alertAts  *safemap.SafeMap
+	alertNums *safemap.SafeMap
 }
 
-// New creates a alerter.
+// New creates a new Alerter.
 func New(cfg *config.Config, db *storage.DB) *Alerter {
-	al := new(Alerter)
-	al.cfg = cfg
-	al.db = db
-	al.In = make(chan *models.Event, bufferedMetricResultsLimit)
-	al.m = safemap.New()
-	al.c = safemap.New()
-	return al
+	return &Alerter{
+		cfg:       cfg,
+		db:        db,
+		In:        make(chan *models.Event, bufferedEventsLimit),
+		alertAts:  safemap.New(),
+		alertNums: safemap.New(),
+	}
 }
 
-// Start several goroutines to wait for detected metrics, then check each
-// metric with all the rules, the configured shell command will be executed
-// once a rule is hit.
+// initAlerterNumsReseter starts a ticker to reset alert numbers by one day.
+func (al *Alerter) initAlerterNumsReseter() {
+	go func() {
+		ticker := time.NewTicker(time.Hour * 24)
+		for _ = range ticker.C {
+			al.alertNums.Clear()
+		}
+	}()
+}
+
+// Start workers to wait for events.
 func (al *Alerter) Start() {
 	log.Infof("start %d alerter workers..", al.cfg.Alerter.Workers)
 	for i := 0; i < al.cfg.Alerter.Workers; i++ {
 		go al.work()
 	}
-	go func() {
-		ticker := time.NewTicker(time.Hour * 24)
-		for _ = range ticker.C {
-			al.c.Clear()
-		}
-	}()
+	al.initAlerterNumsReseter()
 }
 
-// Test if an hour is in [start, end)
+// hourInRange returns true if given hour is in range [start, end).
+// Examples:
+//	hourInRange(10, 7, 19) // true
+//	hourInRange(10, 20, 19) // false
 func hourInRange(hour, start, end int) bool {
 	switch {
 	case start < end:
@@ -80,15 +76,14 @@ func hourInRange(hour, start, end int) bool {
 	return false
 }
 
-// Test if alerter should silent now for a project.
-func (al *Alerter) shouldSilent(proj *models.Project) bool {
+// shouldProjBeSilent returns true if given project should be silent at this
+// time.
+func (al *Alerter) shoudProjBeSilent(proj *models.Project) bool {
 	var start, end int
 	if proj.EnableSilent {
-		// Use project defined.
 		start = proj.SilentTimeStart
 		end = proj.SilentTimeEnd
 	} else {
-		// Default
 		start = al.cfg.Alerter.DefaultSilentTimeRange[0]
 		end = al.cfg.Alerter.DefaultSilentTimeRange[1]
 	}
@@ -96,108 +91,136 @@ func (al *Alerter) shouldSilent(proj *models.Project) bool {
 	return hourInRange(now, start, end)
 }
 
-// execute command with event within certain timeout.
-func (al *Alerter) execCommand(ev *models.Event) error {
-	b, _ := json.Marshal(ev)
-	arg := string(b)
+// execCommand executes configured command with configured timeout.
+func (al *Alerter) execCommand(ew *models.EventWrapper) (err error) {
+	b, _ := json.Marshal(ew) // No error would occur
 	done := make(chan error)
-	cmd := exec.Command(al.cfg.Alerter.Command, arg)
+	cmd := exec.Command(al.cfg.Alerter.Command, string(b))
 	go func() {
 		done <- cmd.Run()
 	}()
-	timeout := time.After(execCommandTimeout)
+	timeout := time.After(time.Second * time.Duration(al.cfg.Alerter.ExecCommandTimeout))
 	select {
 	case <-timeout:
-		if cmd.Process == nil {
-			return errors.New("command may already exit")
-		}
-		err := cmd.Process.Kill()
-		if err == nil {
-			err = errors.New("command timed out, killed")
-		} else {
-			s := fmt.Sprintf("failed to kill command: %v", err)
-			err = errors.New(s)
-		}
-		go func() {
-			<-done // exit the prev goroutine
+		defer func() {
+			go func() {
+				<-done // Avoid goroutine links
+			}()
 		}()
-		return err
-	case err := <-done:
-		return err
+		if cmd.Process == nil {
+			return // May exit
+		}
+		if err = cmd.Process.Kill(); err != nil {
+			return
+		}
+		return errors.New("command timed out, killed")
+	case err = <-done:
+		return
 	}
+	return
 }
 
-// work waits for detected metrics, then check each metric with all the
-// rules, the configured shell command will be executed once a rule is hit.
+// getUniversalUsers returns universal users.
+func (al *Alerter) getUniversalUsers() (univs []models.User, err error) {
+	if err = al.db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
+		return
+	}
+	return
+}
+
+// checkOneDayAlerts returns true if given metric exceeds the one day
+// limit.
+func (al *Alerter) checkOneDayAlerts(m *models.Metric) bool {
+	v, ok := al.alertNums.Get(m.Name)
+	if ok && atomic.LoadUint32(v.(*uint32)) > al.cfg.Alerter.OneDayLimit {
+		return true
+	}
+	return false
+}
+
+// incrAlertNum increases alert number by 1 for given metric.
+func (al *Alerter) incrAlertNum(m *models.Metric) {
+	v, ok := al.alertNums.Get(m.Name)
+	if !ok {
+		n := uint32(1)
+		al.alertNums.Set(m.Name, &n)
+		return
+	}
+	atomic.AddUint32(v.(*uint32), 1)
+}
+
+// checkAlertAt returns true if given metric still not reaches the minimal
+// alert interval.
+func (al *Alerter) checkAlertAt(m *models.Metric) bool {
+	v, ok := al.alertAts.Get(m.Name)
+	return ok && m.Stamp < v.(uint32)+al.cfg.Alerter.Interval
+}
+
+// setAlertAt sets the alert timestamp for given metric.
+func (al *Alerter) setAlertAt(m *models.Metric) {
+	al.alertAts.Set(m.Name, m.Stamp)
+}
+
+// getProjByRule returns the project for given rule.
+func (al *Alerter) getProjByRule(rule *models.Rule) (proj *models.Project, err error) {
+	proj = &models.Project{}
+	if err = al.db.Admin.DB().Model(rule).Related(proj).Error; err != nil {
+		return
+	}
+	return
+}
+
+// getUsersByProj returns the users for given project.
+func (al *Alerter) getUsersByProj(proj *models.Project) (users []models.User, err error) {
+	var univs []models.User
+	if univs, err = al.getUniversalUsers(); err != nil {
+		return
+	}
+	if err = al.db.Admin.DB().Model(proj).Related(&users, "Users").Error; err != nil {
+		return
+	}
+	users = append(users, univs...)
+	return
+}
+
+// work waits for events to alert.
 func (al *Alerter) work() {
 	for {
-		ev := <-al.In
-		// Check interval.
-		v, ok := al.m.Get(ev.Metric.Name)
-		if ok && ev.Metric.Stamp-v.(uint32) < al.cfg.Alerter.Interval {
+		ew := models.NewWrapperOfEvent(<-al.In) // Avoid locks
+		if al.checkAlertAt(ew.Metric) {         // Check alert interval
 			continue
 		}
-		// Check alert times in one day
-		v, ok = al.c.Get(ev.Metric.Name)
-		if ok && atomic.LoadUint32(v.(*uint32)) > al.cfg.Alerter.OneDayLimit {
-			log.Warnf("%s hit alerting one day limit, skipping..", ev.Metric.Name)
+		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
 			continue
 		}
-		if !ok {
-			var newCounter uint32
-			newCounter = 1
-			al.c.Set(ev.Metric.Name, &newCounter)
-		} else {
-			atomic.AddUint32(v.(*uint32), 1)
-		}
-		// Universals
-		var univs []models.User
-		if err := al.db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
-			log.Errorf("get universal users: %v, skiping..", err)
+		al.incrAlertNum(ew.Metric)
+		ew.TranslateRuleComment()
+		var err error
+		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
 			continue
 		}
-		for _, rule := range ev.TestedRules {
-			ev.Rule = rule
-			ev.TranslateRuleComment()
-			// Project
-			proj := &models.Project{}
-			if err := al.db.Admin.DB().Model(rule).Related(proj).Error; err != nil {
-				log.Errorf("project, %v, skiping..", err)
+		var users []models.User
+		if users, err = al.getUsersByProj(ew.Project); err != nil {
+			continue
+		}
+		for _, user := range users {
+			ew.User = &user
+			if ew.Rule.Level < user.RuleLevel {
 				continue
 			}
-			ev.Project = proj
-			// Silent
-			if al.shouldSilent(proj) {
+			if len(al.cfg.Alerter.Command) == 0 {
+				log.Warnf("alert command not configured")
 				continue
 			}
-			// Users
-			var users []models.User
-			if err := al.db.Admin.DB().Model(proj).Related(&users, "Users").Error; err != nil {
-				log.Errorf("get users: %v, skiping..", err)
+			if err = al.execCommand(ew); err != nil { // Execute command
+				log.Errorf("exec %s: %v", al.cfg.Alerter.Command, err)
 				continue
 			}
-			users = append(users, univs...)
-			// Send
-			for _, user := range users {
-				ev.User = &user
-				if rule.Level < user.RuleLevel {
-					continue
-				}
-				// Exec
-				if len(al.cfg.Alerter.Command) == 0 {
-					log.Warnf("alert command not configured")
-					continue
-				}
-				if err := al.execCommand(ev); err != nil {
-					log.Errorf("exec %s: %v", al.cfg.Alerter.Command, err)
-					continue
-				}
-				log.Infof("send message to %s with %s ok", user.Name, ev.Metric.Name)
-			}
-			if len(users) != 0 {
-				al.m.Set(ev.Metric.Name, ev.Metric.Stamp)
-				health.IncrNumAlertingEvents(1)
-			}
+			log.Infof("send to %s with %s ok", user.Name, ew.Metric.Name)
+		}
+		if len(users) != 0 {
+			al.setAlertAt(ew.Metric)
+			health.IncrNumAlertingEvents(1)
 		}
 	}
 }

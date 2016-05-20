@@ -4,6 +4,7 @@ pending
 * Models: Add rule new field DisabledFor and DisabledAt. #539
 * Webapp: Add disabledFor to webapp in createRule and editRule. #539
 * Static: Support disable rule for a while in frontend. #539
+* Alerter: Refactor alerter.
 * Config: Add config item detector.warning_timeout.
 * Config: Add config item alerter.exec_command_timeout.
 * Models: Add rule.IsTrendRelated().
