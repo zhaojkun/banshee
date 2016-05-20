@@ -22,3 +22,14 @@ type Metric struct {
 func (m *Metric) LinkTo(idx *Index) {
 	m.Link = idx.Link
 }
+
+// Validate the metric.
+func (m *Metric) Validate() (err error) {
+	if err = ValidateMetricName(m.Name); err != nil {
+		return
+	}
+	if err = ValidateMetricStamp(m.Stamp); err != nil {
+		return
+	}
+	return
+}
