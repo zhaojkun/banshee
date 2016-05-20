@@ -163,6 +163,16 @@ module.exports =
     });
   };
 
+  // Returns true if the rule is disabled forever or disabled at this time
+  // temply.
+  $scope.isRuleDisabledWorksNow = function(rule) {
+    return rule.disabled && (rule.disabledFor <= 0 ||
+                             (rule.disabledFor > 0 &&
+                              (+new Date(rule.disabledAt) / 1000 +
+                                   rule.disabledFor * 60 - new Date() / 1000 >
+                               0)))
+  };
+
   $scope.loadData();
 
   /**
