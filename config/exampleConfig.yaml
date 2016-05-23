@@ -71,7 +71,8 @@ detector:
 webapp:
     # Port for webapp http server, default: 2016
     port: 2016
-    # Website basic auth username and password, default: [admin, admin]
+    # Website basic auth username and password. Setting username to empty string 
+    # with zero length means no auth, default: [admin, admin]
     auth: [admin, admin]
     # Static files directory path, default: static/dist
     static: static/dist
