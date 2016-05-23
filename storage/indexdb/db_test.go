@@ -13,7 +13,7 @@ import (
 
 func TestOpen(t *testing.T) {
 	fileName := "db-testing"
-	db, err := Open(fileName)
+	db, err := Open(fileName, nil)
 	util.Must(t, err == nil)
 	util.Must(t, util.IsFileExist(fileName))
 	db.Close()
@@ -22,7 +22,7 @@ func TestOpen(t *testing.T) {
 
 func TestLoad(t *testing.T) {
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	idx := &models.Index{Name: "foo", Stamp: 1450430839, Score: 0.7, Average: 78.5}
@@ -48,10 +48,26 @@ func TestLoad(t *testing.T) {
 	util.Must(t, i.Link == 1) // link should be correct
 }
 
+func TestLoadExpired(t *testing.T) {
+	fileName := "db-testing"
+	opts := &Options{86400 * 7}
+	db, _ := Open(fileName, opts)
+	defer os.RemoveAll(fileName)
+	defer db.Close()
+	idx := &models.Index{Name: "foo", Stamp: 1450430839, Score: 0.7, Average: 78.5}
+	db.Put(idx)
+	// Clear cache
+	db.tr.Clear()
+	db.idp.Clear()
+	db.load()
+	util.Must(t, db.tr.Len() == 0)
+	util.Must(t, !db.tr.Has(idx.Name))
+}
+
 func TestPut(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Test.
@@ -81,7 +97,7 @@ func TestPut(t *testing.T) {
 func TestGet(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Not found.
@@ -99,7 +115,7 @@ func TestGet(t *testing.T) {
 func TestDelete(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Add one.
@@ -127,7 +143,7 @@ func TestDelete(t *testing.T) {
 func TestFilter(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Add indexes.
@@ -144,7 +160,7 @@ func TestFilter(t *testing.T) {
 func TestLen(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Add indexes.
@@ -158,7 +174,7 @@ func TestLen(t *testing.T) {
 func BenchmarkGet10K(b *testing.B) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Suite
@@ -175,7 +191,7 @@ func BenchmarkGet10K(b *testing.B) {
 func BenchmarkPut(b *testing.B) {
 	// Open db.
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	db, _ := Open(fileName, nil)
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	b.ResetTimer()
