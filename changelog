@@ -1,17 +1,18 @@
 pending
 -------
 
-* Models: Add rule new field DisabledFor and DisabledAt. #539
-* Webapp: Add disabledFor to webapp in createRule and editRule. #539
-* Static: Support disable rule for a while in frontend. #539
 * Alerter: Refactor alerter.
-* Detector: Non trend related metrics should not enter the analyzation.
-* Detector: Bind a single tested rule to event instead of multiple.
 * Config: Add config item detector.warning_timeout.
 * Config: Add config item alerter.exec_command_timeout.
+* Detector: Non trend related metrics should not enter the analyzation.
+* Detector: Bind a single tested rule to event instead of multiple.
 * Models: Add rule.IsTrendRelated().
 * Models: Add metric.Validate().
 * Models: Split events out a wrapper.
+* Models: Add rule new field DisabledFor and DisabledAt. #539
+* Static: Support disable rule for a while in frontend. #539
+* Storage: Skip outdated indexes on indexdb load.
+* Webapp: Add disabledFor to webapp in createRule and editRule. #539
 
 0.2.1
 -----
