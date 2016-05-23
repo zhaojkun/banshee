@@ -31,6 +31,7 @@ import (
 	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/trie"
 	"github.com/syndtr/goleveldb/leveldb"
+	"time"
 )
 
 // MaxNumIndex is the max value of the number indexes this db can handle.
@@ -38,8 +39,14 @@ import (
 // indexes capacity, it can be larger, theoretically can be MaxUint32.
 const MaxNumIndex = 16 * 1024 * 1024
 
+// Options is to open DB.
+type Options struct {
+	Expiration uint32
+}
+
 // DB handles indexes storage.
 type DB struct {
+	opts *Options
 	// LevelDB.
 	db *leveldb.DB
 	// Cache.
@@ -48,13 +55,14 @@ type DB struct {
 }
 
 // Open a DB by fileName.
-func Open(fileName string) (*DB, error) {
+func Open(fileName string, opts *Options) (*DB, error) {
 	ldb, err := leveldb.OpenFile(fileName, nil)
 	if err != nil {
 		return nil, err
 	}
 	db := new(DB)
 	db.db = ldb
+	db.opts = opts
 	db.tr = trie.New()
 	db.idp = idpool.New(1, MaxNumIndex) // low is 1 to distinct default 0
 	db.load()
@@ -81,6 +89,10 @@ func (db *DB) load() {
 		if err != nil {
 			// Skip corrupted values
 			log.Warn("corrupted data found, skipping..")
+			continue
+		}
+		if db.opts != nil && int64(idx.Stamp+db.opts.Expiration) < time.Now().Unix() {
+			// Delete and skip outdated index.
 			continue
 		}
 		idx.Share()

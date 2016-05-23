@@ -19,9 +19,6 @@ import (
 	"github.com/eleme/banshee/util/mathutil"
 )
 
-// Timeout in milliseconds.
-const timeout = 300
-
 // Detector is to detect anomalies.
 type Detector struct {
 	cfg  *config.Config
@@ -30,18 +27,23 @@ type Detector struct {
 	outs []chan *models.Event
 }
 
-// New creates a detector.
+// New creates a new Detector.
 func New(cfg *config.Config, db *storage.DB, flt *filter.Filter) *Detector {
-	return &Detector{cfg, db, flt, make([]chan *models.Event, 0)}
+	return &Detector{
+		cfg:  cfg,
+		db:   db,
+		flt:  flt,
+		outs: make([]chan *models.Event, 0),
+	}
 }
 
-// Out adds a channel to receive detection results.
+// Out adds a chan to receive detection results.
 func (d *Detector) Out(ch chan *models.Event) {
 	d.outs = append(d.outs, ch)
 }
 
-// Output detected metrics to channels in outs, will skip if the target channel
-// is full.
+// output detected metrics to all chans in outs.
+// Skip if the target chan is full.
 func (d *Detector) output(ev *models.Event) {
 	for _, ch := range d.outs {
 		select {
@@ -55,14 +57,12 @@ func (d *Detector) output(ev *models.Event) {
 
 // Start the tcp server.
 func (d *Detector) Start() {
-	// Listen
 	addr := fmt.Sprintf("0.0.0.0:%d", d.cfg.Detector.Port)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
-	log.Infof("detector is listening on tcp://%s", addr)
-	// Accept
+	log.Infof("detector is listening on %s", addr)
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -73,99 +73,83 @@ func (d *Detector) Start() {
 	}
 }
 
-// Handle a new connection, it will:
-//
-//	1. Read input from the connection line by line.
-//	2. Parse the lines into metrics.
-//	3. Validate the metrics.
-//
+// handle a new connection:
+// Steps:
+//	1. Read input from connection line by line.
+//	2. Parse each line into a metric.
+//	3. Validate the metric
+//	4. Process the metric.
 func (d *Detector) handle(conn net.Conn) {
-	// New conn established.
 	addr := conn.RemoteAddr()
 	health.IncrNumClients(1)
 	log.Infof("conn %s established", addr)
-	// Read
 	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		// Read line by line.
-		if err := scanner.Err(); err != nil {
-			// Close conn on read error.
+	for scanner.Scan() { // Read line by line.
+		if err := scanner.Err(); err != nil { // Close on read error.
 			log.Errorf("read error: %v, closing conn..", err)
 			break
 		}
 		line := scanner.Text()
-		// Parse metric.
-		m, err := parseMetric(line)
+		m, err := parseMetric(line) // Parse
 		if err != nil {
-			// Skip invalid input.
 			log.Errorf("parse error: %v, skipping..", err)
 			continue
 		}
-		// Validate metric.
-		if err := models.ValidateMetricName(m.Name); err != nil {
+		if err = m.Validate(); err != nil {
 			log.Errorf("invalid metric: %v, skipping..", err)
-			continue
+			return
 		}
-		if err := models.ValidateMetricStamp(m.Stamp); err != nil {
-			log.Errorf("invalid metric: %v, skipping..", err)
-			continue
-		}
-		// Process
 		d.process(m)
 	}
-	// Close conn.
 	conn.Close()
 	log.Infof("conn %s disconnected", addr)
 	health.DecrNumClients(1)
 }
 
-// Process the input metric.
-//
-//	1. Match metric with rules.
+// process the input metric.
+// Steps:
+//	1. Match metric with all rules.
 //	2. Detect the metric with matched rules.
-//
+//	3. Output detection results to receivers.
 func (d *Detector) process(m *models.Metric) {
 	health.IncrNumMetricIncomed(1)
-	timer := util.NewTimer()
+	timer := util.NewTimer() // Detection cost timer
 	// Match
 	ok, rules := d.match(m)
 	if !ok {
-		// Not matched.
 		return
 	}
 	// Detect
-	ev, err := d.detect(m, rules)
+	evs, err := d.detect(m, rules)
 	if err != nil {
 		log.Errorf("detect: %v, skipping..", err)
 		return
 	}
 	health.IncrNumMetricDetected(1)
 	// Output
-	if ev != nil {
+	for _, ev := range evs {
 		d.output(ev)
 	}
 	// Time end.
 	elapsed := timer.Elapsed()
-	if elapsed > timeout {
+	if elapsed > float64(d.cfg.Detector.WarningTimeout) {
 		log.Warnf("detection is slow: %.2fms", elapsed)
 	}
 	health.AddDetectionCost(elapsed)
 }
 
-// Match a metric with rules, and return matched rules.
-//
-//	If no rules matched, return false.
-//	If any black patterns matched, return false.
-//	Else, return true and matched rules.
-//
+// match a metric with rules, and return matched rules.
+// Details:
+//	1. If no rules matched, return false.
+//	2. If any black patterns matched, return false.
+//	3. Else, return true and matched rules.
 func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 	// Check rules.
-	timer := util.NewTimer()
+	timer := util.NewTimer() // Filter timer
 	rules := d.flt.MatchedRules(m)
 	elapsed := timer.Elapsed()
 	health.AddFilterCost(elapsed)
-	if len(rules) == 0 {
-		// Hit no rules.
+	if len(rules) == 0 { // Hit no rules.
 		return false, rules
 	}
 	// Check blacklist.
@@ -182,53 +166,67 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 			return false, rules
 		}
 	}
-	// Ok
-	return true, rules
+	return true, rules // OK
 }
 
-// Detect input metric with its matched rules via 3-sigma.
-//
-//	1. Get history values for this metric.
-//	2. Get current index for this metric.
-//	3. Calculate score via 3-sigma.
-//	4. Get score trending via ewma.
-//	5. Save the metric and index to db.
-//	6. Test with its matched rules and output it.
-//
-func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (*models.Event, error) {
-	// Get index.
-	idx, err := d.db.Index.Get(m.Name)
-	if err != nil {
+// detect input metric with its matched rules.
+// Details:
+//	1. Get its index from db.
+//	2. If the metric need to be analyzed, analyze it.
+//	3. Save its index and the metricinto db.
+//	2. Test the metric with matched rules.
+//	3. Make events with its tested rules.
+func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models.Event, err error) {
+	var idx *models.Index
+	if idx, err = d.db.Index.Get(m.Name); err != nil {
 		if err == indexdb.ErrNotFound {
 			idx = nil
 		} else {
-			return nil, err // unexcepted
+			return nil, err
 		}
 	}
-	// Fill zero?
-	fz := idx != nil && d.shouldFz(m, rules)
+	if d.shouldAnalyze(rules) {
+		idx = d.analyze(idx, m, rules)
+	} else {
+		idx = d.makeIdx(idx, m)
+	}
+	if err = d.save(m, idx); err != nil {
+		return
+	}
+	for _, rule := range d.test(m, idx, rules) {
+		evs = append(evs, models.NewEvent(m, idx, rule))
+	}
+	return
+}
+
+// shouldAnalyze returns true if given matched rules requires the metric to be
+// calculated with 3sigma.
+func (d *Detector) shouldAnalyze(rules []*models.Rule) bool {
+	for _, rule := range rules {
+		if rule.IsTrendRelated() {
+			return true
+		}
+	}
+	return false
+}
+
+// analyze given metric with 3sigma, returns the new index.
+// Steps:
+//	1. Get index.
+//	2. Get history values.
+//	3. Do 3sigma calculation.
+//	4. Move the index next.
+func (d *Detector) analyze(idx *models.Index, m *models.Metric, rules []*models.Rule) *models.Index {
+	fz := idx != nil && d.shouldFill0(m, rules)
 	if idx != nil {
 		m.LinkTo(idx)
 	}
-	// History values.
 	vals, err := d.values(m, fz)
 	if err != nil {
-		return nil, err // unexcepted
+		return nil
 	}
-	// Apply 3-sigma.
 	d.div3Sigma(m, vals)
-	// New index.
-	idx = d.nextIdx(idx, m)
-	// Test with rules.
-	testedRules := d.test(m, idx, rules)
-	// Save
-	err = d.save(m, idx)
-	if len(testedRules) > 0 {
-		// Test ok.
-		ev := models.NewEvent(m, idx, testedRules)
-		return ev, err
-	}
-	return nil, err
+	return d.nextIdx(idx, m)
 }
 
 // Test metric and index with rules.
@@ -248,16 +246,18 @@ func (d *Detector) save(m *models.Metric, idx *models.Index) error {
 		return err
 	}
 	// Save metric.
-	m.LinkTo(idx)
+	m.LinkTo(idx) // Important
 	if err := d.db.Metric.Put(m); err != nil {
 		return err
 	}
 	return nil
 }
 
-// Test whether a metric need to fill blank with zeros to its history
-// values.
-func (d *Detector) shouldFz(m *models.Metric, rules []*models.Rule) bool {
+// shouldFill0 returns true if given metric needs to fill blanks with zeros to
+// its hidtory values.
+// A metric should fill0 if it matches configured fill blank zero patterns and
+// the matching rules have no option NeverFillZero set.
+func (d *Detector) shouldFill0(m *models.Metric, rules []*models.Rule) bool {
 	for _, p := range d.cfg.Detector.FillBlankZeros {
 		ok, err := filepath.Match(p, m.Name)
 		if err != nil {
@@ -272,11 +272,9 @@ func (d *Detector) shouldFz(m *models.Metric, rules []*models.Rule) bool {
 					return false
 				}
 			}
-			// Ok.
-			return true
+			return true // OK
 		}
 	}
-	// No need.
 	return false
 }
 
@@ -292,18 +290,14 @@ func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []float64 {
 			m := ms[i]
 			// start is smaller than current stamp.
 			for ; start < m.Stamp; start += step {
-				if len(vals) >= 1 && vals[0] != 0 {
-					// https://github.com/eleme/banshee/issues/470
+				if len(vals) >= 1 && vals[0] != 0 { // issue#470
 					vals = append(vals, 0)
 				}
 			}
-			// Push real-metric.
-			vals = append(vals, m.Value)
+			vals = append(vals, m.Value) // Append a real metric
 			i++
-		} else {
-			// No more real-metric.
-			if len(vals) >= 1 && vals[0] != 0 {
-				// https://github.com/eleme/banshee/issues/470
+		} else { // No more real metric.
+			if len(vals) >= 1 && vals[0] != 0 { // issue#470
 				vals = append(vals, 0)
 			}
 		}
@@ -386,33 +380,11 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 	return vals, nil
 }
 
-// Calculate metric score with 3-sigma rule.
-//
-// What's the 3-sigma rule?
-//
+// div3Sigma sets given metric score and average via 3-sigma.
 //	states that nearly all values (99.7%) lie within the 3 standard deviations
 //	of the mean in a normal distribution.
-//
-// Also like z-score, defined as
-//
-//	(val - mean) / stddev
-//
-// And we name the below as metric score, yet 1/3 of z-score
-//
-//	(val - mean) / (3 * stddev)
-//
-// The score has
-//
-//	score > 0   => values is trending up
-//	score < 0   => values is trending down
-//	score > 1   => values is anomalously trending up
-//	score < -1  => values is anomalously trending down
-//
-// The following function will set the metric score and also the average.
-//
 func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 	if len(vals) == 0 {
-		// Values empty.
 		m.Score = 0
 		m.Average = m.Value
 		return
@@ -423,13 +395,12 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 	// Set metric average
 	m.Average = avg
 	// Set metric score
-	if len(vals) <= int(d.cfg.Detector.LeastCount) {
-		// Values not enough.
+	if len(vals) <= int(d.cfg.Detector.LeastCount) { // Number of values not enough
 		m.Score = 0
 		return
 	}
 	last := vals[len(vals)-1]
-	if std == 0 {
+	if std == 0 { // Eadger
 		switch {
 		case last == avg:
 			m.Score = 0
@@ -440,21 +411,13 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 		}
 		return
 	}
-	// 3-sigma
-	m.Score = (last - avg) / (3 * std)
+	m.Score = (last - avg) / (3 * std) // 3-sigma
 }
 
-// Calculate next score for index via ewma, called the weighted exponential
-// moving average.
-//
+// nextIdx creates the next index via the weighted exponentia moving average.
 //	t[0] = x[1], f: 0~1
 //	t[n] = t[n-1] * (1 - f) + f * x[n]
-//
-// The index score will follow the metric's score, and additionally the index
-// average is the latest metric average.
-//
 // Index score is the trending description of metric score.
-//
 func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 	n := &models.Index{Name: m.Name, Stamp: m.Stamp}
 	if idx == nil {
@@ -468,5 +431,19 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average
 	n.Link = idx.Link
+	return n
+}
+
+// makeIdx makes the next index via simple copy.
+func (d *Detector) makeIdx(idx *models.Index, m *models.Metric) *models.Index {
+	n := &models.Index{
+		Name:    m.Name,
+		Stamp:   m.Stamp,
+		Score:   m.Score,
+		Average: m.Average,
+	}
+	if idx != nil {
+		n.Link = idx.Link
+	}
 	return n
 }

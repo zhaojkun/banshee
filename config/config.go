@@ -45,6 +45,10 @@ const (
 	DefaultSilentTimeEnd   int = 6
 	// Default language for webapp.
 	DefaultWebappLanguage string = "en"
+	// Default detection warning timeout, in ms.
+	DefaultDetectionWarningTimeout = 300
+	// Default alert command execution timeout, in seconds.
+	DefaultAlertExecCommandTimeout = 5
 )
 
 // Limitations
@@ -91,6 +95,7 @@ type configDetector struct {
 	DefaultThresholdMaxs   map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
 	DefaultThresholdMins   map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
 	FillBlankZeros         []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
+	WarningTimeout         int                `json:"warningTimeout" yaml:"warning_timeout"`
 }
 
 type configWebapp struct {
@@ -103,6 +108,7 @@ type configWebapp struct {
 
 type configAlerter struct {
 	Command                string `json:"command" yaml:"command"`
+	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
 	Workers                int    `json:"workers" yaml:"workers"`
 	Interval               uint32 `json:"interval" yaml:"interval"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
@@ -127,12 +133,14 @@ func New() *Config {
 	c.Detector.DefaultThresholdMaxs = make(map[string]float64, 0)
 	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
 	c.Detector.FillBlankZeros = []string{}
+	c.Detector.WarningTimeout = DefaultDetectionWarningTimeout
 	c.Webapp.Port = 2016
 	c.Webapp.Auth = []string{"admin", "admin"}
 	c.Webapp.Static = "static/dist"
 	c.Webapp.Language = DefaultWebappLanguage
 	c.Webapp.PrivateDocURL = ""
 	c.Alerter.Command = ""
+	c.Alerter.ExecCommandTimeout = DefaultAlertExecCommandTimeout
 	c.Alerter.Workers = 4
 	c.Alerter.Interval = DefaultAlerterInterval
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
@@ -172,12 +180,14 @@ func (c *Config) Copy() *Config {
 	cfg.Detector.FillBlankZeros = c.Detector.FillBlankZeros
 	cfg.Detector.EnableIntervalHitLimit = c.Detector.EnableIntervalHitLimit
 	cfg.Detector.IntervalHitLimit = c.Detector.IntervalHitLimit
+	cfg.Detector.WarningTimeout = c.Detector.WarningTimeout
 	cfg.Webapp.Port = c.Webapp.Port
 	cfg.Webapp.Auth = c.Webapp.Auth
 	cfg.Webapp.Static = c.Webapp.Static
 	cfg.Webapp.Language = c.Webapp.Language
 	cfg.Webapp.PrivateDocURL = c.Webapp.PrivateDocURL
 	cfg.Alerter.Command = c.Alerter.Command
+	cfg.Alerter.ExecCommandTimeout = c.Alerter.ExecCommandTimeout
 	cfg.Alerter.Workers = c.Alerter.Workers
 	cfg.Alerter.Interval = c.Alerter.Interval
 	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit

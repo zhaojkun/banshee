@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGenerateID(t *testing.T) {
+func TestEventGenerateID(t *testing.T) {
 	// Metric with the same name but different stamps.
 	ev1 := NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil, nil)
 	ev2 := NewEvent(&Metric{Name: "foo", Stamp: 1456815974}, nil, nil)
@@ -18,20 +18,22 @@ func TestGenerateID(t *testing.T) {
 	util.Must(t, ev1.ID != ev2.ID)
 }
 
-func TestTranslateRuleComment(t *testing.T) {
+func TestEventWrapperTranslateRuleComment(t *testing.T) {
 	m := &Metric{Name: "timer.count_ps.foo.bar"}
 	r := &Rule{Pattern: "timer.count_ps.*.*", Comment: "$1 and $2 timing"}
 	ev := &Event{Metric: m, Rule: r}
-	ev.TranslateRuleComment()
+	ew := NewWrapperOfEvent(ev)
+	ew.TranslateRuleComment()
 	excepted := "foo and bar timing"
-	util.Must(t, ev.RuleTranslatedComment == excepted)
+	util.Must(t, ew.RuleTranslatedComment == excepted)
 }
 
-func TestTranslateRuleCommentNoVariables(t *testing.T) {
+func TestEventWrapperTranslateRuleCommentNoVariables(t *testing.T) {
 	m := &Metric{Name: "foo.bar"}
 	r := &Rule{Pattern: "foo.*", Comment: "no variables"}
 	ev := &Event{Metric: m, Rule: r}
-	ev.TranslateRuleComment()
+	ew := NewWrapperOfEvent(ev)
+	ew.TranslateRuleComment()
 	excepted := "no variables"
-	util.Must(t, ev.RuleTranslatedComment == excepted)
+	util.Must(t, ew.RuleTranslatedComment == excepted)
 }
