@@ -117,7 +117,6 @@ func (al *Alerter) execCommand(ew *models.EventWrapper) (err error) {
 	case err = <-done:
 		return
 	}
-	return
 }
 
 // getUniversalUsers returns universal users.
