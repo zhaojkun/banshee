@@ -1,5 +1,7 @@
 // Copyright 2015 Eleme Inc. All rights reserved.
 
+// Package webapp implements a simple http web server to visualize detection
+// results and to manage alert rules.
 package webapp
 
 import (
@@ -61,7 +63,7 @@ func Start(c *config.Config, d *storage.DB, f *filter.Filter) {
 	router.GET("/api/user/:id/projects", auth.handler(getUserProjects))
 	router.POST("/api/project/:id/rule", auth.handler(createRule))
 	router.DELETE("/api/rule/:id", auth.handler(deleteRule))
-	router.POST("/api/rule/:id", auth.handler(editRule))
+	router.PATCH("/api/rule/:id", auth.handler(editRule))
 	router.GET("/api/metric/rules/:name", getMetricRules)
 	router.GET("/api/metric/indexes", getMetricIndexes)
 	router.GET("/api/metric/data", getMetrics)
