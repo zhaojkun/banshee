@@ -1,18 +1,19 @@
-pending
--------
+0.2.2
+-----
 
-* Alerter: Refactor alerter.
-* Config: Add config item detector.warning_timeout.
-* Config: Add config item alerter.exec_command_timeout.
-* Detector: Non trend related metrics should not enter the analyzation.
-* Detector: Bind a single tested rule to event instead of multiple.
-* Models: Add rule.IsTrendRelated().
-* Models: Add metric.Validate().
-* Models: Split events out a wrapper.
+* Alerter: Refactor alerter. #542
+* Config: Add config item detector.warning_timeout. #542
+* Config: Add config item alerter.exec_command_timeout. #542
+* Detector: Non trend related metrics should not enter the analyzation. #542
+* Detector: Bind a single tested rule to event instead of multiple. #542
+* Models: Add rule.IsTrendRelated(). #542
+* Models: Add metric.Validate(). #542
+* Models: Split events out a wrapper. #542
 * Models: Add rule new field DisabledFor and DisabledAt. #539
 * Static: Support disable rule for a while in frontend. #539
-* Storage: Skip outdated indexes on indexdb load.
+* Storage: Skip outdated indexes on indexdb load. #542
 * Webapp: Add disabledFor to webapp in createRule and editRule. #539
+* Webapp: Rule create and edit must with a comment. #543
 
 0.2.1
 -----

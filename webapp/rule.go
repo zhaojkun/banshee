@@ -49,6 +49,10 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if len(req.Comment) <= 0 {
+		ResponseError(w, ErrRuleNoComment)
+		return
+	}
 	if projectID <= 0 {
 		// ProjectID is invalid.
 		ResponseError(w, ErrProjectID)
@@ -161,6 +165,10 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	if err := models.ValidateRuleLevel(req.Level); err != nil {
 		ResponseError(w, NewValidationWebError(err))
+		return
+	}
+	if len(req.Comment) <= 0 {
+		ResponseError(w, ErrRuleNoComment)
 		return
 	}
 	if !req.TrendUp && !req.TrendDown && req.ThresholdMax == 0 && req.ThresholdMin == 0 {

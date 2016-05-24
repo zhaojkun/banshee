@@ -38,6 +38,7 @@ var (
 	ErrDuplicateRulePattern = NewWebError(http.StatusForbidden, "Duplicate rule pattern")
 	ErrRuleNotFound         = NewWebError(http.StatusNotFound, "Rule not found")
 	ErrRuleNoCondition      = NewWebError(http.StatusBadRequest, "No condition specified")
+	ErrRuleNoComment        = NewWebError(http.StatusBadRequest, "No rule comment")
 	ErrRuleCommentNotValid  = NewWebError(http.StatusBadRequest, "Rule comment is not valid, empty?")
 	ErrRuleUpdateFailed     = NewWebError(http.StatusBadRequest, "Failed to update rule")
 	// Metric

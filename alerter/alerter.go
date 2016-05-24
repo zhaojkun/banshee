@@ -198,6 +198,9 @@ func (al *Alerter) work() {
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
 			continue
 		}
+		if al.shoudProjBeSilent(ew.Project) {
+			continue
+		}
 		var users []models.User
 		if users, err = al.getUsersByProj(ew.Project); err != nil {
 			continue

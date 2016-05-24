@@ -125,7 +125,7 @@ But how do you really analyze the anomalous metrics? Via 3-sigma:
 -1.3842407711224991 # anomaly, too small
 ```
 
-For further implementation introduction, please checkout [intro.md](intro.md).
+For further implementation introduction, please checkout [docs/intro.md](docs/intro.md).
 
 Network Protocol
 ----------------
@@ -138,6 +138,14 @@ The network protocol is line based:
 ```
 <NAME> <STAMP> <VALUE> '\n'
 ```
+
+Where the `NAME` should be a string, `STAMP` should be a timestamp integer in seconds, and 
+the `VALUE` should be a float number.
+
+Web HTTP API
+------------
+
+Please checkout [docs/webapi.md](docs/webapi.md).
 
 Authors
 -------
