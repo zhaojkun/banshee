@@ -185,11 +185,7 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models
 			return nil, err
 		}
 	}
-	if d.shouldAnalyze(rules) {
-		idx = d.analyze(idx, m, rules)
-	} else {
-		idx = d.makeIdx(idx, m)
-	}
+	idx = d.analyze(idx, m, rules)
 	if err = d.save(m, idx); err != nil {
 		return
 	}
@@ -197,17 +193,6 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models
 		evs = append(evs, models.NewEvent(m, idx, rule))
 	}
 	return
-}
-
-// shouldAnalyze returns true if given matched rules requires the metric to be
-// calculated with 3sigma.
-func (d *Detector) shouldAnalyze(rules []*models.Rule) bool {
-	for _, rule := range rules {
-		if rule.IsTrendRelated() {
-			return true
-		}
-	}
-	return false
 }
 
 // analyze given metric with 3sigma, returns the new index.
@@ -431,19 +416,5 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average
 	n.Link = idx.Link
-	return n
-}
-
-// makeIdx makes the next index via simple copy.
-func (d *Detector) makeIdx(idx *models.Index, m *models.Metric) *models.Index {
-	n := &models.Index{
-		Name:    m.Name,
-		Stamp:   m.Stamp,
-		Score:   m.Score,
-		Average: m.Average,
-	}
-	if idx != nil {
-		n.Link = idx.Link
-	}
 	return n
 }
