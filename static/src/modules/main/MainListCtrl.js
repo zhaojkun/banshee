@@ -1,5 +1,6 @@
 /*@ngInject*/
-module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate, Metric, Config, Project, Util) {
+module.exports = function($scope, $rootScope, $timeout, $stateParams,
+                          $translate, Metric, Config, Project, Util) {
   var chart = require('./chart');
   var cubism;
   var initOpt;
@@ -7,89 +8,42 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
 
   $rootScope.currentMain = true;
   $scope.projectId = $stateParams.project;
+  $scope.past = null;
+  $scope.pastUsed = false;
 
   $scope.dateTimes = [
-    {
-      label: 'MAIN_PAST_NOW',
-      seconds: 0
-    },
-    {
-      label: 'MAIN_PAST_3HOURS_AGO',
-      seconds: 3 * 3600
-    },
-    {
-      label: 'MAIN_PAST_6HOURS_AGO',
-      seconds: 6 * 3600
-    },
-    {
-      label: 'MAIN_PAST_1DAY_AGO',
-      seconds: 24 * 3600
-    },
-    {
-      label: 'MAIN_PAST_2DAYS_AGO',
-      seconds: 48 * 3600
-    },
-    {
-      label: 'MAIN_PAST_3DAYS_AGO',
-      seconds: 3 * 24 * 3600
-    },
-    {
-      label: 'MAIN_PAST_4DAYS_AGO',
-      seconds: 4 * 24 * 3600
-    },
-    {
-      label: 'MAIN_PAST_5DAYS_AGO',
-      seconds: 5 * 24 * 3600
-    },
-    {
-      label: 'MAIN_PAST_6DAYS_AGO',
-      seconds: 6 * 24 * 3600
-    },
-    {
-      label: 'MAIN_PAST_7DAYS_AGO',
-      seconds: 7 * 24 * 3600
-    }
+    {label: 'MAIN_PAST_NOW', seconds: 0},
+    {label: 'MAIN_PAST_3HOURS_AGO', seconds: 3 * 3600},
+    {label: 'MAIN_PAST_6HOURS_AGO', seconds: 6 * 3600},
+    {label: 'MAIN_PAST_1DAY_AGO', seconds: 24 * 3600},
+    {label: 'MAIN_PAST_2DAYS_AGO', seconds: 48 * 3600},
+    {label: 'MAIN_PAST_3DAYS_AGO', seconds: 3 * 24 * 3600},
+    {label: 'MAIN_PAST_4DAYS_AGO', seconds: 4 * 24 * 3600},
+    {label: 'MAIN_PAST_5DAYS_AGO', seconds: 5 * 24 * 3600},
+    {label: 'MAIN_PAST_6DAYS_AGO', seconds: 6 * 24 * 3600},
+    {label: 'MAIN_PAST_7DAYS_AGO', seconds: 7 * 24 * 3600}
   ];
 
-  $scope.limitList = [{
-    label: 'MAIN_LIMIT_1',
-    val: 1
-  }, {
-    label: 'MAIN_LIMIT_30',
-    val: 30
-  }, {
-    label: 'MAIN_LIMIT_50',
-    val: 50
-  }, {
-    label: 'MAIN_LIMIT_100',
-    val: 100
-  }, {
-    label: 'MAIN_LIMIT_500',
-    val: 500
-  }, {
-    label: 'MAIN_LIMIT_1000',
-    val: 1000
-  }];
+  $scope.limitList = [
+    {label: 'MAIN_LIMIT_1', val: 1},
+    {label: 'MAIN_LIMIT_30', val: 30},
+    {label: 'MAIN_LIMIT_50', val: 50},
+    {label: 'MAIN_LIMIT_100', val: 100},
+    {label: 'MAIN_LIMIT_500', val: 500},
+    {label: 'MAIN_LIMIT_1000', val: 1000}
+  ];
 
-  $scope.sortList = [{
-    label: 'MAIN_TREND_UP',
-    val: 'up'
-  }, {
-    label: 'MAIN_TREND_DOWN',
-    val: 'down'
-  }];
+  $scope.sortList = [
+    {label: 'MAIN_TREND_UP', val: 'up'},
+    {label: 'MAIN_TREND_DOWN', val: 'down'}
+  ];
 
-  $scope.typeList = [{
-    label: 'MAIN_TYPE_VALUE',
-    val: 'v'
-  }, {
-    label: 'MAIN_TYPE_SCORE',
-    val: 'm'
-  }];
+  $scope.typeList = [
+    {label: 'MAIN_TYPE_VALUE', val: 'v'},
+    {label: 'MAIN_TYPE_SCORE', val: 'm'}
+  ];
 
-  $scope.autoComplete = {
-    searchText: ''
-  };
+  $scope.autoComplete = {searchText: ''};
 
   initOpt = {
     project: $stateParams.project,
@@ -100,6 +54,11 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
     type: $scope.typeList[0].val,
     status: false
   };
+
+  if (typeof $stateParams.past !== 'undefined') {
+    $scope.past =
+        Util.secondsToTimespanString(Util.timeSpanToSeconds($stateParams.past));
+  }
 
   $scope.filter = angular.copy(initOpt);
 
@@ -124,9 +83,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
     }
 
     $scope.spinner = true;
-    $timeout(function() {
-      $scope.spinner = false;
-    }, 1000);
+    $timeout(function() { $scope.spinner = false; }, 1000);
 
     buildCubism();
   };
@@ -147,46 +104,41 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
   };
 
 
-  $scope.$on('$destroy', function() {
-    $rootScope.currentMain = false;
-  });
+  $scope.$on('$destroy', function() { $rootScope.currentMain = false; });
 
   /**
    * watch filter.
    */
   function watchAll() {
-    $scope.$watchGroup(['filter.datetime', 'filter.limit', 'filter.sort', 'filter.type'], function() {
-      buildCubism();
-    });
+    $scope.$watchGroup(
+        ['filter.datetime', 'filter.limit', 'filter.sort', 'filter.type'],
+        function() { buildCubism(); });
   }
 
 
   function loadData() {
-    Project.getAllProjects().$promise
-      .then(function(res) {
-        var projectId = parseInt($stateParams.project);
-        $scope.projects = res;
+    Project.getAllProjects().$promise.then(function(res) {
+      var projectId = parseInt($stateParams.project);
+      $scope.projects = res;
 
-        if (projectId) {
-          $scope.projects.forEach(function(el) {
-            if (el.id === projectId) {
-              $scope.autoComplete.searchText = el.name;
-              $scope.initProject = el;
-              $scope.project = el;
-            }
-          });
-        }
-      });
+      if (projectId) {
+        $scope.projects.forEach(function(el) {
+          if (el.id === projectId) {
+            $scope.autoComplete.searchText = el.name;
+            $scope.initProject = el;
+            $scope.project = el;
+          }
+        });
+      }
+    });
 
-    Config.getInterval().$promise
-      .then(function(res) {
-        $scope.filter.interval = res.interval;
+    Config.getInterval().$promise.then(function(res) {
+      $scope.filter.interval = res.interval;
 
-        setIntervalAndRunNow(buildCubism, 10 * 60 * 1000);
+      setIntervalAndRunNow(buildCubism, 10 * 60 * 1000);
 
-        watchAll();
-      });
-
+      watchAll();
+    });
   }
 
   function buildCubism() {
@@ -198,6 +150,13 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
       params.project = $scope.filter.project;
     } else {
       params.pattern = $scope.filter.pattern;
+    }
+
+    var serverDelay;
+
+    if ($scope.past && !$scope.pastUsed) {
+      $scope.filter.datetime = Util.timeSpanToSeconds($scope.past);
+      $scope.pastUsed = true;
     }
 
     chart.remove();
@@ -212,10 +171,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
       type: $scope.filter.type
     });
 
-    Metric.getMetricIndexes(params).$promise
-      .then(function(res) {
-        plot(res);
-      });
+    Metric.getMetricIndexes(params).$promise.then(function(res) { plot(res); });
   }
 
   /**
@@ -241,20 +197,24 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
       var currentEl = data[index];
       var className = getClassNameByTrend(currentEl.score, currentEl.stamp);
       var str;
-      var _box = ['<div class="box"><span>' + $translate.instant('MAIN_METRIC_RULES_TEXT') + '<span class="icon-tr"></span></span><ul>'];
+      var _box = ['<div class="box"><span>' +
+                  $translate.instant('MAIN_METRIC_RULES_TEXT') +
+                  '<span class="icon-tr"></span></span><ul>'];
 
       for (var i = 0; i < currentEl.matchedRules.length; i++) {
         var rule = currentEl.matchedRules[i];
-        _box.push('<li><a href="#/admin/project/' + rule.projectID + '?rule=' + rule.id + '">' + rule.pattern + '</a></li>');
+        _box.push('<li><a href="#/admin/project/' + rule.projectID + '?rule=' +
+                  rule.id + '">' + rule.pattern + '</a></li>');
       }
       _box.push('</ul></div>');
 
       str = [
-          '<a href="#/main?pattern=' + currentEl.name + '" class="' + className + '">',
-          getTextByTrend(currentEl.score),
-          currentEl.name,
-          '</a>',
-          _box.join('')
+        '<a href="#/main?pattern=' + currentEl.name + '" class="' + className +
+            '">',
+        getTextByTrend(currentEl.score),
+        currentEl.name,
+        '</a>',
+        _box.join('')
       ].join('');
 
       _el.innerHTML = str;
@@ -302,25 +262,19 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
    */
   function feed(name, data, cb) {
     return chart.metric(function(start, stop, step, callback) {
-      var values = [],
-        i = 0;
+      var values = [], i = 0;
       // cast to timestamp from date
       start = parseInt((+start - $scope.filter.datetime) / 1000);
       stop = parseInt((+stop - $scope.filter.datetime) / 1000);
       step = parseInt(+step / 1000);
       // parameters to pull data
-      var params = {
-        name: name,
-        start: start,
-        stop: stop
-      };
+      var params = {name: name, start: start, stop: stop};
       // request data and call `callback` with values
       // data schema: {name: {String}, times: {Array}, vals: {Array}}
       Metric.getMetricValues(params, function(data) {
         // the timestamps from statsd DONT have exactly steps `10`
         var len = data.length;
         while (start < stop && i < len) {
-
           while (start < data[i].stamp) {
             start += step;
             if ($scope.filter.type === 'v') {
@@ -368,6 +322,26 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams, $translate
 
   $scope.isGraphiteName = Util.isGraphiteName;
   $scope.translateGraphiteName = Util.translateGraphiteName;
+
+  $scope.datetimeRangeInString = function() {
+    if (!chart.context()) return '';
+    var stop = +new Date() - $scope.filter.datetime * 1000;
+    var start = stop - chart.size() * chart.step();
+    return Util.format("%s ~ %s", Util.dateToString(start),
+                       Util.dateToString(stop));
+  };
+
+  $scope.datetimeInList = function(seconds) {
+    var i;
+    for (i = 0; i < $scope.dateTimes.length; i++) {
+      if ($scope.dateTimes[i].seconds == seconds) {
+        return true
+      }
+    }
+    return false
+  };
+
+  $scope.secondsToTimespanString = Util.secondsToTimespanString;
 
   loadData();
   initScrollbars();
