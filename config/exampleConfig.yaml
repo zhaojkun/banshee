@@ -1,9 +1,9 @@
 # Metrics incoming time interval, in seconds. default: 10
-# Currently,aAll metrics uses the same interval.
+# Currently, all metrics use the same interval.
 interval: 10
 
 # Metrics period, in seconds, default: 86400 (1 day)
-# Currently, All metrics uses the same period.
+# Currently, all metrics use the same period.
 period: 86400
 
 # Metric expiration, in seconds, default: 604800 (7 days)
@@ -15,7 +15,7 @@ expiration: 604800
 storage:
     # Storage data directory path, default: ./data
     # If the configured path dose not exist, banshee would create one with
-    # this name.
+    # this path.
     path: ./data
 
 detector:
@@ -29,10 +29,13 @@ detector:
     # Percentage of the filter history offset to period, should be a number
     # between 0 and 1, default: 0.01
     # The time span to filter in a single period is: filter_offset * period,
-    # so setting this value arger means more history datapoints would be quried,
+    # so setting this value larger means more history datapoints would be quried,
     # detection would be slower but preciser.
     filter_offset: 0.01
     # Number of times to filter history metrics, default: 4
+    # In the case that period is 1 day and expiration is 7 days, setting this value
+    # to 4 means filter history datapoints in latest 4 days. And this value should
+    # be an integer smaller than expiration/period.
     # Setting this value larger, also, the detection would be slower but preciser.
     filter_times: 4
     # Least count of datapoints to start detection for a single metric,
@@ -44,6 +47,9 @@ detector:
     # Example: ["statsd.*"]
     blacklist: []
     # Whether enable the filter interval hit limit, default: true
+    # Setting this value to true means a rule can match at most a certain number of
+    # metrics in an interval. Once the limitation reached, later matched metrics
+    # would be ignored.
     enable_interval_hit_limit: true
     # Limitation of incoming datapoints for a single rule in an interval,
     # default: 512.
@@ -52,18 +58,19 @@ detector:
     # Default values of thresholdMaxs, the thresholdMax is the maximum value
     # to trigger an alert rule. default: {}
     # Example: {"counter.*": 10}, which means trending up counters below 10
-    # never trigger alerts for rules without thresholdMax.
+    # never trigger alerts for rules without a non-zero thresholdMax.
     # Note that this setting has no effect on trending down metric events.
     default_threshold_maxs: {}
     # Default values of thresholdMins, the thresholdMin is the minimum value
     # to trigger an alert rule. default: {}
     # Example: {"counter.*": 10}, which means trending down counters above 10
-    # never trigger alerts for rules without thresholdMin.
+    # never trigger alerts for rules without a non-zero thresholdMin.
     # Note that this setting has no effect on trending up metric events.
     default_threshold_mins: {}
     # A list of wildcard patterns, for any matched metrics, banshee would fill
     # the blank gaps by zeros in detection. default: []
-    # Example: ["counter.*"].
+    # Example: ["counter.*"], which means banshee would fill blank zeros after
+    # filter counters history datapoints.
     fill_blank_zeros: []
     # Detection warning timeout in millseconds, default: 300
     warning_timeout: 300
@@ -71,7 +78,8 @@ detector:
 webapp:
     # Port for webapp http server, default: 2016
     port: 2016
-    # Website basic auth username and password, default: [admin, admin]
+    # Website basic auth username and password. Setting username to an empty
+    # string means disabling auth, default: [admin, admin]
     auth: [admin, admin]
     # Static files directory path, default: static/dist
     static: static/dist
@@ -87,7 +95,7 @@ alerter:
     # Reference: https://godoc.org/github.com/eleme/banshee/alerter
     command: ""
     # Command execution timeout in seconds, default: 5
-    # If the alert command execution exceeds timed out, it would be killed.
+    # If the alert command execution exceeds this timeout, it would be killed.
     exec_command_time_out: 5
     # Number of workers to send alert messages by executing the alerter
     # command. default: 4
