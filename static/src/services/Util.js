@@ -131,10 +131,94 @@ module.exports = function() {
       function() { return exports.translateDate(new Date()); };
 
   exports.translateGoDate = function(s) {
-    if (typeof s === "undefined" || s.length === 0) {
+    if (typeof s === 'undefined' || s.length === 0) {
       return exports.translateNow();
     }
     return exports.translateDate(new Date(s));
+  };
+
+  // Convert string format timespan to seconds.
+  exports.timeSpanToSeconds = function(timeSpan) {
+    var map = {
+      's': 1,
+      'm': 60,
+      'h': 60 * 60,
+      'd': 24 * 60 * 60,
+    };
+    var secs = 0, i, ch, measure, count;
+
+    while (timeSpan.length > 0) {
+      for (i = 0; i < timeSpan.length; i++) {
+        ch = timeSpan[i];
+        measure = map[ch];
+        if (!isNaN(measure)) {
+          count = +timeSpan.slice(0, i);
+          secs += count * measure;
+          timeSpan = timeSpan.slice(i + 1);
+          break;
+        }
+      }
+      if (i === timeSpan.length) return secs;
+    }
+    return secs;
+  };
+
+  // Covert seconds to string format.
+  exports.secondsToTimespanString = function(seconds) {
+    var numDays = parseInt(seconds / (24 * 60 * 60));
+    seconds -= numDays * 24 * 60 * 60;
+    var numHours = parseInt(seconds / (60 * 60));
+    seconds -= numHours * 60 * 60;
+    var numMinutes = parseInt(seconds / 60);
+    seconds -= numMinutes * 60;
+    var numSeconds = seconds;
+    var s = '';
+    if (numDays > 0) s += exports.format("%dd", numDays);
+    if (numHours > 0) s += exports.format("%dh", numHours);
+    if (numMinutes > 0) s += exports.format("%dm", numMinutes);
+    if (numSeconds > 0) s += exports.format("%ds", numSeconds);
+    return s
+  };
+
+  // Convert date to readable string.
+  exports.dateToString = function(date) {
+    if (!(date instanceof Date)) date = new Date(date);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    // normalize
+    year = '' + year;
+    month = ('00' + month).slice(-2);
+    day = ('00' + day).slice(-2);
+    hours = ('00' + hours).slice(-2);
+    minutes = ('00' + minutes).slice(-2);
+    seconds = ('00' + seconds).slice(-2);
+    return [year, month, day].join('/') +
+           ' ' + [hours, minutes, seconds].join(':');
+  };
+
+  // Format string.
+  exports.format = function() {
+    var args = arguments;
+    var fmt = args[0];
+    var i = 1;
+    return fmt.replace(/%((%)|s|d|f)/g, function(m) {
+      if (m[2]) {
+        return m[2];
+      }
+      var val = args[i++];
+      switch (m) {
+        case '%d':
+          return parseInt(val);
+        case '%f':
+          return parseFloat(val);
+        case '%s':
+          return val.toString();
+      }
+    });
   };
 
   return exports;

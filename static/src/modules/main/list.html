@@ -48,7 +48,11 @@
           </div>
           <md-input-container>
             <md-select ng-model="filter.datetime" aria-label="datetime">
-              <md-option ng-repeat="time in dateTimes" ng-value="time.seconds" ng-selected="$index === 0">
+              <label ng-if="!datetimeInList(filter.datetime)" ng-bind="secondsToTimespanString(filter.datetime)"></label>
+              <md-option ng-if="datetimeInList(filter.datetime)" ng-repeat="time in dateTimes" ng-value="time.seconds" ng-selected="$index === 0">
+                {{ time.label | translate }}
+              </md-option>
+              <md-option ng-if="!datetimeInList(filter.datetime)" ng-repeat="time in dateTimes" ng-value="time.seconds" >
                 {{ time.label | translate }}
               </md-option>
             </md-select>
@@ -85,6 +89,10 @@
               <md-tooltip md-direction="bottom" ng-if="!filter.status"> {{ 'MAIN_PAUSE_TOOLTIP_TEXT' | translate }} </md-tooltip>
               <md-tooltip md-direction="bottom" ng-if="filter.status"> {{ 'MAIN_RESUME_TOOLTIP_TEXT' | translate }} </md-tooltip>
               <md-icon class="fa" ng-class="{'fa-pause': !filter.status, 'fa-play': filter.status}"></md-icon>
+            </md-button>
+          </md-input-container>
+          <md-input-container class="pull-right">
+          <md-button ng-bind="datetimeRangeInString()">
             </md-button>
           </md-input-container>
         </div>
