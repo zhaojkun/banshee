@@ -18,22 +18,18 @@ func TestEventGenerateID(t *testing.T) {
 	util.Must(t, ev1.ID != ev2.ID)
 }
 
-func TestEventWrapperTranslateRuleComment(t *testing.T) {
+func TestEventTranslateRuleComment(t *testing.T) {
 	m := &Metric{Name: "timer.count_ps.foo.bar"}
 	r := &Rule{Pattern: "timer.count_ps.*.*", Comment: "$1 and $2 timing"}
 	ev := &Event{Metric: m, Rule: r}
-	ew := NewWrapperOfEvent(ev)
-	ew.TranslateRuleComment()
 	excepted := "foo and bar timing"
-	util.Must(t, ew.RuleTranslatedComment == excepted)
+	util.Must(t, ev.TranslateRuleComment() == excepted)
 }
 
-func TestEventWrapperTranslateRuleCommentNoVariables(t *testing.T) {
+func TestEventTranslateRuleCommentNoVariables(t *testing.T) {
 	m := &Metric{Name: "foo.bar"}
 	r := &Rule{Pattern: "foo.*", Comment: "no variables"}
 	ev := &Event{Metric: m, Rule: r}
-	ew := NewWrapperOfEvent(ev)
-	ew.TranslateRuleComment()
 	excepted := "no variables"
-	util.Must(t, ew.RuleTranslatedComment == excepted)
+	util.Must(t, ev.TranslateRuleComment() == excepted)
 }

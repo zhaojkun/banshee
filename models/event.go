@@ -32,6 +32,32 @@ func (ev *Event) generateID() {
 	ev.ID = hex.EncodeToString(hash.Sum(nil))
 }
 
+// TranslateRuleComment translates rule comment variables with metric name and
+// rule pattern.
+//
+//	m := &Metric{Name: "timer.count_ps.foo"}
+//	r := &Rule{Pattern: "timer.count_ps.*", Comment: "$1 timing"}
+//	ev := &Event{Metric:m, Rule:r}
+//	ev.TranslateRuleComment()  // => "foo timing"
+//
+func (ev *Event) TranslateRuleComment() string {
+	patternParts := strings.Split(ev.Rule.Pattern, ".")
+	metricParts := strings.Split(ev.Metric.Name, ".")
+	if len(patternParts) != len(metricParts) { // Unexcepted input metric and pattern.
+		return ev.Rule.Comment // Use original comment
+	}
+	i := 0
+	s := ev.Rule.Comment
+	for j, patternPart := range patternParts {
+		if patternPart == "*" {
+			i++
+			repl := fmt.Sprintf("$%d", i)
+			s = strings.Replace(s, repl, metricParts[j], 1)
+		}
+	}
+	return s
+}
+
 // EventWrapper is a wrapper of Event for tmp usage.
 type EventWrapper struct {
 	*Event
@@ -42,32 +68,5 @@ type EventWrapper struct {
 
 // NewWrapperOfEvent creates an event wrapper from given event.
 func NewWrapperOfEvent(ev *Event) *EventWrapper {
-	return &EventWrapper{Event: ev}
-}
-
-// TranslateRuleComment translates rule comment variables with metric name and
-// rule pattern.
-//
-//	m := &Metric{Name: "timer.count_ps.foo"}
-//	r := &Rule{Pattern: "timer.count_ps.*", Comment: "$1 timing"}
-//	ev := &Event{Metric:m, Rule:r}
-//	ev.TranslateRuleComment()  // ev.RuleTranslatedComment => "foo timing"
-//
-func (ew *EventWrapper) TranslateRuleComment() {
-	patternParts := strings.Split(ew.Rule.Pattern, ".")
-	metricParts := strings.Split(ew.Metric.Name, ".")
-	if len(patternParts) != len(metricParts) { // Unexcepted input metric and pattern.
-		ew.RuleTranslatedComment = ew.Rule.Comment // Use original comment
-		return
-	}
-	i := 0
-	s := ew.Rule.Comment
-	for j, patternPart := range patternParts {
-		if patternPart == "*" {
-			i++
-			repl := fmt.Sprintf("$%d", i)
-			s = strings.Replace(s, repl, metricParts[j], 1)
-		}
-	}
-	ew.RuleTranslatedComment = s
+	return &EventWrapper{Event: ev, RuleTranslatedComment: ev.TranslateRuleComment()}
 }

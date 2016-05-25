@@ -4,6 +4,7 @@ package storage
 
 import (
 	"github.com/eleme/banshee/storage/admindb"
+	"github.com/eleme/banshee/storage/eventdb"
 	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/eleme/banshee/storage/metricdb"
 	"github.com/eleme/banshee/util/log"
@@ -19,6 +20,7 @@ const (
 	admindbFileName  = "admin"
 	indexdbFileName  = "index"
 	metricdbFileName = "metric"
+	eventdbFileName  = "event"
 )
 
 // Options is to open DB.
@@ -33,6 +35,7 @@ type DB struct {
 	Admin  *admindb.DB
 	Index  *indexdb.DB
 	Metric *metricdb.DB
+	Event  *eventdb.DB
 }
 
 // Open a DB by fileName and options.
@@ -73,6 +76,18 @@ func Open(fileName string, opts *Options) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Eventdb.
+	var eventdbOpts *eventdb.Options
+	if opts != nil {
+		eventdbOpts = &eventdb.Options{
+			Period:     opts.Period,
+			Expiration: opts.Expiration,
+		}
+	}
+	db.Event, err = eventdb.Open(path.Join(fileName, eventdbFileName), eventdbOpts)
+	if err != nil {
+		return nil, err
+	}
 	log.Debugf("storage is opened successfully")
 	return db, nil
 }
@@ -89,6 +104,10 @@ func (db *DB) Close() error {
 	}
 	// Metricdb.
 	if err := db.Metric.Close(); err != nil {
+		return err
+	}
+	// Eventdb.
+	if err := db.Event.Close(); err != nil {
 		return err
 	}
 	return nil

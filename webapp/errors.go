@@ -43,6 +43,8 @@ var (
 	ErrRuleUpdateFailed     = NewWebError(http.StatusBadRequest, "Failed to update rule")
 	// Metric
 	ErrMetricNotFound = NewWebError(http.StatusNotFound, "Metric not found")
+	// Event
+	ErrEventPast = NewWebError(http.StatusBadRequest, "Bad event time past")
 )
 
 // NewWebError creates a WebError.
