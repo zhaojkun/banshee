@@ -200,16 +200,17 @@ func (db *DB) expireStorages() error {
 
 // EventWrapper is an event wrapper to store into sqlite.
 type EventWrapper struct {
-	ID        string  `gorm:"primary_key" json:"id"`
-	RuleID    int     `sql:"index;not null" json:"ruleID"`
-	ProjectID int     `sql:"index;not null" json:"projectID"`
-	Level     int     `sql:"index;not null" json:"level"`
-	Comment   string  `json:"comment"` // rule.Comment
-	Name      string  `sql:"size:257;not null" json:"name"`
-	Stamp     uint32  `sql:"index;not null" json:"stamp"`
-	Score     float64 `json:"score"`   // index.Score
-	Average   float64 `json:"average"` // index.Average
-	Value     float64 `json:"value"`   // metric.Value
+	ID                string  `gorm:"primary_key" json:"id"`
+	RuleID            int     `sql:"index;not null" json:"ruleID"`
+	ProjectID         int     `sql:"index;not null" json:"projectID"`
+	Level             int     `sql:"index;not null" json:"level"`
+	Comment           string  `json:"comment"` // rule.Comment
+	Name              string  `sql:"size:257;not null" json:"name"`
+	Stamp             uint32  `sql:"index;not null" json:"stamp"`
+	Score             float64 `json:"score"`   // index.Score
+	Average           float64 `json:"average"` // index.Average
+	Value             float64 `json:"value"`   // metric.Value
+	TranslatedComment string  `json:"translatedComment"`
 }
 
 // NewEventWrapper creates a new EventWrapper from models.Event.
