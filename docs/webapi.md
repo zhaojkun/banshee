@@ -476,6 +476,32 @@ Metric
    ]
    ```
 
+Event
+-----
+
+1. Get events by project id. (default `past`: `3600*24`), baisc auth required:
+
+   ```
+   GET /api/project/:id/events?past=<number>
+
+   200
+   [
+     {
+       "id": "f2d44be1b10dd44875f86a9c1eacfac912ecc45e",
+       "ruleID": 10,
+       "projectID": 12,
+       "level": 2,
+       "comment": "Add note",
+       "name": "timer.count_ps.note.add",
+       "stamp": 1464166573,
+       "score": 1.7112404844428821,
+       "average": 1.2682274247491634,
+       "value": 21.4
+     },
+     ...
+   ]
+   ```
+
 Misc
 ----
 
