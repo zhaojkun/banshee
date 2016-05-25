@@ -202,8 +202,7 @@ module.exports =
   $scope.ruleCheck = Util.ruleCheck;
   $scope.dateToString = Util.dateToString;
   $scope.getEventRuleComment = function(event) {
-    if (event.translatedComment.length > 0)
-      return event.translatedComment.length;
+    if (event.translatedComment.length > 0) return event.translatedComment;
     if (event.comment.length > 0) return event.comment;
     return event.pattern;
   };
@@ -212,7 +211,7 @@ module.exports =
               {id: $scope.projectId, rule: ruleId}, {reload: true});
   };
   $scope.goToMain = function(metricName, stamp) {
-    var past = +new Date() / 1000 - stamp;
+    var past = +new Date() / 1000 - stamp + 30 * 60;  // +30min
     $state.go('banshee.main',
               {pattern: metricName, past: Util.secondsToTimespanString(past)});
   };
