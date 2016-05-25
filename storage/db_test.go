@@ -22,4 +22,5 @@ func TestOpen(t *testing.T) {
 	util.Must(t, util.IsFileExist(path.Join(fileName, admindbFileName)))
 	util.Must(t, util.IsFileExist(path.Join(fileName, indexdbFileName)))
 	util.Must(t, util.IsFileExist(path.Join(fileName, metricdbFileName)))
+	util.Must(t, util.IsFileExist(path.Join(fileName, eventdbFileName)))
 }

@@ -13,6 +13,7 @@ structure is:
 	    |--index/               --- Metric index          LevelDB
 	    |--metric/              --- Metric data           LevelDB
 	    |--admin                --- Rules/Users/Projects  SQLite3
+		|- event/               --- Event                 SQLite3
 
 The storage directory will be created if not exists.
 

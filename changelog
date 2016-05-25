@@ -3,6 +3,7 @@ pending
 
 * Detector: Threshold related rules should also be analyzed because the avg is
 wanted. 
+* Storage: Add eventdb to storage alert events.
 
 0.2.2
 -----
