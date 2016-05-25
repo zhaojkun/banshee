@@ -214,6 +214,10 @@ type EventWrapper struct {
 
 // NewEventWrapper creates a new EventWrapper from models.Event.
 func NewEventWrapper(ev *models.Event) *EventWrapper {
+	ev.Rule.RLock()
+	defer ev.Rule.RUnlock()
+	ev.Index.RLock()
+	defer ev.Index.RUnlock()
 	return &EventWrapper{
 		ID:        ev.ID,
 		RuleID:    ev.Rule.ID,
