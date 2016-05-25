@@ -193,7 +193,6 @@ func (al *Alerter) work() {
 			continue
 		}
 		al.incrAlertNum(ew.Metric)
-		ew.TranslateRuleComment()
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
 			continue
