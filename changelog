@@ -5,6 +5,7 @@ pending
 wanted. 
 * Detector: Store events after detection.
 * Storage: Add eventdb to storage alert events.
+* Webapp: Add api getEventsByProjectID.
 
 0.2.2
 -----
