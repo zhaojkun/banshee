@@ -101,6 +101,7 @@
   "ADMIN_PROJECT_RULES_TEXT": "Rules",
   "ADMIN_PROJECT_USERS_TEXT": "Receivers",
   "ADMIN_PROJECT_EDIT_TEXT": "Edit",
+  "ADMIN_PROJECT_EVENTS_TEXT": "Events",
   "ADMIN_PROJECT_SAVE_TEXT": "Save Project",
   "ADMIN_PROJECT_DELETE_TEXT": "Delete Project",
   "ADMIN_PROJECT_DELETE_WARN": "This will delete this project with all its rules, do you want to proceed?",
@@ -157,5 +158,9 @@
   "ADMIN_PROJEC_SILENT_END": "Silent time end (number 0 ~ 24)",
   "ADMIN_PROJEC_SILENT_RANGE_DEFAULT": "Default silent time range",
   "ADMIN_PROJEC_SILENT_RANGE_ENABLE_TEXT": "Enable silent",
+  "ADMIN_PROJECT_EVENT_METRIC_NAME": "Metric",
+  "ADMIN_PROJECT_EVENT_DATETIME": "Datetime",
+  "ADMIN_PROJECT_EVENT_LEVEL": "Level",
+  "ADMIN_PROJECT_EVENT_RULE": "Rule",
   "FINAL_PLACEHOLDER": "Nothing"
 }

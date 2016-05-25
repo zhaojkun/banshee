@@ -35,6 +35,10 @@ module.exports =
 
     // get config
     Config.get().$promise.then(function(res) { $scope.config = res; });
+
+    // get events
+    Project.getEventsByProjectId({id: projectId})
+        .$promise.then(function(res) { $scope.events = res; });
   };
 
   $scope.edit = function() {
@@ -196,4 +200,20 @@ module.exports =
 
   $scope.buildRepr = Util.buildRepr;
   $scope.ruleCheck = Util.ruleCheck;
+  $scope.dateToString = Util.dateToString;
+  $scope.getEventRuleComment = function(event) {
+    if (event.translatedComment.length > 0)
+      return event.translatedComment.length;
+    if (event.comment.length > 0) return event.comment;
+    return event.pattern;
+  };
+  $scope.goToRuleID = function(ruleId) {
+    $state.go('banshee.admin.project.detail',
+              {id: $scope.projectId, rule: ruleId}, {reload: true});
+  };
+  $scope.goToMain = function(metricName, stamp) {
+    var past = +new Date() / 1000 - stamp;
+    $state.go('banshee.main',
+              {pattern: metricName, past: Util.secondsToTimespanString(past)});
+  };
 };
