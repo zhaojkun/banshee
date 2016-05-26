@@ -1,10 +1,8 @@
 Web Manual
 ==========
 
-Rule
-----
-
-### Cases
+Rule Cases
+----------
 
 ```
 [ ] On trend up   AND Value >= ___
@@ -24,36 +22,41 @@ OR
 
 *Setting a fixed threshold to 0 means the rule is unrelated to this threshold.*
 
-### Example rule for timers
+Example rule for timers
+-----------------------
 
 For a timer, we only care its upward trend, the image below means:
 alert when the time cost of `note.add` rises abnormally.
 
-![](web-manual-01.png)
+![](snap/web-manual-01.png)
 
-### Example rule for count ps
+Example rule for count ps
+-------------------------
 
 The words "count ps" means "count per second".
 For a count_ps, we care its upward and downward trend, the image below
 means: alert when the number of calls of `note.add` rises or drops abnormally.
 
-![](web-manual-02.png)
+![](snap/web-manual-02.png)
 
-### Example rule for counters
+Example rule for counters
+-------------------------
 
 For an errors counter, we care its upward trend, the image below means:
 alert when the number of errors rises to at least 10.
 
-![](web-manual-03.png)
+![](snap/web-manual-03.png)
 
-### Example rule for fixed-threshold
+Example rule for fixed-threshold
+--------------------------------
 
 We may want to use simple thresholds but not dynamic trend analyzation, the
 image below means: alert when the number of hard errors is greater than 10.
 
-![](web-manual-04.png)
+![](snap/web-manual-04.png)
 
-### Example rule comment variable matching
+Example rule comment variable matching
+--------------------------------------
 
 Comment is required to create or edit a rule. Banshee supports dynamic variable matching
 for comments:
@@ -65,26 +68,35 @@ Metric Name: counter.note.add.error
 Alert Message: API add of Service note errors
 ```
 
-![](web-manual-05.png)
+![](snap/web-manual-05.png)
 
-### Example to disable rule
+Example to disable rule
+-----------------------
 
 Metrics matching disabled rules are still accepted and analyzed by banshee,
 but the alert won't work.
 
 To disable a rule forever:
 
-![](web-manual-06.png)
+![](snap/web-manual-06.png)
 
 To disable a rule for a while:
 
-![](web-manual-07.png)
+![](snap/web-manual-07.png)
 
-Receiver
---------
-
-### Universal receivers
+Universal receivers
+-------------------
 
 Universal receivers receive alerts from all projects.
 
-![](web-manual-08.png)
+![](snap/web-manual-08.png)
+
+Make a project silent
+---------------------
+
+By default, the configured silent time range is `[0,6]`, which means
+all projects won't alert in `00:00~06:00` by default.
+
+Here is an example to customize this behavior:
+
+![](snap/web-manual-09.png)

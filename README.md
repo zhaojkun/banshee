@@ -89,7 +89,7 @@ supported and are also recommended to use as banshee input.
 
 *Statsd-banshee would format banshee metric names before data sent out.*
 
-Wen Panel Manual
+Web Panel Manual
 ----------------
 
 Welcome to checkout the web panel manuals: [English](docs/web-manual.md), [简体中文](docs/web-manual.zh.md).
