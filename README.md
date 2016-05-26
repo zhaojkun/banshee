@@ -8,7 +8,7 @@ metrics.
 [![GoDoc](https://godoc.org/github.com/eleme/banshee?status.svg)](https://godoc.org/github.com/eleme/banshee)
 [![Join the chat at https://gitter.im/eleme/banshee](https://badges.gitter.im/eleme/banshee.svg)](https://gitter.im/eleme/banshee?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-![snap-01](snap/01.png)
+![snap-01](docs/snap/01.png)
 
 Case
 ----
@@ -88,6 +88,11 @@ Detection should work for any metric delimited by dots, but above types are bett
 supported and are also recommended to use as banshee input.
 
 *Statsd-banshee would format banshee metric names before data sent out.*
+
+Wen Panel Manual
+----------------
+
+Welcome to checkout the web panel manuals: [English](docs/web-manual.md), [简体中文](docs/web-manual.zh.md).
 
 Deployment
 ----------
