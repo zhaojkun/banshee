@@ -264,9 +264,10 @@ module.exports =
 
   $scope.getGraphiteUrl = function(name) {
     var fmt = $scope.config.webapp.graphiteUrl;
-    return Util.format(fmt, name);
+    return Util.format(fmt, Util.getGraphiteName(name));
   };
 
   $scope.loadData();
 
+  $scope.foldNumber = Util.foldNumber;
 };

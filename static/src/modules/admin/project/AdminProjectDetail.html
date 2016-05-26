@@ -198,6 +198,8 @@
                       <th> {{ 'ADMIN_PROJECT_EVENT_LEVEL' | translate }} </th>
                       <th> {{ 'ADMIN_PROJECT_EVENT_RULE' | translate }} </th>
                       <th> {{ 'ADMIN_PROJECT_EVENT_METRIC_NAME' | translate }} </th>
+                      <th> {{ 'ADMIN_PROJECT_EVENT_METRIC_VALUE' | translate }} </th>
+                      <th> {{ 'ADMIN_PROJECT_EVENT_METRIC_AVERAGE' | translate }} </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -218,6 +220,8 @@
                           {{ 'METRIC_CHART_TEXT' | translate  }}
                         </a>
                       </td>
+                      <td> {{ foldNumber(event.value) }} </td>
+                      <td> {{ foldNumber(event.average) }} </td>
                     </tr>
                   </tbody>
                 </table>

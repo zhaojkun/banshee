@@ -1,5 +1,5 @@
-pending
--------
+0.2.3
+-----
 
 * Config: Add new config webapp.graphite_url.
 * Deploy: Don't transfer binary on only_static set.

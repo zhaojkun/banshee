@@ -274,5 +274,15 @@ module.exports = function() {
     }
   };
 
+  exports.foldNumber = function(n) {
+    var m = 0;
+    while (Math.abs(n) >= 1000) {
+      m += 1;
+      n /= 1000;
+    }
+    var k = parseFloat(n.toFixed(2));
+    return k + ['', 'K', 'M', 'G', 'T', 'P'][m];
+  };
+
   return exports;
 };
