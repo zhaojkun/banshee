@@ -13,7 +13,6 @@ import (
 	"github.com/eleme/banshee/health"
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/storage"
-	"github.com/eleme/banshee/storage/eventdb"
 	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/eleme/banshee/util"
 	"github.com/eleme/banshee/util/log"
@@ -177,7 +176,6 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 //	3. Save its index and the metricinto db.
 //	4. Test the metric with matched rules.
 //	5. Make events with its tested rules.
-//	6. Store events.
 func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models.Event, err error) {
 	var idx *models.Index
 	if idx, err = d.db.Index.Get(m.Name); err != nil {
@@ -194,12 +192,7 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models
 	for _, rule := range d.test(m, idx, rules) {
 		evs = append(evs, models.NewEvent(m, idx, rule))
 	}
-	for _, ev := range evs {
-		if err = d.db.Event.Put(eventdb.NewEventWrapper(ev)); err != nil {
-			log.Warnf("failed to store event:%v, skipping..", err)
-		}
-	}
-	return evs, nil
+	return
 }
 
 // analyze given metric with 3sigma, returns the new index.

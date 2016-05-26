@@ -211,7 +211,7 @@ module.exports =
               {id: $scope.projectId, rule: ruleId}, {reload: true});
   };
   $scope.goToMain = function(metricName, stamp) {
-    var past = +new Date() / 1000 - stamp + 30 * 60;  // +30min
+    var past = +new Date() / 1000 - stamp - 15 * 60;  // -15min
     $state.go('banshee.main',
               {pattern: metricName, past: Util.secondsToTimespanString(past)});
   };
