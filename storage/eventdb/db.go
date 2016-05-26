@@ -204,13 +204,13 @@ type EventWrapper struct {
 	RuleID            int     `sql:"index;not null" json:"ruleID"`
 	ProjectID         int     `sql:"index;not null" json:"projectID"`
 	Level             int     `sql:"index;not null" json:"level"`
-	Comment           string  `json:"comment"` // rule.Comment
+	Comment           string  `sql:"type:varchar(256)" json:"comment"` // rule.Comment
 	Name              string  `sql:"size:257;not null" json:"name"`
 	Stamp             uint32  `sql:"index;not null" json:"stamp"`
 	Score             float64 `json:"score"`   // index.Score
 	Average           float64 `json:"average"` // index.Average
 	Value             float64 `json:"value"`   // metric.Value
-	TranslatedComment string  `json:"translatedComment"`
+	TranslatedComment string  `sql:"type:varchar(513)" json:"translatedComment"`
 }
 
 // NewEventWrapper creates a new EventWrapper from models.Event.
@@ -218,16 +218,17 @@ func NewEventWrapper(ev *models.Event) *EventWrapper {
 	// Note: No need to rlock the index or rule, all rules/indexes are copied
 	// of the shared rules/indexes.
 	return &EventWrapper{
-		ID:        ev.ID,
-		RuleID:    ev.Rule.ID,
-		ProjectID: ev.Rule.ProjectID,
-		Level:     ev.Rule.Level,
-		Comment:   ev.Rule.Comment,
-		Name:      ev.Index.Name,
-		Stamp:     ev.Index.Stamp,
-		Score:     ev.Index.Score,
-		Average:   ev.Index.Average,
-		Value:     ev.Metric.Value,
+		ID:                ev.ID,
+		RuleID:            ev.Rule.ID,
+		ProjectID:         ev.Rule.ProjectID,
+		Level:             ev.Rule.Level,
+		Comment:           ev.Rule.Comment,
+		Name:              ev.Index.Name,
+		Stamp:             ev.Index.Stamp,
+		Score:             ev.Index.Score,
+		Average:           ev.Index.Average,
+		Value:             ev.Metric.Value,
+		TranslatedComment: ev.TranslateRuleComment(),
 	}
 }
 
