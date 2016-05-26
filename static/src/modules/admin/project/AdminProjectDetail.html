@@ -173,7 +173,7 @@
             </md-content> <!-- ./Edit md-content-->
           </md-tab> <!-- ./Edit -->
           <!-- Events -->
-          <md-tab label="{{ 'ADMIN_PROJECT_EVENTS_TEXT' | translate }}">
+          <md-tab label="{{ 'ADMIN_PROJECT_EVENTS_TEXT' | translate }}" ng-click="watchEventLoadParams()">
             <md-content class="md-padding">
               <md-input-container>
                 <md-select ng-model="eventPast">

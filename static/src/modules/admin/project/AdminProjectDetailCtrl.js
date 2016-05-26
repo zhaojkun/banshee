@@ -36,11 +36,6 @@ module.exports =
     // get config
     Config.get().$promise.then(function(res) { $scope.config = res; });
 
-    // get events
-    Project.getEventsByProjectId({id: projectId})
-        .$promise.then(function(res) { $scope.events = res; });
-
-    watchEventLoadParams();
   };
 
   $scope.edit = function() {
@@ -247,12 +242,18 @@ module.exports =
         .$promise.then(function(res) { $scope.events = res; });
   };
 
-  function watchEventLoadParams() {
+  $scope.watchEventLoadParams = function() {
+    if ($scope.watchEventLoadParamsDone) {
+      return;
+    }
     $scope.$watchGroup(['eventPast', 'eventLevel'], function() {
       $scope.events = null;
       $scope.loadEvents();
-    })
-  }
+    });
+    $scope.watchEventLoadParamsDone = true;
+  };
+
+  $scope.watchEventLoadParamsDone = false;
 
   $scope.loadData();
 
