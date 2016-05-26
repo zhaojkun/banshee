@@ -134,10 +134,10 @@ def upload():
         sudo("mkdir -p {}".format(env.remote_path))
     sudo("chmod 755 {}".format(env.remote_path))
     sudo("chown -R {0} {1}".format(env.user, env.remote_path))
-    extra_opts = []
     if env.only_static:
-        extra_opts.extend(["--exclude=./{}".format(BINARY_NAME)])
-    rsync_project(env.remote_path, LOCAL_DIR + '/', extra_opts=extra_opts)
+        rsync_project(env.remote_path, LOCAL_DIR + '/', exclude=BINARY_NAME)
+    else:
+        rsync_project(env.remote_path, LOCAL_DIR + '/', *extra_opts)
     sudo("chown -R {0} {1}".format(env.remote_user, env.remote_path))
 
 
