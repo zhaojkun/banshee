@@ -262,6 +262,11 @@ module.exports =
 
   $scope.watchEventLoadParamsDone = false;
 
+  $scope.getGraphiteUrl = function(name) {
+    var fmt = $scope.config.webapp.graphiteUrl;
+    return Util.format(fmt, name);
+  };
+
   $scope.loadData();
 
 };

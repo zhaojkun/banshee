@@ -137,7 +137,7 @@ def upload():
     if env.only_static:
         rsync_project(env.remote_path, LOCAL_DIR + '/', exclude=BINARY_NAME)
     else:
-        rsync_project(env.remote_path, LOCAL_DIR + '/', *extra_opts)
+        rsync_project(env.remote_path, LOCAL_DIR + '/')
     sudo("chown -R {0} {1}".format(env.remote_user, env.remote_path))
 
 

@@ -212,7 +212,12 @@
                         <span class="label label-danger" ng-if="event.level==2">{{ 'ADMIN_RULE_LEVEL_HIGH' | translate }}</span>
                       </td>
                       <td><a ng-click="goToRuleID(event.ruleID)" ng-style="{'cursor': 'pointer'}">{{ getEventRuleComment(event) }}</a></td>
-                      <td><a ng-click="goToMain(event.name, event.stamp)" ng-style="{'cursor': 'pointer'}">{{ event.name }}</a></td>
+                      <td>
+                        <a ng-click="goToMain(event.name, event.stamp)" ng-style="{'cursor': 'pointer'}">{{ event.name }}</a>,
+                        <a href="{{getGraphiteUrl(event.name)}}" ng-if="config.webapp.graphiteUrl.length>0" target="_blank">
+                          {{ 'METRIC_CHART_TEXT' | translate  }}
+                        </a>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
