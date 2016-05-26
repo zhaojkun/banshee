@@ -77,6 +77,10 @@ func TestRuleDisabled(t *testing.T) {
 	rule = &Rule{Disabled: true, DisabledFor: 1, DisabledAt: time.Time{}, ThresholdMax: 2}
 	util.Must(t, rule.Test(&Metric{Value: 3}, nil, nil))
 }
+func TestRuleDisabledAtCopy(t *testing.T) {
+	rule := &Rule{Disabled: true, DisabledFor: 1, DisabledAt: time.Now(), ThresholdMax: 2}
+	util.Must(t, !rule.Copy().Test(&Metric{Value: 3}, nil, nil))
+}
 
 func BenchmarkRuleTest(b *testing.B) {
 	cfg := config.New()

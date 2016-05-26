@@ -74,6 +74,7 @@ func (rule *Rule) CopyTo(r *Rule) {
 	r.Level = rule.Level
 	r.Disabled = rule.Disabled
 	r.DisabledFor = rule.DisabledFor
+	r.DisabledAt = rule.DisabledAt
 }
 
 // Equal tests rule equality
@@ -92,7 +93,8 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.Comment == rule.Comment &&
 		r.Level == rule.Level &&
 		r.Disabled == rule.Disabled &&
-		r.DisabledFor == rule.DisabledFor)
+		r.DisabledFor == rule.DisabledFor &&
+		r.DisabledAt.Equal(rule.DisabledAt))
 }
 
 // IsTrendRelated returns true if any trend options is set.
