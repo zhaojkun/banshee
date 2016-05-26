@@ -2,6 +2,7 @@ pending
 -------
 
 * Config: Add new config webapp.graphite_url.
+* Deploy: Don't transfer binary on only_static set.
 * Detector: Threshold related rules should also be analyzed because the avg is
 wanted. 
 * Detector: Store events after detection.
