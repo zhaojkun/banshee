@@ -295,20 +295,20 @@ func (db *DB) getRangeOpts(start, end uint32) (opts []*rangeOpt) {
 }
 
 // getByProjectID returns event wrappers by project id and time range.
-func (s *storage) getByProjectID(projectID int, start, end uint32) (ews []EventWrapper, err error) {
-	if err = s.db.Where("project_id = ? AND stamp >= ? AND stamp < ?", projectID, start, end).Find(&ews).Error; err != nil {
+func (s *storage) getByProjectID(projectID, lowestLevel int, start, end uint32) (ews []EventWrapper, err error) {
+	if err = s.db.Where("project_id = ? AND stamp >= ? AND stamp < ? AND level >= ?", projectID, start, end, lowestLevel).Find(&ews).Error; err != nil {
 		return
 	}
 	return
 }
 
 // GetByProjectID returns event wrappers by project id and time range.
-func (db *DB) GetByProjectID(projectID int, start, end uint32) (ews []EventWrapper, err error) {
+func (db *DB) GetByProjectID(projectID, lowestLevel int, start, end uint32) (ews []EventWrapper, err error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 	for _, opt := range db.getRangeOpts(start, end) {
 		var chunk []EventWrapper
-		if chunk, err = opt.s.getByProjectID(projectID, opt.start, opt.end); err != nil {
+		if chunk, err = opt.s.getByProjectID(projectID, lowestLevel, opt.start, opt.end); err != nil {
 			return
 		}
 		ews = append(ews, chunk...)

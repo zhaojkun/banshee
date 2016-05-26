@@ -71,7 +71,7 @@ func TestGetByProjectID(t *testing.T) {
 	defer os.RemoveAll(fileName)
 	defer db.Close()
 	// Nothing.
-	ews, err := db.GetByProjectID(1, 0, 1464162569)
+	ews, err := db.GetByProjectID(1, 0, 0, 1464162569)
 	util.Must(t, err == nil)
 	util.Must(t, len(ews) == 0)
 	// Put some.
@@ -80,7 +80,7 @@ func TestGetByProjectID(t *testing.T) {
 	db.Put(&EventWrapper{ID: "20160525155330.3", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162589})
 	db.Put(&EventWrapper{ID: "20160525155330.4", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162599})
 	// Get again.
-	ews, err = db.GetByProjectID(1, 0, 1464162599)
+	ews, err = db.GetByProjectID(1, 0, 0, 1464162599)
 	util.Must(t, err == nil)
 	util.Must(t, len(ews) == 3) // right is closed
 	// Test the value
@@ -103,7 +103,7 @@ func TestGetAcrossStorages(t *testing.T) {
 	db.Put(&EventWrapper{ID: "20160525155730.4", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: base + db.opts.Period*3}) // 3
 	db.Put(&EventWrapper{ID: "20160525155730.5", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: base + db.opts.Period*4}) // 4
 	// Get by project id.
-	ews, err := db.GetByProjectID(1, base, base+db.opts.Period*3)
+	ews, err := db.GetByProjectID(1, 0, base, base+db.opts.Period*3)
 	util.Must(t, err == nil)
 	util.Must(t, len(ews) == 3)
 	util.Must(t, ews[0].Stamp == base)

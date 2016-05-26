@@ -7,6 +7,7 @@ wanted.
 * Detector: Store events after detection.
 * Static: Add events to project detail page.
 * Storage: Add eventdb to storage alert events.
+* Storage: Add lowestLevel to GetByProjectID.
 * Webapp: Add api getEventsByProjectID.
 * Webapp: Add api getGraphiteUrl.
 
