@@ -43,10 +43,10 @@ func getPrivateDocURL(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 }
 
 // getGraphiteURL returns config.webapp.graphiteUrl.
-type getGraphiteUrlResponse struct {
-	GraphiteUrl string `json:"graphiteUrl"`
+type getGraphiteURLResponse struct {
+	GraphiteURL string `json:"graphiteUrl"`
 }
 
-func getGraphiteUrl(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	ResponseJSONOK(w, &getGraphiteUrlResponse{cfg.Webapp.GraphiteUrl})
+func getGraphiteURL(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ResponseJSONOK(w, &getGraphiteURLResponse{cfg.Webapp.GraphiteURL})
 }
