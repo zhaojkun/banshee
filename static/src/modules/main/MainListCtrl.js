@@ -139,6 +139,9 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
 
       watchAll();
     });
+
+    Config.getGraphiteUrl().$promise.then(
+        function(res) { $scope.graphiteUrl = res.graphiteUrl; });
   }
 
   function buildCubism() {
@@ -207,10 +210,14 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       _box.push('</ul></div>');
 
       // Graphite name.
-      var graphiteUrl = Util.getGraphiteName(currentEl.name);
-      var graphiteUrlHtml = Util.format(
-          '<a class="graphite-link" href="%s" target="_blank">%s</a>',
-          graphiteUrl, $translate.instant('METRIC_CHART_TEXT'));
+      var graphiteUrlHtml = '';
+      if ($scope.graphiteUrl || $scope.graphiteUrl.length > 0) {
+        var graphiteName = Util.getGraphiteName(currentEl.name);
+        var graphiteUrl = Util.format($scope.graphiteUrl, graphiteName);
+        graphiteUrlHtml = Util.format(
+            '<a class="graphite-link" href="%s" target="_blank">%s</a>',
+            graphiteUrl, $translate.instant('METRIC_CHART_TEXT'));
+      }
 
       str = [
         '<a href="#/main?pattern=' + currentEl.name + '" class="' + className +
