@@ -169,5 +169,8 @@
   "EVENT_PAST_5DAYS": "最近五天",
   "EVENT_PAST_6DAYS": "最近六天",
   "EVENT_PAST_7DAYS": "最近七天",
+  "EVENT_LEVEL_LOW": "低以上",
+  "EVENT_LEVEL_MIDDLE": "中以上",
+  "EVENT_LEVEL_HIGH": "高",
   "FINAL_PLACEHOLDER": "无"
 }

@@ -232,13 +232,26 @@ module.exports =
 
   $scope.eventPast = $scope.eventPasts[0].seconds;
 
+  $scope.eventLevels = [
+    {label: 'EVENT_LEVEL_LOW', value: 0},
+    {label: 'EVENT_LEVEL_MIDDLE', value: 1},
+    {label: 'EVENT_LEVEL_HIGH', value: 2},
+  ];
+
+  $scope.eventLevel = $scope.eventLevels[0].value;
+
   $scope.loadEvents = function() {
-    Project.getEventsByProjectId({id: projectId, past: $scope.eventPast})
+    Project
+        .getEventsByProjectId(
+             {id: projectId, past: $scope.eventPast, level: $scope.eventLevel})
         .$promise.then(function(res) { $scope.events = res; });
   };
 
   function watchEventLoadParams() {
-    $scope.$watchGroup(['eventPast'], function() { $scope.loadEvents(); })
+    $scope.$watchGroup(['eventPast', 'eventLevel'], function() {
+      $scope.events = null;
+      $scope.loadEvents();
+    })
   }
 
   $scope.loadData();

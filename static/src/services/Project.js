@@ -3,8 +3,7 @@
  */
 /*@ngInject*/
 module.exports = function($resource) {
-  return $resource('/api/project/:id',
-                   {id: '@id', userId: '@userId', past: '@past'}, {
+  return $resource('/api/project/:id', {id: '@id', userId: '@userId'}, {
     edit: {method: 'PATCH', url: '/api/project/:id'},
     getAllProjects: {method: 'GET', url: '/api/projects', isArray: true},
     getRulesByProjectId:

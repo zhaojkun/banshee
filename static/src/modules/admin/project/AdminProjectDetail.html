@@ -182,6 +182,13 @@
                   </md-option>
                 </md-select>
               </md-input-container>
+              <md-input-container>
+                <md-select ng-model="eventLevel">
+                  <md-option ng-repeat="item in eventLevels" ng-value="item.value" >
+                    {{ item.label | translate }}
+                  </md-option>
+                </md-select>
+              </md-input-container>
               <!-- Table -->
               <div class="table-responsive">
                 <table class="table">
