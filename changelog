@@ -11,6 +11,7 @@ wanted.
 * Storage: Add lowestLevel to GetByProjectID.
 * Webapp: Add api getEventsByProjectID.
 * Webapp: Add api getGraphiteUrl.
+* Webapp: Add event level to webapp getEventsByProjectID.
 
 0.2.2
 -----
