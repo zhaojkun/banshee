@@ -4,7 +4,7 @@ package version
 
 // Version
 const (
-	Version = "0.2.2"
+	Version = "0.2.3"
 	Product = "banshee"
 	Website = "https://github.com/eleme/banshee"
 	License = "Copyright MIT, Eleme Inc."
