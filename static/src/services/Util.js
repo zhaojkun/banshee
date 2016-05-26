@@ -56,33 +56,54 @@ module.exports = function() {
     }
   };
 
+  var PrefixTimerCountPs = 'timer.count_ps.';
+  var PrefixTimerMean = 'timer.mean.';
+  var PrefixTimerMean90 = 'timer.mean_90.';
+  var PrefixTimerMean95 = 'timer.mean_95.';
+  var PrefixTimerUpper = 'timer.upper.';
+  var PrefixTimerUpper90 = 'timer.upper_90.';
+  var PrefixTimerUpper95 = 'timer.upper_95.';
+  var PrefixTimerCount = 'timer.count.';
+  var PrefixTimerCount90 = 'timer.count_90.';
+  var PrefixTimerCount95 = 'timer.count_95.';
+  var PrefixTimerMedian = 'timer.median.';
+  var PrefixTimerStd = 'timer.std.';
+  var PrefixTimerSum = 'timer.sum.';
+  var PrefixTimerSum90 = 'timer.sum_90.';
+  var PrefixTimerSum95 = 'timer.sum_95.';
+  var PrefixTimerSumSquares = 'timer.sum_squares.';
+  var PrefixTimerLower = 'timer.lower.';
+  var PrefixCounter = 'counter.';
+  var PrefixGauge = 'gauge.';
+
   exports.ruleCheck = function(rule) {
     if (exports.isGraphiteName(rule.pattern) && rule.numMetrics === 0) {
       return 1;  // Graphite name.
     }
-    if (!exports.startsWith(rule.pattern, 'timer.count_ps.') &&
-        !exports.startsWith(rule.pattern, 'timer.mean.') &&
-        !exports.startsWith(rule.pattern, 'timer.mean_90.') &&
-        !exports.startsWith(rule.pattern, 'timer.mean_95.') &&
-        !exports.startsWith(rule.pattern, 'timer.upper.') &&
-        !exports.startsWith(rule.pattern, 'timer.upper_90.') &&
-        !exports.startsWith(rule.pattern, 'timer.upper_95.') &&
-        !exports.startsWith(rule.pattern, 'timer.count.') &&
-        !exports.startsWith(rule.pattern, 'timer.count_90.') &&
-        !exports.startsWith(rule.pattern, 'timer.count_95.') &&
-        !exports.startsWith(rule.pattern, 'timer.median.') &&
-        !exports.startsWith(rule.pattern, 'timer.std.') &&
-        !exports.startsWith(rule.pattern, 'timer.sum.') &&
-        !exports.startsWith(rule.pattern, 'timer.sum_90.') &&
-        !exports.startsWith(rule.pattern, 'timer.sum_95.') &&
-        !exports.startsWith(rule.pattern, 'timer.sum_suqares.') &&
-        !exports.startsWith(rule.pattern, 'timer.lower.') &&
-        !exports.startsWith(rule.pattern, 'counter.') &&
-        !exports.startsWith(rule.pattern, 'gauge.')) {
+    if (!exports.startsWith(rule.pattern, PrefixTimerCountPs) &&
+        !exports.startsWith(rule.pattern, PrefixTimerMean) &&
+        !exports.startsWith(rule.pattern, PrefixTimerMean90) &&
+        !exports.startsWith(rule.pattern, PrefixTimerMean95) &&
+        !exports.startsWith(rule.pattern, PrefixTimerUpper) &&
+        !exports.startsWith(rule.pattern, PrefixTimerUpper90) &&
+        !exports.startsWith(rule.pattern, PrefixTimerUpper95) &&
+        !exports.startsWith(rule.pattern, PrefixTimerCount) &&
+        !exports.startsWith(rule.pattern, PrefixTimerCount90) &&
+        !exports.startsWith(rule.pattern, PrefixTimerCount95) &&
+        !exports.startsWith(rule.pattern, PrefixTimerMedian) &&
+        !exports.startsWith(rule.pattern, PrefixTimerStd) &&
+        !exports.startsWith(rule.pattern, PrefixTimerSum) &&
+        !exports.startsWith(rule.pattern, PrefixTimerSum90) &&
+        !exports.startsWith(rule.pattern, PrefixTimerSum95) &&
+        !exports.startsWith(rule.pattern, PrefixTimerSumSquares) &&
+        !exports.startsWith(rule.pattern, PrefixTimerLower) &&
+        !exports.startsWith(rule.pattern, PrefixCounter) &&
+        !exports.startsWith(rule.pattern, PrefixGauge)) {
       return 2;  // Unsupported metric.
     }
     return 0;  // OK
   };
+
 
   // Translate rule repr to readable string.
   exports.translateRuleRepr = function(rule, config, $translate) {
@@ -158,7 +179,9 @@ module.exports = function() {
           break;
         }
       }
-      if (i === timeSpan.length) return secs;
+      if (i === timeSpan.length) {
+        return secs;
+      }
     }
     return secs;
   };
@@ -173,16 +196,26 @@ module.exports = function() {
     seconds -= numMinutes * 60;
     var numSeconds = seconds;
     var s = '';
-    if (numDays > 0) s += exports.format("%dd", numDays);
-    if (numHours > 0) s += exports.format("%dh", numHours);
-    if (numMinutes > 0) s += exports.format("%dm", numMinutes);
-    if (numSeconds > 0) s += exports.format("%ds", numSeconds);
-    return s
+    if (numDays > 0) {
+      s += exports.format('%dd', numDays);
+    }
+    if (numHours > 0) {
+      s += exports.format('%dh', numHours);
+    }
+    if (numMinutes > 0) {
+      s += exports.format('%dm', numMinutes);
+    }
+    if (numSeconds > 0) {
+      s += exports.format('%ds', numSeconds);
+    }
+    return s;
   };
 
   // Convert date to readable string.
   exports.dateToString = function(date) {
-    if (!(date instanceof Date)) date = new Date(date);
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+    }
     var year = date.getFullYear();
     var month = date.getMonth() + 1;
     var day = date.getDate();
@@ -219,6 +252,26 @@ module.exports = function() {
           return val.toString();
       }
     });
+  };
+
+  // getGraphiteName returns the graphite name format of given banshee metric
+  // name.
+  exports.getGraphiteName = function(name) {
+    var slug;
+    if (exports.startsWith(name, 'timer.')) {
+      var arr = name.split('.');
+      var typ = arr[1];
+      slug = arr.slice(2).join('.');
+      return 'stats.timers.' + slug + '.' + typ;
+    }
+    if (exports.startsWith(name, 'counter.')) {
+      slug = name.slice('counter.'.length);
+      return 'stats.' + slug;
+    }
+    if (exports.startsWith(name, 'gauge.')) {
+      slug = name.slice('gauge.'.length);
+      return 'stats.gauges.' + slug;
+    }
   };
 
   return exports;
