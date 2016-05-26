@@ -21,12 +21,14 @@ module.exports = function($scope, $state, $stateParams, $translate, toastr,
     if ($scope.loadUserProjectsDone) {
       return;
     }
+    setTimeout(function() {
+      // get projects by user id
+      User.getProjectsByUserId({id: userId}).$promise.then(function(res) {
+        $scope.projects = res;
+        $scope.loadUserProjectsDone = true;
+      });
 
-    // get projects by user id
-    User.getProjectsByUserId({id: userId})
-        .$promise.then(function(res) { $scope.projects = res; });
-
-    $scope.loadUserProjectsDone = teue;
+    }, 500);
   };
 
   $scope.deleteUser = function(event) {
