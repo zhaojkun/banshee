@@ -152,8 +152,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       params.pattern = $scope.filter.pattern;
     }
 
-    var serverDelay;
-
     if ($scope.past && !$scope.pastUsed) {
       $scope.filter.datetime = Util.timeSpanToSeconds($scope.past);
       $scope.pastUsed = true;
@@ -324,21 +322,23 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   $scope.translateGraphiteName = Util.translateGraphiteName;
 
   $scope.datetimeRangeInString = function() {
-    if (!chart.context()) return '';
+    if (!chart.context()) {
+      return '';
+    }
     var stop = +new Date() - $scope.filter.datetime * 1000;
     var start = stop - chart.size() * chart.step();
-    return Util.format("%s ~ %s", Util.dateToString(start),
+    return Util.format('%s ~ %s', Util.dateToString(start),
                        Util.dateToString(stop));
   };
 
   $scope.datetimeInList = function(seconds) {
     var i;
     for (i = 0; i < $scope.dateTimes.length; i++) {
-      if ($scope.dateTimes[i].seconds == seconds) {
-        return true
+      if ($scope.dateTimes[i].seconds === seconds) {
+        return true;
       }
     }
-    return false
+    return false;
   };
 
   $scope.secondsToTimespanString = Util.secondsToTimespanString;

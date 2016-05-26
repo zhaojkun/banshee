@@ -85,5 +85,5 @@ self.title = function(cb) {
 
 self.size = function() { return context.size(); };
 self.step = function() { return context.step(); };
-self.context = function() { return context };
+self.context = function() { return context; };
 module.exports = self;

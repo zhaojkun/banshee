@@ -174,7 +174,7 @@ module.exports =
                              (rule.disabledFor > 0 &&
                               (+new Date(rule.disabledAt) / 1000 +
                                    rule.disabledFor * 60 - new Date() / 1000 >
-                               0)))
+                               0)));
   };
 
   $scope.loadData();
@@ -202,8 +202,12 @@ module.exports =
   $scope.ruleCheck = Util.ruleCheck;
   $scope.dateToString = Util.dateToString;
   $scope.getEventRuleComment = function(event) {
-    if (event.translatedComment.length > 0) return event.translatedComment;
-    if (event.comment.length > 0) return event.comment;
+    if (event.translatedComment.length > 0) {
+      return event.translatedComment;
+    }
+    if (event.comment.length > 0) {
+      return event.comment;
+    }
     return event.pattern;
   };
   $scope.goToRuleID = function(ruleId) {
