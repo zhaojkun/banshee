@@ -26,7 +26,7 @@ func NewEvent(m *Metric, idx *Index, rule *Rule) *Event {
 
 // generateID generates a sha1 string id for the event.
 func (ev *Event) generateID() {
-	slug := fmt.Sprintf("%s:%d", ev.Metric.Name, ev.Metric.Stamp)
+	slug := fmt.Sprintf("%s:%d:%d", ev.Metric.Name, ev.Metric.Stamp, ev.Rule.ID)
 	hash := sha1.New()
 	hash.Write([]byte(slug))
 	ev.ID = hex.EncodeToString(hash.Sum(nil))

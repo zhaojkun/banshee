@@ -8,13 +8,14 @@ import (
 )
 
 func TestEventGenerateID(t *testing.T) {
+	rule := &Rule{ID: 1}
 	// Metric with the same name but different stamps.
-	ev1 := NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil, nil)
-	ev2 := NewEvent(&Metric{Name: "foo", Stamp: 1456815974}, nil, nil)
+	ev1 := NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil, rule)
+	ev2 := NewEvent(&Metric{Name: "foo", Stamp: 1456815974}, nil, rule)
 	util.Must(t, ev1.ID != ev2.ID)
 	// Metric with the same stamp but different names.
-	ev1 = NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil, nil)
-	ev2 = NewEvent(&Metric{Name: "bar", Stamp: 1456815973}, nil, nil)
+	ev1 = NewEvent(&Metric{Name: "foo", Stamp: 1456815973}, nil, rule)
+	ev2 = NewEvent(&Metric{Name: "bar", Stamp: 1456815973}, nil, rule)
 	util.Must(t, ev1.ID != ev2.ID)
 }
 
