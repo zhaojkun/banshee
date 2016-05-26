@@ -1,6 +1,7 @@
 pending
 -------
 
+* Config: Add new config webapp.graphite_url.
 * Detector: Threshold related rules should also be analyzed because the avg is
 wanted. 
 * Detector: Store events after detection.

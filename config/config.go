@@ -104,6 +104,7 @@ type configWebapp struct {
 	Static        string   `json:"static" yaml:"static"`
 	Language      string   `json:"language" yaml:"language"`
 	PrivateDocURL string   `json:"privateDocUrl" yaml:"private_doc_url"`
+	GraphiteUrl   string   `json:"graphiteUrl" yaml:"graphite_url"`
 }
 
 type configAlerter struct {
@@ -139,6 +140,7 @@ func New() *Config {
 	c.Webapp.Static = "static/dist"
 	c.Webapp.Language = DefaultWebappLanguage
 	c.Webapp.PrivateDocURL = ""
+	c.Webapp.GraphiteUrl = ""
 	c.Alerter.Command = ""
 	c.Alerter.ExecCommandTimeout = DefaultAlertExecCommandTimeout
 	c.Alerter.Workers = 4
@@ -186,6 +188,7 @@ func (c *Config) Copy() *Config {
 	cfg.Webapp.Static = c.Webapp.Static
 	cfg.Webapp.Language = c.Webapp.Language
 	cfg.Webapp.PrivateDocURL = c.Webapp.PrivateDocURL
+	cfg.Webapp.GraphiteUrl = c.Webapp.GraphiteUrl
 	cfg.Alerter.Command = c.Alerter.Command
 	cfg.Alerter.ExecCommandTimeout = c.Alerter.ExecCommandTimeout
 	cfg.Alerter.Workers = c.Alerter.Workers
