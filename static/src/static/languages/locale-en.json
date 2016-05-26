@@ -163,5 +163,12 @@
   "ADMIN_PROJECT_EVENT_LEVEL": "Level",
   "ADMIN_PROJECT_EVENT_RULE": "Rule",
   "METRIC_CHART_TEXT": "Chart",
+  "EVENT_PAST_1DAY": "Last day",
+  "EVENT_PAST_2DAYS": "Last 2 days",
+  "EVENT_PAST_3DAYS": "Last 3 days",
+  "EVENT_PAST_4DAYS": "Last 4 days",
+  "EVENT_PAST_5DAYS": "Last 5 days",
+  "EVENT_PAST_6DAYS": "Last 6 days",
+  "EVENT_PAST_7DAYS": "Last 7 days",
   "FINAL_PLACEHOLDER": "Nothing"
 }
