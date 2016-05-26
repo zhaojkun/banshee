@@ -13,6 +13,7 @@ import (
 	"github.com/eleme/banshee/health"
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/storage"
+	"github.com/eleme/banshee/storage/eventdb"
 	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/safemap"
 )
@@ -182,17 +183,32 @@ func (al *Alerter) getUsersByProj(proj *models.Project) (users []models.User, er
 	return
 }
 
+// storeEvent stores an event into db.
+func (al *Alerter) storeEvent(ev *models.Event) (err error) {
+	if err = al.db.Event.Put(eventdb.NewEventWrapper(ev)); err != nil {
+		return
+	}
+	return
+}
+
 // work waits for events to alert.
 func (al *Alerter) work() {
 	for {
-		ew := models.NewWrapperOfEvent(<-al.In) // Avoid locks
-		if al.checkAlertAt(ew.Metric) {         // Check alert interval
+		ev := <-al.In
+		ew := models.NewWrapperOfEvent(ev) // Avoid locks
+		if al.checkAlertAt(ew.Metric) {    // Check alert interval
 			continue
 		}
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
 			continue
 		}
 		al.incrAlertNum(ew.Metric)
+		// Store event
+		if err := al.storeEvent(ev); err != nil {
+			log.Warnf("failed to store event:%v, skipping..", err)
+			continue
+		}
+		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
 			continue
