@@ -8,7 +8,7 @@ metrics.
 [![GoDoc](https://godoc.org/github.com/eleme/banshee?status.svg)](https://godoc.org/github.com/eleme/banshee)
 [![Join the chat at https://gitter.im/eleme/banshee](https://badges.gitter.im/eleme/banshee.svg)](https://gitter.im/eleme/banshee?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-![snap-01](snap/01.png)
+![snap-01](docs/snap/01.png)
 
 Case
 ----
@@ -36,6 +36,9 @@ Requirements
 
 1. Go >= 1.5.
 2. Node and gulp.
+3. [Statsd](https://github.com/etsy/statsd).
+
+It is strongly recommended to use statsd as banshee client.
 
 Build
 -----
@@ -56,8 +59,6 @@ Example configuration file is [config/exampleConfig.yaml](config/exampleConfig.y
 Statsd Integration
 ------------------
 
-**It is strongly recommended to use statsd as banshee client.**
-
 1. Install [statsd-banshee](https://www.npmjs.com/package/statsd-banshee) to forward
    metrics to banshee.
 
@@ -75,6 +76,23 @@ Statsd Integration
 	, bansheePort: 2015
 	}
    ```
+
+Supported Metrics
+-----------------
+
+* timers: `timer.mean_90.*`, `timer.upper_90.*`, `timer.count_ps.*`.
+* counters: `counter.*`.
+* gauge: `gauge.*`.
+
+Detection should work for any metric delimited by dots, but above types are better
+supported and are also recommended to use as banshee input.
+
+*Statsd-banshee would format banshee metric names before data sent out.*
+
+Wen Panel Manual
+----------------
+
+Welcome to checkout the web panel manuals: [English](docs/web-manual.md), [简体中文](docs/web-manual.zh.md).
 
 Deployment
 ----------
@@ -127,7 +145,7 @@ But how do you really analyze the anomalous metrics? Via 3-sigma:
 -1.3842407711224991 # anomaly, too small
 ```
 
-For further implementation introduction, please checkout [docs/intro.md](docs/intro.md).
+For further implementation introduction, please checkout [docs/algorithms.md](docs/algorithms.md).
 
 Network Protocol
 ----------------
@@ -141,13 +159,13 @@ The network protocol is line based:
 <NAME> <STAMP> <VALUE> '\n'
 ```
 
-Where the `NAME` should be a string, `STAMP` should be a timestamp integer in seconds, and 
+Where the `NAME` should be a string, `STAMP` should be a timestamp integer in seconds, and
 the `VALUE` should be a float number.
 
 Web HTTP API
 ------------
 
-Please checkout [docs/webapi.md](docs/webapi.md).
+Please checkout [docs/web-api.md](docs/web-api.md).
 
 Authors
 -------

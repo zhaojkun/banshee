@@ -85,8 +85,8 @@
   "ADMIN_USER_MESSAGE_TYPE": "Message type",
   "ADMIN_USER_IS_UNIVERSAL": "Universal",
   "ADMIN_USER_RULE_LEVEL": "Rule level",
-  "ADMIN_USER_RULE_LEVEL_LOW": "Low",
-  "ADMIN_USER_RULE_LEVEL_MIDDLE": "Middle",
+  "ADMIN_USER_RULE_LEVEL_LOW": "Low and higher",
+  "ADMIN_USER_RULE_LEVEL_MIDDLE": "Middle and higher",
   "ADMIN_USER_RULE_LEVEL_HIGH": "High",
   "ADMIN_USER_EDIT_TITLE": "Receiver",
   "ADMIN_USER_DELETE_TITLE": "Delete Receiver",
@@ -172,8 +172,8 @@
   "EVENT_PAST_5DAYS": "Last 5 days",
   "EVENT_PAST_6DAYS": "Last 6 days",
   "EVENT_PAST_7DAYS": "Last 7 days",
-  "EVENT_LEVEL_LOW": "Low",
-  "EVENT_LEVEL_MIDDLE": "Middle",
+  "EVENT_LEVEL_LOW": "Low and higher",
+  "EVENT_LEVEL_MIDDLE": "Middle and higher",
   "EVENT_LEVEL_HIGH": "High",
   "FINAL_PLACEHOLDER": "Nothing"
 }

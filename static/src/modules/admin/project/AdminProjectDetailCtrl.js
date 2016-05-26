@@ -36,13 +36,15 @@ module.exports =
     if ($scope.loadUsersDone) {
       return;
     }
-    // get users of project
-    Project.getUsersByProjectId({id: projectId})
-        .$promise.then(function(res) { $scope.users = res; });
+    setTimeout(function() {
+      // get users of project
+      Project.getUsersByProjectId({id: projectId})
+          .$promise.then(function(res) { $scope.users = res; });
 
-    // get all users
-    User.getAllUsers().$promise.then(function(res) { allUsers = res; });
-    $scope.loadUsersDone = true;
+      // get all users
+      User.getAllUsers().$promise.then(function(res) { allUsers = res; });
+      $scope.loadUsersDone = true;
+    }, 500);
   };
 
   $scope.edit = function() {
@@ -255,7 +257,7 @@ module.exports =
     }
     $scope.$watchGroup(['eventPast', 'eventLevel'], function() {
       $scope.events = null;
-      $scope.loadEvents();
+      setTimeout(function() { $scope.loadEvents(); }, 500);
     });
     $scope.watchEventLoadParamsDone = true;
   };
