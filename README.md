@@ -40,7 +40,7 @@ Requirements
 Build
 -----
 
-1. Clone this repo.
+1. Clone this repo and checkout to the latest release.
 2. Build binary via `make`.
 3. Build static files via `make static`.
 
@@ -55,6 +55,8 @@ Example configuration file is [config/exampleConfig.yaml](config/exampleConfig.y
 
 Statsd Integration
 ------------------
+
+**It is strongly recommended to use statsd as banshee client.**
 
 1. Install [statsd-banshee](https://www.npmjs.com/package/statsd-banshee) to forward
    metrics to banshee.
