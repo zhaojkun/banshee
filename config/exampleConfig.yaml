@@ -88,6 +88,9 @@ webapp:
     language: en
     # Private url of the document about the monitor. default: ""
     private_doc_url: ""
+    # Graphite or grafana url formatter.
+    # Example: "http://mygraphite-host.com/render?target=%s"
+    graphite_url: ""
 
 alerter:
     # Command to be executed to send alert messages, default: ""

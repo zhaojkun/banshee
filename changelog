@@ -1,12 +1,14 @@
 pending
 -------
 
+* Config: Add new config webapp.graphite_url.
 * Detector: Threshold related rules should also be analyzed because the avg is
 wanted. 
 * Detector: Store events after detection.
 * Static: Add events to project detail page.
 * Storage: Add eventdb to storage alert events.
 * Webapp: Add api getEventsByProjectID.
+* Webapp: Add api getGraphiteUrl.
 
 0.2.2
 -----

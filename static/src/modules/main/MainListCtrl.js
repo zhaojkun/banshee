@@ -139,6 +139,9 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
 
       watchAll();
     });
+
+    Config.getGraphiteUrl().$promise.then(
+        function(res) { $scope.graphiteUrl = res.graphiteUrl; });
   }
 
   function buildCubism() {
@@ -151,8 +154,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
     } else {
       params.pattern = $scope.filter.pattern;
     }
-
-    var serverDelay;
 
     if ($scope.past && !$scope.pastUsed) {
       $scope.filter.datetime = Util.timeSpanToSeconds($scope.past);
@@ -208,13 +209,24 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       }
       _box.push('</ul></div>');
 
+      // Graphite name.
+      var graphiteUrlHtml = '';
+      if ($scope.graphiteUrl || $scope.graphiteUrl.length > 0) {
+        var graphiteName = Util.getGraphiteName(currentEl.name);
+        var graphiteUrl = Util.format($scope.graphiteUrl, graphiteName);
+        graphiteUrlHtml = Util.format(
+            '<a class="graphite-link" href="%s" target="_blank">%s</a>',
+            graphiteUrl, $translate.instant('METRIC_CHART_TEXT'));
+      }
+
       str = [
         '<a href="#/main?pattern=' + currentEl.name + '" class="' + className +
             '">',
         getTextByTrend(currentEl.score),
         currentEl.name,
         '</a>',
-        _box.join('')
+        graphiteUrlHtml,
+        _box.join(''),
       ].join('');
 
       _el.innerHTML = str;
@@ -324,21 +336,23 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   $scope.translateGraphiteName = Util.translateGraphiteName;
 
   $scope.datetimeRangeInString = function() {
-    if (!chart.context()) return '';
+    if (!chart.context()) {
+      return '';
+    }
     var stop = +new Date() - $scope.filter.datetime * 1000;
     var start = stop - chart.size() * chart.step();
-    return Util.format("%s ~ %s", Util.dateToString(start),
+    return Util.format('%s ~ %s', Util.dateToString(start),
                        Util.dateToString(stop));
   };
 
   $scope.datetimeInList = function(seconds) {
     var i;
     for (i = 0; i < $scope.dateTimes.length; i++) {
-      if ($scope.dateTimes[i].seconds == seconds) {
-        return true
+      if ($scope.dateTimes[i].seconds === seconds) {
+        return true;
       }
     }
-    return false
+    return false;
   };
 
   $scope.secondsToTimespanString = Util.secondsToTimespanString;
