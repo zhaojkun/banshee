@@ -8,6 +8,7 @@ wanted.
 * Static: Add events to project detail page.
 * Storage: Add eventdb to storage alert events.
 * Webapp: Add api getEventsByProjectID.
+* Webapp: Add api getGraphiteUrl.
 
 0.2.2
 -----

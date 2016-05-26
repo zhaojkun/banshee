@@ -45,6 +45,7 @@ func Start(c *config.Config, d *storage.DB, f *filter.Filter) {
 	router.GET("/api/config", auth.handler(getConfig))
 	router.GET("/api/interval", getInterval)
 	router.GET("/api/privateDocUrl", getPrivateDocURL)
+	router.GET("/api/graphiteUrl", getGraphiteUrl)
 	router.GET("/api/language", getLanguage)
 	router.GET("/api/projects", getProjects)
 	router.GET("/api/project/:id", getProject)
