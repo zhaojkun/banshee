@@ -206,13 +206,20 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       }
       _box.push('</ul></div>');
 
+      // Graphite name.
+      var graphiteUrl = Util.getGraphiteName(currentEl.name);
+      var graphiteUrlHtml = Util.format(
+          '<a class="graphite-link" href="%s" target="_blank">%s</a>',
+          graphiteUrl, $translate.instant('METRIC_CHART_TEXT'));
+
       str = [
         '<a href="#/main?pattern=' + currentEl.name + '" class="' + className +
             '">',
         getTextByTrend(currentEl.score),
         currentEl.name,
         '</a>',
-        _box.join('')
+        graphiteUrlHtml,
+        _box.join(''),
       ].join('');
 
       _el.innerHTML = str;
