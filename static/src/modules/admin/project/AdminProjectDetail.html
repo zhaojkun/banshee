@@ -93,7 +93,7 @@
             </md-content>
           </md-tab> <!-- ./Rules -->
           <!-- Users -->
-          <md-tab label="{{ 'ADMIN_PROJECT_USERS_TEXT' | translate }}">
+          <md-tab label="{{ 'ADMIN_PROJECT_USERS_TEXT' | translate }}" ng-click="loadUsers()">
             <md-content class="md-padding">
               <div ng-style="{'text-align': 'right'}" layout-padding>
                 <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_USER_ADD_TEXT' | translate }}" ng-click="openModal($event, 'addUserToProject')">

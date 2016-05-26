@@ -26,16 +26,23 @@ module.exports =
       }
     });
 
+    // get config
+    Config.get().$promise.then(function(res) { $scope.config = res; });
+
+  };
+
+  $scope.loadUsersDone = false;
+  $scope.loadUsers = function() {
+    if ($scope.loadUsersDone) {
+      return;
+    }
     // get users of project
     Project.getUsersByProjectId({id: projectId})
         .$promise.then(function(res) { $scope.users = res; });
 
     // get all users
     User.getAllUsers().$promise.then(function(res) { allUsers = res; });
-
-    // get config
-    Config.get().$promise.then(function(res) { $scope.config = res; });
-
+    $scope.loadUsersDone = true;
   };
 
   $scope.edit = function() {
