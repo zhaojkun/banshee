@@ -26,21 +26,23 @@ module.exports =
       }
     });
 
+    // get config
+    Config.get().$promise.then(function(res) { $scope.config = res; });
+
+  };
+
+  $scope.loadUsersDone = false;
+  $scope.loadUsers = function() {
+    if ($scope.loadUsersDone) {
+      return;
+    }
     // get users of project
     Project.getUsersByProjectId({id: projectId})
         .$promise.then(function(res) { $scope.users = res; });
 
     // get all users
     User.getAllUsers().$promise.then(function(res) { allUsers = res; });
-
-    // get config
-    Config.get().$promise.then(function(res) { $scope.config = res; });
-
-    // get events
-    Project.getEventsByProjectId({id: projectId})
-        .$promise.then(function(res) { $scope.events = res; });
-
-    watchEventLoadParams();
+    $scope.loadUsersDone = true;
   };
 
   $scope.edit = function() {
@@ -247,12 +249,18 @@ module.exports =
         .$promise.then(function(res) { $scope.events = res; });
   };
 
-  function watchEventLoadParams() {
+  $scope.watchEventLoadParams = function() {
+    if ($scope.watchEventLoadParamsDone) {
+      return;
+    }
     $scope.$watchGroup(['eventPast', 'eventLevel'], function() {
       $scope.events = null;
       $scope.loadEvents();
-    })
-  }
+    });
+    $scope.watchEventLoadParamsDone = true;
+  };
+
+  $scope.watchEventLoadParamsDone = false;
 
   $scope.loadData();
 
