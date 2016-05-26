@@ -269,4 +269,5 @@ module.exports =
 
   $scope.loadData();
 
+  $scope.foldNumber = Util.foldNumber;
 };
