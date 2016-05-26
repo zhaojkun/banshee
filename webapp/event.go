@@ -3,6 +3,7 @@
 package webapp
 
 import (
+	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/storage/eventdb"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -21,6 +22,14 @@ func getEventsByProjectID(w http.ResponseWriter, r *http.Request, ps httprouter.
 		ResponseError(w, ErrEventPast)
 		return
 	}
+	level, err := strconv.Atoi(r.URL.Query().Get("level"))
+	if err != nil {
+		level = 0 // low
+	}
+	if err := models.ValidateRuleLevel(level); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
 	// Params
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
@@ -29,7 +38,7 @@ func getEventsByProjectID(w http.ResponseWriter, r *http.Request, ps httprouter.
 	}
 	end := uint32(time.Now().Unix())
 	start := end - past
-	ews, err := db.Event.GetByProjectID(id, start, end)
+	ews, err := db.Event.GetByProjectID(id, level, start, end)
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
 		return

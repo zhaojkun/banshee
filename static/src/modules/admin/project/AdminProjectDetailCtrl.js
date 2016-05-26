@@ -39,6 +39,8 @@ module.exports =
     // get events
     Project.getEventsByProjectId({id: projectId})
         .$promise.then(function(res) { $scope.events = res; });
+
+    watchEventLoadParams();
   };
 
   $scope.edit = function() {
@@ -177,8 +179,6 @@ module.exports =
                                0)));
   };
 
-  $scope.loadData();
-
   /**
    * filter user:
    *  1.user.universal = true;
@@ -219,4 +219,41 @@ module.exports =
     $state.go('banshee.main',
               {pattern: metricName, past: Util.secondsToTimespanString(past)});
   };
+
+  $scope.eventPasts = [
+    {label: 'EVENT_PAST_1DAY', seconds: 3600 * 24 * 1},
+    {label: 'EVENT_PAST_2DAYS', seconds: 3600 * 24 * 2},
+    {label: 'EVENT_PAST_3DAYS', seconds: 3600 * 24 * 3},
+    {label: 'EVENT_PAST_4DAYS', seconds: 3600 * 24 * 4},
+    {label: 'EVENT_PAST_5DAYS', seconds: 3600 * 24 * 5},
+    {label: 'EVENT_PAST_6DAYS', seconds: 3600 * 24 * 6},
+    {label: 'EVENT_PAST_7DAYS', seconds: 3600 * 24 * 7},
+  ];
+
+  $scope.eventPast = $scope.eventPasts[0].seconds;
+
+  $scope.eventLevels = [
+    {label: 'EVENT_LEVEL_LOW', value: 0},
+    {label: 'EVENT_LEVEL_MIDDLE', value: 1},
+    {label: 'EVENT_LEVEL_HIGH', value: 2},
+  ];
+
+  $scope.eventLevel = $scope.eventLevels[0].value;
+
+  $scope.loadEvents = function() {
+    Project
+        .getEventsByProjectId(
+             {id: projectId, past: $scope.eventPast, level: $scope.eventLevel})
+        .$promise.then(function(res) { $scope.events = res; });
+  };
+
+  function watchEventLoadParams() {
+    $scope.$watchGroup(['eventPast', 'eventLevel'], function() {
+      $scope.events = null;
+      $scope.loadEvents();
+    })
+  }
+
+  $scope.loadData();
+
 };

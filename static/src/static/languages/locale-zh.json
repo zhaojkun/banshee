@@ -162,5 +162,15 @@
   "ADMIN_PROJECT_EVENT_LEVEL": "时间等级",
   "ADMIN_PROJECT_EVENT_RULE": "命中规则",
   "METRIC_CHART_TEXT": "图表",
+  "EVENT_PAST_1DAY": "最近一天",
+  "EVENT_PAST_2DAYS": "最近两天",
+  "EVENT_PAST_3DAYS": "最近三天",
+  "EVENT_PAST_4DAYS": "最近四天",
+  "EVENT_PAST_5DAYS": "最近五天",
+  "EVENT_PAST_6DAYS": "最近六天",
+  "EVENT_PAST_7DAYS": "最近七天",
+  "EVENT_LEVEL_LOW": "低以上",
+  "EVENT_LEVEL_MIDDLE": "中以上",
+  "EVENT_LEVEL_HIGH": "高",
   "FINAL_PLACEHOLDER": "无"
 }
