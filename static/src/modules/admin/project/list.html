@@ -49,6 +49,7 @@
               </tr>
             </thead>
             <tbody>
+              <md-progress-linear md-mode="indeterminate" ng-if="!projects"></md-progress-linear>
               <tr ng-if="!projects || !projects.length">
                 <td colspan="3">
                 {{ 'NOT_FOUND_ANY_RESULT' | translate }}

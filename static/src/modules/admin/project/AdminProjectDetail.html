@@ -38,6 +38,7 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <md-progress-linear md-mode="indeterminate" ng-if="!rules"></md-progress-linear>
                     <tr ng-if="!rules || !rules.length">
                       <td colspan="3">{{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
                     </tr>
@@ -105,6 +106,7 @@
               <div class="table-responsive">
                 <table class="table">
                   <tbody>
+                  <md-progress-linear md-mode="indeterminate" ng-if="!users"></md-progress-linear>
                     <tr ng-if="!users || !users.length">
                       <td colspan="3"> {{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
                     </tr>
@@ -202,6 +204,7 @@
                       <th> {{ 'ADMIN_PROJECT_EVENT_METRIC_AVERAGE' | translate }} </th>
                     </tr>
                   </thead>
+                  <md-progress-linear md-mode="indeterminate" ng-if="!events"></md-progress-linear>
                   <tbody>
                     <tr ng-if="!events || !events.length">
                       <td colspan="3">{{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
