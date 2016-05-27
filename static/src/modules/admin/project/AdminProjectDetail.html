@@ -174,7 +174,7 @@
           </md-tab> <!-- ./Edit -->
           <!-- Events -->
           <md-tab label="{{ 'ADMIN_PROJECT_EVENTS_TEXT' | translate }}" ng-click="watchEventLoadParams()">
-            <md-content class="md-padding">
+            <md-content class="md-padding" ng-style="{'z-index': '9'}">
               <md-input-container>
                 <md-select ng-model="eventPast">
                   <md-option ng-repeat="item in eventPasts" ng-value="item.seconds" >
