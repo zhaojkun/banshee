@@ -1,6 +1,18 @@
 Web Manual
 ==========
 
+Rule Pattern
+------------
+
+Rule pattern is similar to traditional wildcards. Like metric names, there are
+delimeted by dots, and only `*` is supported. A single `*` must match a single
+word.
+
+```
+a.b.c.d.e matches a.*.c.*.e
+a.b.c.d.e dose not match a.*
+```
+
 Rule Cases
 ----------
 
