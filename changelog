@@ -4,6 +4,7 @@ pending
 Not backward compatible.
 
 * Config: Split config.detector.trending_factor by rule levels.
+* Config: Add idle metrics check settings.
 * Detector: Select trending factor to use by rule level.
 
 0.2.3
@@ -12,7 +13,7 @@ Not backward compatible.
 * Config: Add new config webapp.graphite_url.
 * Deploy: Don't transfer binary on only_static set.
 * Detector: Threshold related rules should also be analyzed because the avg is
-wanted. 
+wanted.
 * Detector: Store events after detection.
 * Static: Add events to project detail page.
 * Static: Add past selects to events page.
@@ -65,7 +66,7 @@ wanted.
 
 Not backward compatible.
 
-* Config: Update default alert one day limit to 10 from 5. #505 
+* Config: Update default alert one day limit to 10 from 5. #505
 * Config: Update default storage path to ./data. #505
 * Config: Use yaml instead of json. #505
 * Detector: Use latest history data instead of random. #506
@@ -349,4 +350,4 @@ Not backward compatible.
 0.0.1
 -----
 
-* Implement the basic version without frontend. 
+* Implement the basic version without frontend.

@@ -75,6 +75,15 @@ detector:
     # Example: ["counter.*"], which means banshee would fill blank zeros after
     # filter counters history datapoints.
     fill_blank_zeros: []
+    # A list of wildcard patterns, for any matched metrics, banshee would alert
+    # an event if they are idle or inactive. default: []
+    # Example: ["timer.count_ps.*"]
+    idle_metric_check_list: []
+    # Time interval in seconds to check idle metrics, default: 60
+    idle_metric_check_interval: 60
+    # Limitation of times to track idle metrics, a metric would be tracked for
+    # at most certain times once it is checked as idle. default: 60
+    idle_metric_track_limit: 60
     # Detection warning timeout in millseconds, default: 300
     warning_timeout: 300
 
