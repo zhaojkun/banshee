@@ -58,7 +58,7 @@ func Open(fileName string, opts *Options) (*DB, error) {
 	// Indexdb.
 	var indexdbOpts *indexdb.Options
 	if opts != nil {
-		indexdbOpts = &indexdb.Options{opts.Expiration}
+		indexdbOpts = &indexdb.Options{Expiration: opts.Expiration}
 	}
 	db.Index, err = indexdb.Open(path.Join(fileName, indexdbFileName), indexdbOpts)
 	if err != nil {
