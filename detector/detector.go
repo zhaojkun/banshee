@@ -108,7 +108,7 @@ func (d *Detector) handle(conn net.Conn) {
 			log.Errorf("invalid metric: %v, skipping..", err)
 			return
 		}
-		d.process(m, true, false)
+		d.process(m, true)
 	}
 	conn.Close()
 	log.Infof("conn %s disconnected", addr)
@@ -120,7 +120,7 @@ func (d *Detector) handle(conn net.Conn) {
 //	1. Match metric with all rules.
 //	2. Detect the metric with matched rules.
 //	3. Output detection results to receivers.
-func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool, forceTestok bool) {
+func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
 	health.IncrNumMetricIncomed(1)
 	timer := util.NewTimer() // Detection cost timer
 	// Match
@@ -132,7 +132,7 @@ func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool, forceTestok 
 		d.adjustIdleM(m, rules)
 	}
 	// Detect
-	evs, err := d.detect(m, rules, forceTestok)
+	evs, err := d.detect(m, rules)
 	if err != nil {
 		log.Errorf("detect: %v, skipping..", err)
 		return
@@ -246,7 +246,7 @@ func (d *Detector) checkIdles() {
 			Stamp: uint32(time.Now().Unix()),
 			Value: 0, // !Must 0
 		}
-		d.process(mockedMetric, false, true)
+		d.process(mockedMetric, false)
 		// Copy mapA to mapB.
 		// Reason: mapA should be much smaller than mapB.
 		if d.idleMA[name] < d.cfg.Detector.IdleMetricTrackLimit {
@@ -265,7 +265,7 @@ func (d *Detector) checkIdles() {
 //	3. Save its index and the metricinto db.
 //	4. Test the metric with matched rules.
 //	5. Make events with its tested rules.
-func (d *Detector) detect(m *models.Metric, rules []*models.Rule, forceTestok bool) (evs []*models.Event, err error) {
+func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models.Event, err error) {
 	var idx *models.Index
 	if idx, err = d.db.Index.Get(m.Name); err != nil {
 		if err == indexdb.ErrNotFound {
@@ -278,17 +278,7 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule, forceTestok bo
 	if err = d.save(m, idx); err != nil {
 		return
 	}
-	var testedRules []*models.Rule
-	if forceTestok { // NOTE: forceTestedok only works for high level rules.
-		for _, rule := range rules {
-			if rule.Level == models.RuleLevelHigh {
-				testedRules = append(testedRules, rule)
-			}
-		}
-	} else { // Normal case.
-		testedRules = d.test(m, idx, rules)
-	}
-	for _, rule := range testedRules {
+	for _, rule := range d.test(m, idx, rules) {
 		evs = append(evs, models.NewEvent(m, idx, rule))
 	}
 	return

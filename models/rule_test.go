@@ -83,12 +83,6 @@ func TestRuleDisabledAtCopy(t *testing.T) {
 	util.Must(t, !rule.Copy().Test(&Metric{Value: 3}, nil, nil))
 }
 
-func TestRuleTrackIdle(t *testing.T) {
-	rule := &Rule{TrackIdle: true}
-	util.Must(t, rule.Test(&Metric{Value: 0}, nil, nil))
-	util.Must(t, !rule.Test(&Metric{Value: 1}, nil, nil))
-}
-
 func BenchmarkRuleTest(b *testing.B) {
 	cfg := config.New()
 	m := &Metric{Value: 102}
