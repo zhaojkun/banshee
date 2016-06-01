@@ -46,5 +46,9 @@ func getEventsByProjectID(w http.ResponseWriter, r *http.Request, ps httprouter.
 	if ews == nil {
 		ews = make([]eventdb.EventWrapper, 0) // Note: Avoid js null
 	}
+	// Reverse
+	for i, j := 0, len(ews)-1; i < j; i, j = i+1, j-1 {
+		ews[i], ews[j] = ews[j], ews[i]
+	}
 	ResponseJSONOK(w, ews)
 }
