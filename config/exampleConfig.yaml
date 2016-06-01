@@ -77,6 +77,7 @@ detector:
     fill_blank_zeros: []
     # A list of wildcard patterns, for any matched metrics, banshee would alert
     # an event if they are idle or inactive. default: []
+    # NOTE: this setting only works for high level rules.
     # Example: ["timer.count_ps.*"]
     idle_metric_check_list: []
     # Time interval in seconds to check idle metrics, default: 60

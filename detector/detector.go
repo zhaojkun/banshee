@@ -200,18 +200,24 @@ func (d *Detector) adjustIdleM(m *models.Metric, rules []*models.Rule) {
 // A metric should be tracked for idle states if it matches configured check
 // pattern list or its matched rules have an option TrackIdle set.
 func (d *Detector) shoudTrackIdle(m *models.Metric, rules []*models.Rule) bool {
+	for _, rule := range rules {
+		if rule.TrackIdle {
+			return true
+		}
+	}
+	isHighLevel := false
+	for _, rule := range rules { // IdleMetricCheckList only works for high level rules.
+		if rule.Level == models.RuleLevelHigh {
+			isHighLevel = true
+		}
+	}
 	for _, p := range d.cfg.Detector.IdleMetricCheckList {
 		ok, err := filepath.Match(p, m.Name)
 		if err != nil {
 			log.Errorf("invalid idleMetricCheck pattern: %s, %v", p, err)
 			continue
 		}
-		if ok {
-			return true
-		}
-	}
-	for _, rule := range rules {
-		if rule.TrackIdle {
+		if ok && isHighLevel {
 			return true
 		}
 	}
@@ -272,8 +278,14 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule, forceTestok bo
 	if err = d.save(m, idx); err != nil {
 		return
 	}
-	testedRules := rules
-	if !forceTestok {
+	var testedRules []*models.Rule
+	if forceTestok { // NOTE: forceTestedok only works for high level rules.
+		for _, rule := range rules {
+			if rule.Level == models.RuleLevelHigh {
+				testedRules = append(testedRules, rule)
+			}
+		}
+	} else { // Normal case.
 		testedRules = d.test(m, idx, rules)
 	}
 	for _, rule := range testedRules {
