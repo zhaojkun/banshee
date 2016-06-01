@@ -4,6 +4,7 @@ pending
 Not backward compatible.
 
 * Config: Split config.detector.trending_factor by rule levels.
+* Detector: Select trending factor to use by rule level.
 
 0.2.3
 -----
