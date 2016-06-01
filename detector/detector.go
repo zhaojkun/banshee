@@ -211,7 +211,7 @@ func (d *Detector) analyze(idx *models.Index, m *models.Metric, rules []*models.
 		return nil
 	}
 	d.div3Sigma(m, vals)
-	return d.nextIdx(idx, m)
+	return d.nextIdx(idx, m, d.pickTrendingFactor(rules))
 }
 
 // Test metric and index with rules.
@@ -403,7 +403,7 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 //	t[0] = x[1], f: 0~1
 //	t[n] = t[n-1] * (1 - f) + f * x[n]
 // Index score is the trending description of metric score.
-func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
+func (d *Detector) nextIdx(idx *models.Index, m *models.Metric, f float64) *models.Index {
 	n := &models.Index{Name: m.Name, Stamp: m.Stamp}
 	if idx == nil {
 		// As first
@@ -412,9 +412,31 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric) *models.Index {
 		return n
 	}
 	// Move next
-	f := d.cfg.Detector.TrendingFactor
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average
 	n.Link = idx.Link
 	return n
+}
+
+// pickTrendingFactor picks a trending factor by rules levels.
+func (d *Detector) pickTrendingFactor(rules []*models.Rule) float64 {
+	maxLevel := models.RuleLevelLow
+	factor := d.cfg.Detector.TrendingFactorLowLevel
+	for _, rule := range rules {
+		switch rule.Level {
+		case models.RuleLevelLow:
+			if maxLevel < rule.Level {
+				factor = d.cfg.Detector.TrendingFactorLowLevel
+			}
+		case models.RuleLevelMiddle:
+			if maxLevel < rule.Level {
+				factor = d.cfg.Detector.TrendingFactorMiddleLevel
+			}
+		case models.RuleLevelHigh:
+			if maxLevel < rule.Level {
+				factor = d.cfg.Detector.TrendingFactorHighLevel
+			}
+		}
+	}
+	return factor
 }
