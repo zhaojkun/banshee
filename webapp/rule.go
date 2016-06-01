@@ -24,6 +24,7 @@ type createRuleRequest struct {
 	Level         int     `json:"level"`
 	Disabled      bool    `json:"disabled"`
 	DisabledFor   int     `json:"disabledFor"` // in Minute
+	TrackIdle     bool    `json:"trackIdle"`
 	NeverFillZero bool    `json:"neverFillZero"`
 }
 
@@ -91,6 +92,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Disabled:      req.Disabled,
 		DisabledFor:   req.DisabledFor,
 		DisabledAt:    time.Now(),
+		TrackIdle:     req.TrackIdle,
 		NeverFillZero: req.NeverFillZero,
 	}
 	if err := db.Admin.DB().Create(rule).Error; err != nil {
@@ -192,6 +194,7 @@ func editRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rule.Disabled = req.Disabled
 	rule.DisabledFor = req.DisabledFor
 	rule.DisabledAt = time.Now()
+	rule.TrackIdle = req.TrackIdle
 	rule.NeverFillZero = req.NeverFillZero
 
 	if db.Admin.DB().Save(rule).Error != nil {

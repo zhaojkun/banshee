@@ -53,6 +53,10 @@ const (
 	DefaultTrendingFactorMiddleLevel float64 = 0.2
 	// Default trending factor for high level rules.
 	DefaultTrendingFactorHighLevel float64 = 0.3
+	// Default idle metric check interval, in seconds.
+	DefaultIdleMetricCheckInterval = 60
+	// Default idle metric track limit.
+	DefaultIdleMetricTrackLimit = 60
 )
 
 // Limitations
@@ -102,6 +106,9 @@ type configDetector struct {
 	DefaultThresholdMins      map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
 	FillBlankZeros            []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
 	WarningTimeout            int                `json:"warningTimeout" yaml:"warning_timeout"`
+	IdleMetricCheckList       []string           `json:"idleMetricCheckList" yaml:"idle_metric_check_list"`
+	IdleMetricCheckInterval   int                `json:"idleMetricCheckInterval" yaml:"idle_metric_check_interval"`
+	IdleMetricTrackLimit      int                `json:"idleMetricTrackLimit" yaml:"idle_metric_track_limit"`
 }
 
 type configWebapp struct {
@@ -143,6 +150,9 @@ func New() *Config {
 	c.Detector.DefaultThresholdMins = make(map[string]float64, 0)
 	c.Detector.FillBlankZeros = []string{}
 	c.Detector.WarningTimeout = DefaultDetectionWarningTimeout
+	c.Detector.IdleMetricCheckList = []string{}
+	c.Detector.IdleMetricCheckInterval = DefaultIdleMetricCheckInterval
+	c.Detector.IdleMetricTrackLimit = DefaultIdleMetricTrackLimit
 	c.Webapp.Port = 2016
 	c.Webapp.Auth = []string{"admin", "admin"}
 	c.Webapp.Static = "static/dist"
@@ -193,6 +203,9 @@ func (c *Config) Copy() *Config {
 	cfg.Detector.EnableIntervalHitLimit = c.Detector.EnableIntervalHitLimit
 	cfg.Detector.IntervalHitLimit = c.Detector.IntervalHitLimit
 	cfg.Detector.WarningTimeout = c.Detector.WarningTimeout
+	cfg.Detector.IdleMetricCheckList = c.Detector.IdleMetricCheckList
+	cfg.Detector.IdleMetricCheckInterval = c.Detector.IdleMetricCheckInterval
+	cfg.Detector.IdleMetricTrackLimit = c.Detector.IdleMetricTrackLimit
 	cfg.Webapp.Port = c.Webapp.Port
 	cfg.Webapp.Auth = c.Webapp.Auth
 	cfg.Webapp.Static = c.Webapp.Static

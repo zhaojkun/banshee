@@ -46,6 +46,8 @@ type Rule struct {
 	DisabledFor int `json:"disabledFor"`
 	// DisabledAt
 	DisabledAt time.Time `json:"disabledAt"`
+	// TrackIdle
+	TrackIdle bool `json:"trackIdle"`
 	// FillZero
 	NeverFillZero bool `sql:"default:false" json:"neverFillZero"`
 }
@@ -75,6 +77,7 @@ func (rule *Rule) CopyTo(r *Rule) {
 	r.Disabled = rule.Disabled
 	r.DisabledFor = rule.DisabledFor
 	r.DisabledAt = rule.DisabledAt
+	r.TrackIdle = rule.TrackIdle
 }
 
 // Equal tests rule equality
@@ -94,7 +97,8 @@ func (rule *Rule) Equal(r *Rule) bool {
 		r.Level == rule.Level &&
 		r.Disabled == rule.Disabled &&
 		r.DisabledFor == rule.DisabledFor &&
-		r.DisabledAt.Equal(rule.DisabledAt))
+		r.DisabledAt.Equal(rule.DisabledAt) &&
+		r.TrackIdle == rule.TrackIdle)
 }
 
 // IsTrendRelated returns true if any trend options is set.
@@ -121,6 +125,10 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 		if time.Now().Before(disabledBefore) { // Disabled for a while
 			return false
 		}
+	}
+	// Force tested ok if given metric is idle and rule tracks idle.
+	if rule.TrackIdle && m.Value == 0 {
+		return true
 	}
 	// Default thresholds.
 	var defaultThresholdMax float64

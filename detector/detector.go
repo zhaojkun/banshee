@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/filter"
@@ -25,15 +27,21 @@ type Detector struct {
 	db   *storage.DB
 	flt  *filter.Filter
 	outs []chan *models.Event
+	// Idle tracking
+	idleMA map[string]int // indexName:trackTimes
+	idleMB map[string]int // indexName:trackTimes
+	lock   sync.Mutex     // protects idleM*
 }
 
 // New creates a new Detector.
 func New(cfg *config.Config, db *storage.DB, flt *filter.Filter) *Detector {
 	return &Detector{
-		cfg:  cfg,
-		db:   db,
-		flt:  flt,
-		outs: make([]chan *models.Event, 0),
+		cfg:    cfg,
+		db:     db,
+		flt:    flt,
+		outs:   make([]chan *models.Event, 0),
+		idleMA: make(map[string]int, 0),
+		idleMB: make(map[string]int, 0),
 	}
 }
 
@@ -63,6 +71,7 @@ func (d *Detector) Start() {
 		log.Fatalf("listen: %v", err)
 	}
 	log.Infof("detector is listening on %s", addr)
+	go d.startIdleTracking()
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -99,7 +108,7 @@ func (d *Detector) handle(conn net.Conn) {
 			log.Errorf("invalid metric: %v, skipping..", err)
 			return
 		}
-		d.process(m)
+		d.process(m, true, false)
 	}
 	conn.Close()
 	log.Infof("conn %s disconnected", addr)
@@ -111,7 +120,7 @@ func (d *Detector) handle(conn net.Conn) {
 //	1. Match metric with all rules.
 //	2. Detect the metric with matched rules.
 //	3. Output detection results to receivers.
-func (d *Detector) process(m *models.Metric) {
+func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool, forceTestok bool) {
 	health.IncrNumMetricIncomed(1)
 	timer := util.NewTimer() // Detection cost timer
 	// Match
@@ -119,8 +128,11 @@ func (d *Detector) process(m *models.Metric) {
 	if !ok {
 		return
 	}
+	if shouldAdjustIdle {
+		d.adjustIdleM(m, rules)
+	}
 	// Detect
-	evs, err := d.detect(m, rules)
+	evs, err := d.detect(m, rules, forceTestok)
 	if err != nil {
 		log.Errorf("detect: %v, skipping..", err)
 		return
@@ -169,6 +181,77 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 	return true, rules // OK
 }
 
+// adjustIdleM puts a metric name to idle track maps if it should be tracked
+// and pops from the maps if it shouldn't.
+func (d *Detector) adjustIdleM(m *models.Metric, rules []*models.Rule) {
+	b := d.shoudTrackIdle(m, rules)
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	if b { // Should be tracked.
+		delete(d.idleMA, m.Name)
+		d.idleMB[m.Name] = 0 // Reset to 0 since real metric comes.
+	} else { // Shouldn't be tracked.
+		delete(d.idleMA, m.Name)
+		delete(d.idleMB, m.Name)
+	}
+}
+
+// shouldTrackIdle returns true if given metric should be tracked for idle.
+// A metric should be tracked for idle states if it matches configured check
+// pattern list or its matched rules have an option TrackIdle set.
+func (d *Detector) shoudTrackIdle(m *models.Metric, rules []*models.Rule) bool {
+	for _, p := range d.cfg.Detector.IdleMetricCheckList {
+		ok, err := filepath.Match(p, m.Name)
+		if err != nil {
+			log.Errorf("invalid idleMetricCheck pattern: %s, %v", p, err)
+			continue
+		}
+		if ok {
+			return true
+		}
+	}
+	for _, rule := range rules {
+		if rule.TrackIdle {
+			return true
+		}
+	}
+	return false
+}
+
+// startIdleTracking starts a goroutine to track idle metrics by interval.
+func (d *Detector) startIdleTracking() {
+	go func() {
+		log.Debugf("starting idle metrics tracking..")
+		interval := time.Duration(d.cfg.Detector.IdleMetricCheckInterval/2) * time.Second
+		ticker := time.NewTicker(interval)
+		for _ = range ticker.C {
+			d.checkIdles()
+		}
+	}()
+}
+
+// checkIdles checks all idle metrics.
+func (d *Detector) checkIdles() {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	for name, n := range d.idleMA {
+		mockedMetric := &models.Metric{
+			Name:  name,
+			Stamp: uint32(time.Now().Unix()),
+			Value: 0, // !Must 0
+		}
+		d.process(mockedMetric, false, true)
+		// Copy mapA to mapB.
+		// Reason: mapA should be much smaller than mapB.
+		if d.idleMA[name] < d.cfg.Detector.IdleMetricTrackLimit {
+			d.idleMB[name] = n + 1 // And increase idle times
+		}
+	}
+	// Rename mapB to mapA and reset mapB.
+	d.idleMA = d.idleMB
+	d.idleMB = make(map[string]int, 0)
+}
+
 // detect input metric with its matched rules.
 // Details:
 //	1. Get its index from db.
@@ -176,7 +259,7 @@ func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 //	3. Save its index and the metricinto db.
 //	4. Test the metric with matched rules.
 //	5. Make events with its tested rules.
-func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models.Event, err error) {
+func (d *Detector) detect(m *models.Metric, rules []*models.Rule, forceTestok bool) (evs []*models.Event, err error) {
 	var idx *models.Index
 	if idx, err = d.db.Index.Get(m.Name); err != nil {
 		if err == indexdb.ErrNotFound {
@@ -189,7 +272,11 @@ func (d *Detector) detect(m *models.Metric, rules []*models.Rule) (evs []*models
 	if err = d.save(m, idx); err != nil {
 		return
 	}
-	for _, rule := range d.test(m, idx, rules) {
+	testedRules := rules
+	if !forceTestok {
+		testedRules = d.test(m, idx, rules)
+	}
+	for _, rule := range testedRules {
 		evs = append(evs, models.NewEvent(m, idx, rule))
 	}
 	return
