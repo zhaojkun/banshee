@@ -1,3 +1,10 @@
+pending
+-------
+
+Not backward compatible.
+
+* Config: Split config.detector.trending_factor by rule levels.
+
 0.2.3
 -----
 

@@ -28,8 +28,6 @@ const (
 	DefaultPeriod uint32 = 1 * Day
 	// Default metric expiration.
 	DefaultExpiration uint32 = 7 * Day
-	// Default weight factor for moving average.
-	DefaultTrendingFactor float64 = 0.1
 	// Default filter offset to query history metrics.
 	DefaultFilterOffset float64 = 0.01
 	// Default filter times to query history metrics.
@@ -49,6 +47,12 @@ const (
 	DefaultDetectionWarningTimeout = 300
 	// Default alert command execution timeout, in seconds.
 	DefaultAlertExecCommandTimeout = 5
+	// Default trending factor for low level rules.
+	DefaultTrendingFactorLowLevel float64 = 0.1
+	// Default trending factor for middle level rules.
+	DefaultTrendingFactorMiddleLevel float64 = 0.2
+	// Default trending factor for high level rules.
+	DefaultTrendingFactorHighLevel float64 = 0.3
 )
 
 // Limitations
@@ -84,18 +88,20 @@ type configStorage struct {
 }
 
 type configDetector struct {
-	Port                   int                `json:"port" yaml:"port"`
-	TrendingFactor         float64            `json:"trendingFactor" yaml:"trending_factor"`
-	FilterOffset           float64            `json:"filterOffset" yaml:"filter_offset"`
-	FilterTimes            int                `json:"filterTimes" yaml:"filter_times"`
-	LeastCount             uint32             `json:"leastCount" yaml:"least_count"`
-	BlackList              []string           `json:"blackList" yaml:"blacklist"`
-	EnableIntervalHitLimit bool               `json:"enableIntervalHitLimit" yaml:"enable_interval_hit_limit"`
-	IntervalHitLimit       uint32             `json:"intervalHitLimit" yaml:"interval_hit_limit"`
-	DefaultThresholdMaxs   map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
-	DefaultThresholdMins   map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
-	FillBlankZeros         []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
-	WarningTimeout         int                `json:"warningTimeout" yaml:"warning_timeout"`
+	Port                      int                `json:"port" yaml:"port"`
+	TrendingFactorLowLevel    float64            `json:"trendingFactorLowLevel" yaml:"trending_factor_low_level"`
+	TrendingFactorMiddleLevel float64            `json:"trendingFactorMiddleLevel" yaml:"trending_factor_middle_level"`
+	TrendingFactorHighLevel   float64            `json:"trendingFactorHighLevel" yaml:"trending_factor_high_level"`
+	FilterOffset              float64            `json:"filterOffset" yaml:"filter_offset"`
+	FilterTimes               int                `json:"filterTimes" yaml:"filter_times"`
+	LeastCount                uint32             `json:"leastCount" yaml:"least_count"`
+	BlackList                 []string           `json:"blackList" yaml:"blacklist"`
+	EnableIntervalHitLimit    bool               `json:"enableIntervalHitLimit" yaml:"enable_interval_hit_limit"`
+	IntervalHitLimit          uint32             `json:"intervalHitLimit" yaml:"interval_hit_limit"`
+	DefaultThresholdMaxs      map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
+	DefaultThresholdMins      map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
+	FillBlankZeros            []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
+	WarningTimeout            int                `json:"warningTimeout" yaml:"warning_timeout"`
 }
 
 type configWebapp struct {
@@ -124,7 +130,9 @@ func New() *Config {
 	c.Expiration = DefaultExpiration
 	c.Storage.Path = "./data"
 	c.Detector.Port = 2015
-	c.Detector.TrendingFactor = DefaultTrendingFactor
+	c.Detector.TrendingFactorLowLevel = DefaultTrendingFactorLowLevel
+	c.Detector.TrendingFactorMiddleLevel = DefaultTrendingFactorMiddleLevel
+	c.Detector.TrendingFactorHighLevel = DefaultTrendingFactorHighLevel
 	c.Detector.FilterOffset = DefaultFilterOffset
 	c.Detector.FilterTimes = DefaultFilterTimes
 	c.Detector.LeastCount = DefaultLeastCount
@@ -172,7 +180,9 @@ func (c *Config) Copy() *Config {
 	cfg.Expiration = c.Expiration
 	cfg.Storage.Path = c.Storage.Path
 	cfg.Detector.Port = c.Detector.Port
-	cfg.Detector.TrendingFactor = c.Detector.TrendingFactor
+	cfg.Detector.TrendingFactorLowLevel = c.Detector.TrendingFactorLowLevel
+	cfg.Detector.TrendingFactorMiddleLevel = c.Detector.TrendingFactorMiddleLevel
+	cfg.Detector.TrendingFactorHighLevel = c.Detector.TrendingFactorHighLevel
 	cfg.Detector.FilterOffset = c.Detector.FilterOffset
 	cfg.Detector.FilterTimes = c.Detector.FilterTimes
 	cfg.Detector.LeastCount = c.Detector.LeastCount
@@ -245,7 +255,13 @@ func (c *configDetector) validateDetector(period uint32, expiration uint32) erro
 		return ErrDetectorPort
 	}
 	// Should: 0 < TrendingFactor < 1
-	if c.TrendingFactor <= 0 || c.TrendingFactor >= 1 {
+	if c.TrendingFactorLowLevel <= 0 || c.TrendingFactorLowLevel >= 1 {
+		return ErrDetectorTrendingFactor
+	}
+	if c.TrendingFactorMiddleLevel <= 0 || c.TrendingFactorMiddleLevel >= 1 {
+		return ErrDetectorTrendingFactor
+	}
+	if c.TrendingFactorHighLevel <= 0 || c.TrendingFactorHighLevel >= 1 {
 		return ErrDetectorTrendingFactor
 	}
 	// Should: len(DefaultThresholdMaxs) <= 8

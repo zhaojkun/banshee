@@ -21,11 +21,14 @@ storage:
 detector:
     # Port for detector tcp server, default: 2015
     port: 2015
-    # Detection weighted moving average factor, should be a number between
-    # 0 and 1, default: 0.1
-    # This value larger, the timeliness better, but more noise. We are using
+    # Detection weighted moving average factors for different rule levels.
+    # Each factor should be a number between 0 and 1.
+    # Defaults: 0.1, 0.2, 0.3.
+    # The factor larger, the timeliness better, but more noise. We are using
     # the default setting.
-    trending_factor: 0.1
+    trending_factor_low_level: 0.1
+    trending_factor_middle_level: 0.2
+    trending_factor_high_level: 0.3
     # Percentage of the filter history offset to period, should be a number
     # between 0 and 1, default: 0.01
     # The time span to filter in a single period is: filter_offset * period,
