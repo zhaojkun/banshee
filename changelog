@@ -5,6 +5,7 @@ pending
 * Config: Add idle metrics check settings.
 * Detector: Select trending factor to use by rule level.
 * Models: Add Rule.TrackIdle and force tested ok if should track idle and value is 0
+* Webapp: Add Rule.TrackIdle to edit and add rule.
 
 0.2.3
 -----
