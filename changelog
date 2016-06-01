@@ -5,7 +5,7 @@ pending
 * Config: Add idle metrics check settings.
 * Detector: Select trending factor to use by rule level.
 * Detector: Support idle (null) metrics detection.
-* Models: Add Rule.TrackIdle and force tested ok if should track idle and value is 0
+* Models: Add Rule.TrackIdle.
 * Static: Add rule track idle option in static modal.
 * Webapp: Add Rule.TrackIdle to edit and add rule.
 

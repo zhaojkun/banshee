@@ -126,10 +126,6 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 			return false
 		}
 	}
-	// Force tested ok if given metric is idle and rule tracks idle.
-	if rule.TrackIdle && m.Value == 0 {
-		return true
-	}
 	// Default thresholds.
 	var defaultThresholdMax float64
 	var defaultThresholdMin float64
