@@ -133,10 +133,15 @@
           {{ 'ADMIN_RULE_DISABLED_WARN' | translate }}
         </span>
         <div layout="row" flex="100" ng-if="showMore">
-          <md-input-container>
-          <md-checkbox ng-model="rule.neverFillZero">
-            {{ 'ADMIN_RULE_NEVER_FILL_ZERO' | translate }}
-          </md-checkbox>
+          <md-input-container flex="50">
+            <md-checkbox ng-model="rule.trackIdle">
+              {{ 'ADMIN_RULE_TRACK_IDLE' | translate }}
+            </md-checkbox>
+          </md-input-container>
+          <md-input-container flex="50">
+            <md-checkbox ng-model="rule.neverFillZero">
+              {{ 'ADMIN_RULE_NEVER_FILL_ZERO' | translate }}
+            </md-checkbox>
           </md-input-container>
         </div>
       </md-content>
