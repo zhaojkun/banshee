@@ -146,6 +146,7 @@
   "ADMIN_RULE_TRANS_TRENDDOWN": "trend abnormally down",
   "ADMIN_RULE_TRANS_TRENDDOWN_AND_THRESHOLDMIN": "trend abnormally down to below {thresholdMin}",
   "ADMIN_RULE_TRANS_TRESHOLDMIN": "value smaller than {thresholdMin}",
+  "ADMIN_RULE_SHOW_MORE_OPTIONS": "Show more options",
   "ADMIN_RULE_TRANS_OR": " or ",
   "ADMIN_RULE_TRANS_TPL": "When {text}",
   "ADMIN_RULE_NUM_METRICS_WARN": "A single rule matches at most {threshold} in {interval}s!",
