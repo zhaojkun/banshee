@@ -95,7 +95,10 @@
             <input type="number" step="any" name="thresholdMin" ng-model="rule.thresholdMin">
           </md-input-container>
         </div>
-        <div layout="row" flex="100">
+        <md-input-container class="md-block" flex-gt-sm ng-init="showMore=false" ng-hide="showMore">
+          <md-button md-no-ink ng-click="showMore=true" class="md-primary">{{ 'ADMIN_RULE_SHOW_MORE_OPTIONS' | translate }}...</md-button>
+        </md-input-container>
+        <div layout="row" flex="100" ng-hide="!showMore">
           <md-input-container flex="25">
             <md-checkbox ng-if="!isEdit" ng-model="rule.disabled" ng-init='rule.disabled=false' class="md-warn">
             {{ 'ADMIN_RULE_DISABLE' | translate }}
@@ -126,10 +129,10 @@
             </label>
           </md-input-container>
         </div>
-        <span ng-if="rule.disabled" ng-style="{'color': 'saddlebrown'}" flex="100">
+        <span ng-if="rule.disabled" ng-style="{'color': 'saddlebrown'}" flex="100" ng-hide="!showMore">
           {{ 'ADMIN_RULE_DISABLED_WARN' | translate }}
         </span>
-        <div layout="row" flex="100">
+        <div layout="row" flex="100" ng-if="showMore">
           <md-input-container>
           <md-checkbox ng-model="rule.neverFillZero">
             {{ 'ADMIN_RULE_NEVER_FILL_ZERO' | translate }}

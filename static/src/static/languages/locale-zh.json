@@ -148,6 +148,7 @@
   "ADMIN_RULE_TRANS_OR": "或者",
   "ADMIN_RULE_TRANS_TPL": "当指标{text}时触发",
   "ADMIN_RULE_NUM_METRICS_WARN": "{interval}s内规则匹配的指标个数最多只能为{threshold}!",
+  "ADMIN_RULE_SHOW_MORE_OPTIONS": "显示更多选项",
   "ADMIN_USER_ADD_TEXT": "添加用户",
   "ADMIN_USER_REMOVE_TEXT": "从这个项目中删除该用户",
   "ADMIN_USER_REMOVE_WARN": "确认从这个项目里删除该用户?",
