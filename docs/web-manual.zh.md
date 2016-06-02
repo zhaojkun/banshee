@@ -90,6 +90,21 @@ a.b.c.d.e 不命中 a.*
 
 ![](snap/web-manual-57.png)
 
+空值告警的例子
+--------------
+
+由于只有数据点流入才会让banshee去检测异常，所以对于一个指标不再发送数据点过来的情况banshee并不会
+去检测这个情况。
+
+如果[statsd](https://github.com/etsy/statsd)中的配置`deleteIdleStats`被设置为`true`, 一个指标
+在一个statsd的`flush_interval`时间内没有新的数据点产生的话，statsd就不会发数据点给它的后端，
+因此banshee也无从知道空值. 但是对于调用频次类指标空值很可能意味着调用量掉底。
+
+我们可以让banshee追踪一些空值指标，如果banshee发现一个指标在一定时间内没有进入，它会模拟一个零值
+指标主动进入分析过程, 如果零值异常, 发送告警消息.
+
+![](snap/web-manual-60.png)
+
 全局消息接收人
 --------------
 

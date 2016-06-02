@@ -228,7 +228,7 @@ func (d *Detector) shoudTrackIdle(m *models.Metric, rules []*models.Rule) bool {
 func (d *Detector) startIdleTracking() {
 	go func() {
 		log.Debugf("starting idle metrics tracking..")
-		interval := time.Duration(d.cfg.Detector.IdleMetricCheckInterval/2) * time.Second
+		interval := time.Duration(d.cfg.Detector.IdleMetricCheckInterval) * time.Second
 		ticker := time.NewTicker(interval)
 		for _ = range ticker.C {
 			d.checkIdles()

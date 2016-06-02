@@ -1,5 +1,5 @@
-pending
--------
+0.2.4
+-----
 
 * Config: Split config.detector.trending_factor by rule levels. (Not-backward-compatible)
 * Config: Add idle metrics check settings.
