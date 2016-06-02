@@ -96,6 +96,21 @@ To disable a rule for a while:
 
 ![](snap/web-manual-07.png)
 
+Example for idle metrics checking
+---------------------------------
+
+Banshee won't trigger a detection for an idle metric, because only incoming datapoints
+drive the detection.
+
+[statsd](https://github.com/etsy/statsd) won't forward datapoints to its backends if its
+`deleteIdleStats` is configured `true`. But for some timer countps metrics, the "null" values
+indicate accidents.
+
+We can force banshee to track idle metrics, by setting the rule option below. Banshee would
+alert if any matched metric dosen't come for a certain time.
+
+![](snap/web-manual-10.png)
+
 Universal receivers
 -------------------
 
