@@ -91,6 +91,7 @@ func (d *Detector) Start() {
 func (d *Detector) handle(conn net.Conn) {
 	addr := conn.RemoteAddr()
 	health.IncrNumClients(1)
+	defer health.DecrNumClients(1)
 	log.Infof("conn %s established", addr)
 	scanner := bufio.NewScanner(conn)
 	for scanner.Scan() { // Read line by line.
@@ -112,7 +113,6 @@ func (d *Detector) handle(conn net.Conn) {
 	}
 	conn.Close()
 	log.Infof("conn %s disconnected", addr)
-	health.DecrNumClients(1)
 }
 
 // process the input metric.

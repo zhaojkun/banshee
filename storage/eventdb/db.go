@@ -232,17 +232,27 @@ func NewEventWrapper(ev *models.Event) *EventWrapper {
 	}
 }
 
-// Put an event wraper into db.
-func (db *DB) Put(ew *EventWrapper) (err error) {
+// adjust db storages pool.
+func (db *DB) adjust(stamp uint32) (err error) {
 	db.lock.Lock()
 	defer db.lock.Unlock()
-	// Adjust storage pool.
-	if err = db.createStorage(ew.Stamp); err != nil {
+	if err = db.createStorage(stamp); err != nil {
 		return
 	}
 	if err = db.expireStorages(); err != nil {
 		return
 	}
+	return
+}
+
+// Put an event wraper into db.
+func (db *DB) Put(ew *EventWrapper) (err error) {
+	// Adjust storage pool.
+	if err = db.adjust(ew.Stamp); err != nil {
+		return
+	}
+	db.lock.RLock()
+	defer db.lock.RUnlock()
 	// Select a storage.
 	if len(db.pool) == 0 {
 		return ErrNoStorage

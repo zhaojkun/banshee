@@ -190,19 +190,29 @@ func (db *DB) expireStorages() error {
 	return nil
 }
 
-// Put a metric into db.
-// Returns ErrNoStorage if no storage is available.
-func (db *DB) Put(m *models.Metric) (err error) {
+// adjust db storages pool.
+func (db *DB) adjust(stamp uint32) (err error) {
 	db.lock.Lock()
 	defer db.lock.Unlock()
-	// Adjust storage pool.
-	if err = db.createStorage(m.Stamp); err != nil {
+	if err = db.createStorage(stamp); err != nil {
 		return
 	}
 	if err = db.expireStorages(); err != nil {
 		return
 	}
+	return
+}
+
+// Put a metric into db.
+// Returns ErrNoStorage if no storage is available.
+func (db *DB) Put(m *models.Metric) (err error) {
+	// Adjust storage pool.
+	if err = db.adjust(m.Stamp); err != nil {
+		return
+	}
 	// Select a storage.
+	db.lock.RLock()
+	defer db.lock.RUnlock()
 	if len(db.pool) == 0 {
 		return ErrNoStorage
 	}
