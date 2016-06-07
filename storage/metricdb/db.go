@@ -68,16 +68,18 @@ func (b byID) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 
 // Options is to open DB.
 type Options struct {
-	Period     uint32
-	Expiration uint32
+	Period       uint32
+	Expiration   uint32
+	FilterOffset float64
 }
 
 // DB is the top level metric storage handler.
 type DB struct {
-	name string // dirname
-	opts *Options
-	pool []*storage   // sorted byID
-	lock sync.RWMutex // protects runtime pool
+	name  string // dirname
+	opts  *Options
+	pool  []*storage // sorted byID
+	cache map[uint32][]*models.Metric
+	lock  sync.RWMutex // protects runtime pool
 }
 
 // openStorage opens a storage by filename.
@@ -108,7 +110,7 @@ func Open(fileName string, opts *Options) (*DB, error) {
 		}
 		log.Debugf("dir %s created", fileName)
 	}
-	db := &DB{opts: opts, name: fileName}
+	db := &DB{opts: opts, name: fileName, cache: make(map[uint32][]*models.Metric, 0)}
 	if err = db.init(); err != nil {
 		return nil, err
 	}
@@ -192,8 +194,6 @@ func (db *DB) expireStorages() error {
 
 // adjust db storages pool.
 func (db *DB) adjust(stamp uint32) (err error) {
-	db.lock.Lock()
-	defer db.lock.Unlock()
 	if err = db.createStorage(stamp); err != nil {
 		return
 	}
@@ -206,20 +206,44 @@ func (db *DB) adjust(stamp uint32) (err error) {
 // Put a metric into db.
 // Returns ErrNoStorage if no storage is available.
 func (db *DB) Put(m *models.Metric) (err error) {
+	if m.Link == 0 {
+		return ErrNoLink
+	}
+	db.lock.Lock()
+	defer db.lock.Unlock()
 	// Adjust storage pool.
 	if err = db.adjust(m.Stamp); err != nil {
 		return
 	}
 	// Select a storage.
-	db.lock.RLock()
-	defer db.lock.RUnlock()
 	if len(db.pool) == 0 {
 		return ErrNoStorage
 	}
 	for i := len(db.pool) - 1; i >= 0; i-- {
 		s := db.pool[i]
 		if s.id*db.opts.Period <= m.Stamp && m.Stamp < (s.id+1)*db.opts.Period {
-			return s.put(m)
+			if err = s.put(m); err != nil {
+				return
+			}
+			// Cache
+			if _, ok := db.cache[m.Link]; !ok {
+				db.cache[m.Link] = nil
+			}
+			copied := &models.Metric{Stamp: m.Stamp, Value: m.Value}
+			db.cache[m.Link] = append(db.cache[m.Link], copied)
+			offset := uint32(db.opts.FilterOffset * float64(db.opts.Period))
+			for {
+				sl := db.cache[m.Link]
+				if len(sl) < 2 {
+					break
+				}
+				if sl[len(sl)-1].Stamp > sl[1].Stamp+offset {
+					db.cache[m.Link] = sl[1:]
+				} else {
+					break
+				}
+			}
+			return
 		}
 	}
 	return ErrNoStorage
@@ -278,11 +302,20 @@ func (db *DB) Get(name string, link, start, end uint32) ([]*models.Metric, error
 		if end > max {
 			ed = max
 		}
-		l, err := s.get(name, link, st, ed)
-		if err != nil {
-			return nil, err
+		sl, ok := db.cache[link]
+		if ok && len(sl) > 2 && sl[0].Stamp <= st && sl[len(sl)-1].Stamp >= ed {
+			for _, m := range sl {
+				if m.Stamp >= st && m.Stamp <= ed {
+					ms = append(ms, m)
+				}
+			}
+		} else {
+			l, err := s.get(name, link, st, ed)
+			if err != nil {
+				return nil, err
+			}
+			ms = append(ms, l...)
 		}
-		ms = append(ms, l...)
 	}
 	return ms, nil
 }
