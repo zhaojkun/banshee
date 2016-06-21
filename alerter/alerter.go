@@ -156,15 +156,15 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 func (al *Alerter) checkAlertCount(m *models.Metric) bool {
 	v, ok := al.alertRecords.Get(m.Name)
 	if !ok {
-		return false
+		return true
 	}
 	alerted := 0
 	for _, timeStamp := range v.([]uint32) {
-		if m.Stamp-timeStamp > 10 {
+		if timeStamp > 0 && m.Stamp-timeStamp < 10 {
 			alerted += 1
 		}
 	}
-	return alerted > 2
+	return alerted < 2
 }
 
 // checkAlertAt returns true if given metric still not reaches the minimal
@@ -232,10 +232,6 @@ func (al *Alerter) work() {
 		if al.checkAlertAt(ew.Metric) {    // Check alert interval
 			continue
 		}
-		if al.checkAlertCount(ew.Metric) {
-			al.setAlertRecord(ew.Metric)
-			continue
-		}
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
 			continue
 		}
@@ -245,6 +241,13 @@ func (al *Alerter) work() {
 			log.Warnf("failed to store event:%v, skipping..", err)
 			continue
 		}
+		// Avoid noises by issuing alerts only when same alert has occurred
+		// predefined times.
+		if al.checkAlertCount(ew.Metric) {
+			al.setAlertRecord(ew.Metric)
+			continue
+		}
+		al.setAlertRecord(ew.Metric)
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {

@@ -22,15 +22,20 @@ func TestHourInRange(t *testing.T) {
 func TestAlertRecord(t *testing.T) {
 	a := &Alerter{alertRecords: safemap.New()}
 	metrics := &models.Metric{Name: "test", Stamp: 80, Value: 80}
-	util.Must(t, hourInRange(23, 19, 10))
-	util.Must(t, !a.checkAlertCount(metrics))
-	metrics.Stamp = 81
+
+	util.Must(t, a.checkAlertCount(metrics))
 	a.setAlertRecord(metrics)
+
+	metrics.Stamp = 81
+	util.Must(t, a.checkAlertCount(metrics))
+	a.setAlertRecord(metrics)
+
 	metrics.Stamp = 82
 	a.setAlertRecord(metrics)
 	metrics.Stamp = 83
 	a.setAlertRecord(metrics)
 	metrics.Stamp = 84
 	a.setAlertRecord(metrics)
-	util.Must(t, a.checkAlertCount(metrics))
+
+	util.Must(t, !a.checkAlertCount(metrics))
 }
