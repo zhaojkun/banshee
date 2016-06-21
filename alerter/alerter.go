@@ -24,21 +24,23 @@ const bufferedEventsLimit = 10 * 1024 // 10k
 
 // Alerter is the alert service abstraction.
 type Alerter struct {
-	cfg       *config.Config
-	db        *storage.DB
-	In        chan *models.Event
-	alertAts  *safemap.SafeMap
-	alertNums *safemap.SafeMap
+	cfg          *config.Config
+	db           *storage.DB
+	In           chan *models.Event
+	alertAts     *safemap.SafeMap
+	alertNums    *safemap.SafeMap
+	alertRecords *safemap.SafeMap
 }
 
 // New creates a new Alerter.
 func New(cfg *config.Config, db *storage.DB) *Alerter {
 	return &Alerter{
-		cfg:       cfg,
-		db:        db,
-		In:        make(chan *models.Event, bufferedEventsLimit),
-		alertAts:  safemap.New(),
-		alertNums: safemap.New(),
+		cfg:          cfg,
+		db:           db,
+		In:           make(chan *models.Event, bufferedEventsLimit),
+		alertAts:     safemap.New(),
+		alertNums:    safemap.New(),
+		alertRecords: safemap.New(),
 	}
 }
 
@@ -149,11 +151,42 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 	atomic.AddUint32(v.(*uint32), 1)
 }
 
+// checkAlertCount returns true if given metric has issued an alert
+// with in a minimal given period.
+func (al *Alerter) checkAlertCount(m *models.Metric) bool {
+	v, ok := al.alertRecords.Get(m.Name)
+	if !ok {
+		return false
+	}
+	alerted := 0
+	for _, timeStamp := range v.([]uint32) {
+		if m.Stamp-timeStamp > 10 {
+			alerted += 1
+		}
+	}
+	return alerted > 2
+}
+
 // checkAlertAt returns true if given metric still not reaches the minimal
 // alert interval.
 func (al *Alerter) checkAlertAt(m *models.Metric) bool {
 	v, ok := al.alertAts.Get(m.Name)
 	return ok && m.Stamp < v.(uint32)+al.cfg.Alerter.Interval
+}
+
+// setAlertRecord sets the alert record for given metric.
+func (al *Alerter) setAlertRecord(m *models.Metric) {
+	var records []uint32
+	v, ok := al.alertRecords.Get(m.Name)
+	if ok {
+		records = v.([]uint32)
+	} else {
+		records = make([]uint32, 10)
+	}
+	if len(records) >= 10 {
+		records = append(records[1:], m.Stamp)
+	}
+	al.alertRecords.Set(m.Name, records)
 }
 
 // setAlertAt sets the alert timestamp for given metric.
@@ -197,6 +230,10 @@ func (al *Alerter) work() {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
 		if al.checkAlertAt(ew.Metric) {    // Check alert interval
+			continue
+		}
+		if al.checkAlertCount(ew.Metric) {
+			al.setAlertRecord(ew.Metric)
 			continue
 		}
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
