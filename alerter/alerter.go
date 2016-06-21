@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os/exec"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -30,6 +31,7 @@ type Alerter struct {
 	alertAts     *safemap.SafeMap
 	alertNums    *safemap.SafeMap
 	alertRecords *safemap.SafeMap
+	lock         *sync.RWMutex
 }
 
 // New creates a new Alerter.
@@ -41,6 +43,7 @@ func New(cfg *config.Config, db *storage.DB) *Alerter {
 		alertAts:     safemap.New(),
 		alertNums:    safemap.New(),
 		alertRecords: safemap.New(),
+		lock:         &sync.RWMutex{},
 	}
 }
 
@@ -154,6 +157,8 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 // checkAlertCount returns true if given metric has issued an alert
 // with in a minimal given period.
 func (al *Alerter) checkAlertCount(m *models.Metric) bool {
+	al.lock.RLock()
+	defer al.lock.RUnlock()
 	v, ok := al.alertRecords.Get(m.Name)
 	if !ok {
 		return true
@@ -177,6 +182,8 @@ func (al *Alerter) checkAlertAt(m *models.Metric) bool {
 // setAlertRecord sets the alert record for given metric.
 func (al *Alerter) setAlertRecord(m *models.Metric) {
 	var records []uint32
+	al.lock.Lock()
+	defer al.lock.Unlock()
 	v, ok := al.alertRecords.Get(m.Name)
 	if ok {
 		records = v.([]uint32)
