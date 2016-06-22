@@ -62,6 +62,8 @@ const (
 	DefaultIdleMetricCheckInterval = 60
 	// Default idle metric track limit.
 	DefaultIdleMetricTrackLimit = 60
+	// Default bool if detector should use recent data.
+	DefaultUsingRecentDataPoints = true
 )
 
 // Limitations
@@ -114,6 +116,7 @@ type configDetector struct {
 	IdleMetricCheckList       []string           `json:"idleMetricCheckList" yaml:"idle_metric_check_list"`
 	IdleMetricCheckInterval   int                `json:"idleMetricCheckInterval" yaml:"idle_metric_check_interval"`
 	IdleMetricTrackLimit      int                `json:"idleMetricTrackLimit" yaml:"idle_metric_track_limit"`
+	UsingRecentDataPoints     bool               `json:"using_recent_data_points" yaml:"using_recent_data_points"`
 }
 
 type configWebapp struct {
@@ -130,8 +133,8 @@ type configAlerter struct {
 	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
 	Workers                int    `json:"workers" yaml:"workers"`
 	Interval               uint32 `json:"interval" yaml:"interval"`
-	AlertCheckInterval     uint32 `json:"interval" yaml:"alert_check_interval"`
-	NotifyAfter            int    `json:"interval" yaml:"notify_after"`
+	AlertCheckInterval     uint32 `json:"alert_check_interval" yaml:"alert_check_interval"`
+	NotifyAfter            int    `json:"notify_after" yaml:"notify_after"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
 	DefaultSilentTimeRange []int  `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
 }
@@ -160,6 +163,7 @@ func New() *Config {
 	c.Detector.IdleMetricCheckList = []string{}
 	c.Detector.IdleMetricCheckInterval = DefaultIdleMetricCheckInterval
 	c.Detector.IdleMetricTrackLimit = DefaultIdleMetricTrackLimit
+	c.Detector.UsingRecentDataPoints = DefaultUsingRecentDataPoints
 	c.Webapp.Port = 2016
 	c.Webapp.Auth = []string{"admin", "admin"}
 	c.Webapp.Static = "static/dist"
@@ -215,6 +219,7 @@ func (c *Config) Copy() *Config {
 	cfg.Detector.IdleMetricCheckList = c.Detector.IdleMetricCheckList
 	cfg.Detector.IdleMetricCheckInterval = c.Detector.IdleMetricCheckInterval
 	cfg.Detector.IdleMetricTrackLimit = c.Detector.IdleMetricTrackLimit
+	cfg.Detector.UsingRecentDataPoints = c.Detector.UsingRecentDataPoints
 	cfg.Webapp.Port = c.Webapp.Port
 	cfg.Webapp.Auth = c.Webapp.Auth
 	cfg.Webapp.Static = c.Webapp.Static
@@ -227,6 +232,8 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.Interval = c.Alerter.Interval
 	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit
 	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
+	cfg.Alerter.NotifyAfter = c.Alerter.NotifyAfter
+	cfg.Alerter.AlertCheckInterval = c.Alerter.AlertCheckInterval
 	return cfg
 }
 

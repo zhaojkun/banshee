@@ -87,6 +87,8 @@ detector:
     idle_metric_track_limit: 60
     # Detection warning timeout in millseconds, default: 300
     warning_timeout: 300
+    # Whether to take recent data points into detection calculation.
+    using_recent_data_points: true
 
 webapp:
     # Port for webapp http server, default: 2016

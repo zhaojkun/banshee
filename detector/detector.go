@@ -404,7 +404,13 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 	// Get values with the same phase.
 	n := 0 // number of goroutines to luanch
 	ch := make(chan metricGetResult)
-	for stamp := m.Stamp - period; stamp+expiration > m.Stamp; stamp -= period {
+	var stamp uint32
+	if d.cfg.Detector.UsingRecentDataPoints {
+		stamp = m.Stamp
+	} else {
+		stamp = m.Stamp - period
+	}
+	for ; stamp+expiration > m.Stamp; stamp -= period {
 		start := stamp - offset
 		stop := stamp + offset
 		// Range (m.Stamp,m.Stamp+offset) has no data as it is the future
