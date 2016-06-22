@@ -169,7 +169,7 @@ func (al *Alerter) checkAlertCount(m *models.Metric) bool {
 	alerted := 0
 	for _, timeStamp := range v.([]uint32) {
 		if timeStamp > 0 && m.Stamp-timeStamp < al.cfg.Alerter.AlertCheckInterval {
-			alerted += 1
+			alerted++
 		}
 	}
 	return alerted < al.cfg.Alerter.NotifyAfter
