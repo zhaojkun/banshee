@@ -27,7 +27,7 @@ func TestAlertRecordAlertNotifyAfterConfigDisabled(t *testing.T) {
 	a := &Alerter{cfg: cfg, alertRecords: safemap.New(), lock: &sync.RWMutex{}}
 	metrics := &models.Metric{Name: "test", Stamp: 0, Value: 80}
 
-	for i := 0; i <= 100; i += 1 {
+	for i := 0; i <= 100; i++ {
 		metrics.Stamp = uint32(i)
 		util.Must(t, !a.checkAlertCount(metrics))
 		a.setAlertRecord(metrics)
