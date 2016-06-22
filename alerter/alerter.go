@@ -258,6 +258,7 @@ func (al *Alerter) work() {
 		// predefined times.
 		if al.checkAlertCount(ew.Metric) {
 			al.setAlertRecord(ew.Metric)
+			log.Warnf("Not enough alerts with in `AlertCheckInterval` time skipping..: %v", ew.Metric.Name)
 			continue
 		}
 		al.setAlertRecord(ew.Metric)
