@@ -184,6 +184,9 @@ func (al *Alerter) checkAlertAt(m *models.Metric) bool {
 
 // setAlertRecord sets the alert record for given metric.
 func (al *Alerter) setAlertRecord(m *models.Metric) {
+	if al.cfg.Alerter.NotifyAfter <= 0 {
+		return
+	}
 	var records []uint32
 	al.lock.Lock()
 	defer al.lock.Unlock()
@@ -191,9 +194,9 @@ func (al *Alerter) setAlertRecord(m *models.Metric) {
 	if ok {
 		records = v.([]uint32)
 	} else {
-		records = make([]uint32, 10)
+		records = make([]uint32, al.cfg.Alerter.NotifyAfter)
 	}
-	if len(records) >= 10 {
+	if len(records) >= al.cfg.Alerter.NotifyAfter {
 		records = append(records[1:], m.Stamp)
 	}
 	al.alertRecords.Set(m.Name, records)
