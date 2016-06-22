@@ -157,6 +157,9 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 // checkAlertCount returns true if given metric has issued an alert
 // with in a minimal given period.
 func (al *Alerter) checkAlertCount(m *models.Metric) bool {
+	if al.cfg.Alerter.NotifyAfter <= 0 {
+		return false
+	}
 	al.lock.RLock()
 	defer al.lock.RUnlock()
 	v, ok := al.alertRecords.Get(m.Name)
@@ -165,11 +168,11 @@ func (al *Alerter) checkAlertCount(m *models.Metric) bool {
 	}
 	alerted := 0
 	for _, timeStamp := range v.([]uint32) {
-		if timeStamp > 0 && m.Stamp-timeStamp < 10 {
+		if timeStamp > 0 && m.Stamp-timeStamp < al.cfg.Alerter.AlertCheckInterval {
 			alerted += 1
 		}
 	}
-	return alerted < 2
+	return alerted < al.cfg.Alerter.NotifyAfter
 }
 
 // checkAlertAt returns true if given metric still not reaches the minimal

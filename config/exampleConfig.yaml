@@ -121,6 +121,10 @@ alerter:
     workers: 4
     # Minimum time interval to send messages for a single metric, default: 1200 (20min)
     interval: 1200
+    # The interval to check if the same alert has occurred for defined times.
+    alert_check_interval: 60
+    # The number of alerts after which we should send notifications.
+    notify_after: 1
     # Maximum number of alert times for a single metric in one day, default: 10
     one_day_limit: 10
     # Default silent time range, default: [0, 6] (means 00:00 ~ 06:00)

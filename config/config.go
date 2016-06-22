@@ -4,9 +4,10 @@
 package config
 
 import (
+	"io/ioutil"
+
 	"github.com/eleme/banshee/util/log"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 // Measures
@@ -34,6 +35,10 @@ const (
 	DefaultFilterTimes int = 4
 	// Default value of alerting interval.
 	DefaultAlerterInterval uint32 = 20 * Minute
+	// Default value of alerting check interval.
+	DefaultAlerterCheckInterval uint32 = Minute
+	// Default value of number of alerts after which we should send notifications.
+	DefaultNotifyAfter = 1
 	// Default value of alert times limit in one day for the same metric
 	DefaultAlerterOneDayLimit uint32 = 10
 	// Default value of least count.
@@ -125,6 +130,8 @@ type configAlerter struct {
 	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
 	Workers                int    `json:"workers" yaml:"workers"`
 	Interval               uint32 `json:"interval" yaml:"interval"`
+	AlertCheckInterval     uint32 `json:"interval" yaml:"alert_check_interval"`
+	NotifyAfter            int    `json:"interval" yaml:"notify_after"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
 	DefaultSilentTimeRange []int  `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
 }
@@ -163,6 +170,8 @@ func New() *Config {
 	c.Alerter.ExecCommandTimeout = DefaultAlertExecCommandTimeout
 	c.Alerter.Workers = 4
 	c.Alerter.Interval = DefaultAlerterInterval
+	c.Alerter.AlertCheckInterval = DefaultAlerterCheckInterval
+	c.Alerter.NotifyAfter = DefaultNotifyAfter
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = []int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
 	return c
