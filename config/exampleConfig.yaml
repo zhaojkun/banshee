@@ -87,6 +87,8 @@ detector:
     idle_metric_track_limit: 60
     # Detection warning timeout in millseconds, default: 300
     warning_timeout: 300
+    # Whether to take recent data points into detection calculation.
+    using_recent_data_points: true
 
 webapp:
     # Port for webapp http server, default: 2016
@@ -121,6 +123,10 @@ alerter:
     workers: 4
     # Minimum time interval to send messages for a single metric, default: 1200 (20min)
     interval: 1200
+    # The interval to check if the same alert has occurred for defined times.
+    alert_check_interval: 60
+    # The number of alerts after which we should send notifications.
+    notify_after: 1
     # Maximum number of alert times for a single metric in one day, default: 10
     one_day_limit: 10
     # Default silent time range, default: [0, 6] (means 00:00 ~ 06:00)

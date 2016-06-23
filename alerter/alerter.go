@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os/exec"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -24,21 +25,25 @@ const bufferedEventsLimit = 10 * 1024 // 10k
 
 // Alerter is the alert service abstraction.
 type Alerter struct {
-	cfg       *config.Config
-	db        *storage.DB
-	In        chan *models.Event
-	alertAts  *safemap.SafeMap
-	alertNums *safemap.SafeMap
+	cfg          *config.Config
+	db           *storage.DB
+	In           chan *models.Event
+	alertAts     *safemap.SafeMap
+	alertNums    *safemap.SafeMap
+	alertRecords *safemap.SafeMap
+	lock         *sync.RWMutex
 }
 
 // New creates a new Alerter.
 func New(cfg *config.Config, db *storage.DB) *Alerter {
 	return &Alerter{
-		cfg:       cfg,
-		db:        db,
-		In:        make(chan *models.Event, bufferedEventsLimit),
-		alertAts:  safemap.New(),
-		alertNums: safemap.New(),
+		cfg:          cfg,
+		db:           db,
+		In:           make(chan *models.Event, bufferedEventsLimit),
+		alertAts:     safemap.New(),
+		alertNums:    safemap.New(),
+		alertRecords: safemap.New(),
+		lock:         &sync.RWMutex{},
 	}
 }
 
@@ -149,11 +154,52 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 	atomic.AddUint32(v.(*uint32), 1)
 }
 
+// checkAlertCount returns true if given metric has issued an alert
+// with in a minimal given period.
+func (al *Alerter) checkAlertCount(m *models.Metric) bool {
+	if al.cfg.Alerter.NotifyAfter <= 0 {
+		return false
+	}
+	al.lock.RLock()
+	defer al.lock.RUnlock()
+	v, ok := al.alertRecords.Get(m.Name)
+	if !ok {
+		return true
+	}
+	alerted := 0
+	for _, timeStamp := range v.([]uint32) {
+		if timeStamp > 0 && m.Stamp-timeStamp < al.cfg.Alerter.AlertCheckInterval {
+			alerted++
+		}
+	}
+	return alerted < al.cfg.Alerter.NotifyAfter
+}
+
 // checkAlertAt returns true if given metric still not reaches the minimal
 // alert interval.
 func (al *Alerter) checkAlertAt(m *models.Metric) bool {
 	v, ok := al.alertAts.Get(m.Name)
 	return ok && m.Stamp < v.(uint32)+al.cfg.Alerter.Interval
+}
+
+// setAlertRecord sets the alert record for given metric.
+func (al *Alerter) setAlertRecord(m *models.Metric) {
+	if al.cfg.Alerter.NotifyAfter <= 0 {
+		return
+	}
+	var records []uint32
+	al.lock.Lock()
+	defer al.lock.Unlock()
+	v, ok := al.alertRecords.Get(m.Name)
+	if ok {
+		records = v.([]uint32)
+	} else {
+		records = make([]uint32, al.cfg.Alerter.NotifyAfter)
+	}
+	if len(records) >= al.cfg.Alerter.NotifyAfter {
+		records = append(records[1:], m.Stamp)
+	}
+	al.alertRecords.Set(m.Name, records)
 }
 
 // setAlertAt sets the alert timestamp for given metric.
@@ -208,6 +254,14 @@ func (al *Alerter) work() {
 			log.Warnf("failed to store event:%v, skipping..", err)
 			continue
 		}
+		// Avoid noises by issuing alerts only when same alert has occurred
+		// predefined times.
+		if al.checkAlertCount(ew.Metric) {
+			al.setAlertRecord(ew.Metric)
+			log.Warnf("Not enough alerts with in `AlertCheckInterval` time skipping..: %v", ew.Metric.Name)
+			continue
+		}
+		al.setAlertRecord(ew.Metric)
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
