@@ -248,12 +248,6 @@ func (al *Alerter) work() {
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
 			continue
 		}
-		al.incrAlertNum(ew.Metric)
-		// Store event
-		if err := al.storeEvent(ev); err != nil {
-			log.Warnf("failed to store event:%v, skipping..", err)
-			continue
-		}
 		// Avoid noises by issuing alerts only when same alert has occurred
 		// predefined times.
 		if al.checkAlertCount(ew.Metric) {
@@ -262,6 +256,12 @@ func (al *Alerter) work() {
 			continue
 		}
 		al.setAlertRecord(ew.Metric)
+		al.incrAlertNum(ew.Metric)
+		// Store event
+		if err := al.storeEvent(ev); err != nil {
+			log.Warnf("failed to store event:%v, skipping..", err)
+			continue
+		}
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
