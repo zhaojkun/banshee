@@ -451,13 +451,7 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 			vals = append(vals, d.fill0(r.ms, r.start, r.stop)...)
 		}
 	}
-	if err != nil {
-		// Unexcepted error
-		return vals, err
-	}
-	// Append m
-	vals = append(vals, m.Value)
-	return vals, nil
+	return vals, err
 }
 
 // div3Sigma sets given metric score and average via 3-sigma.
@@ -479,7 +473,7 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 		m.Score = 0
 		return
 	}
-	last := vals[len(vals)-1]
+	last := m.Value
 	if std == 0 { // Eadger
 		switch {
 		case last == avg:
