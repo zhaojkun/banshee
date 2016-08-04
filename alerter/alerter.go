@@ -243,9 +243,11 @@ func (al *Alerter) work() {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
 		if al.checkAlertAt(ew.Metric) {    // Check alert interval
+			log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
 			continue
 		}
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
+			log.Infof("metric %v exceeds the one day limit %v", ew.Metric.Name, al.cfg.Alerter.OneDayLimit)
 			continue
 		}
 		// Avoid noises by issuing alerts only when same alert has occurred
@@ -265,13 +267,16 @@ func (al *Alerter) work() {
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
+			log.Errorf("get project from rule %v: %v", ew.Rule.Pattern, err)
 			continue
 		}
 		if al.shoudProjBeSilent(ew.Project) {
+			log.Infof("project %v stay in silent at %v ", ew.Project.Name, time.Now())
 			continue
 		}
 		var users []models.User
 		if users, err = al.getUsersByProj(ew.Project); err != nil {
+			log.Errorf("get user from project %v: %v", ew.Project.Name, err)
 			continue
 		}
 		for _, user := range users {
