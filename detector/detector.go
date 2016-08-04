@@ -126,7 +126,6 @@ func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
 	// Match
 	ok, rules := d.match(m)
 	if !ok {
-		log.Warnf("metric: %v does not match any rules,skipping..", m.Name)
 		return
 	}
 	if shouldAdjustIdle {
