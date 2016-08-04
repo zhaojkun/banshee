@@ -3,10 +3,11 @@
 package models
 
 import (
-	"github.com/eleme/banshee/config"
-	"github.com/eleme/banshee/util"
 	"testing"
 	"time"
+
+	"github.com/eleme/banshee/config"
+	"github.com/eleme/banshee/util"
 )
 
 func TestRuleTest(t *testing.T) {
@@ -60,6 +61,16 @@ func TestRuleTest(t *testing.T) {
 	cfg.Detector.DefaultThresholdMaxs["fo*"] = 10
 	rule = &Rule{TrendDown: true}
 	util.Must(t, !rule.Test(&Metric{Value: 19, Name: "foo"}, &Index{Score: 0.37}, cfg))
+
+	cfg = config.New()
+	cfg.Detector.DefaultThresholdMaxs["counter.*"] = 10
+	cfg.Detector.DefaultThresholdMaxs["timer.count_ps.*"] = 30
+	cfg.Detector.DefaultThresholdMaxs["timer.mean_90.*"] = 300
+	cfg.Detector.DefaultThresholdMaxs["timer.upper_90.*"] = 5000
+	cfg.Detector.IdleMetricCheckList = []string{"timer.count_ps.*"}
+	rule = &Rule{TrendUp: true, ThresholdMax: 30, TrendDown: true, ThresholdMin: 0, Disabled: false, Level: 2, NeverFillZero: false}
+	util.Must(t, rule.Test(&Metric{Value: 8, Name: "timer.count_ps.new.zeus.eos.create_order"}, &Index{Score: -1.28}, cfg))
+
 }
 
 func TestRuleDisabled(t *testing.T) {
