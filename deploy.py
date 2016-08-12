@@ -100,7 +100,10 @@ def make_local_dir():
     local("cp {0} {1}".format(BINARY_NAME, LOCAL_DIR))
     local("cp -r {0}/* {1}".format(STATIC_DIR, LOCAL_STATIC_DIR))
     local("mv commit {}".format(LOCAL_DIR))
-
+    extra_files = env.extra_files.split(";")
+    for f in extra_files:
+        if f != "":
+            local("cp {0} {1}".format(f,LOCAL_DIR))
 
 def remove_local_dir():
     """Remove local temporary directory.
@@ -168,6 +171,7 @@ def main(host=None, user=None):
                         default="root:root")
     parser.add_argument("--only-static", help="deploy only static files",
                         action='store_true', default=False)
+    parser.add_argument("--extra-files",help="deploy extra files",default="")
     args = parser.parse_args()
 
     hosts = map(lambda s: s.strip(),  args.hosts.split(','))
@@ -191,6 +195,7 @@ def main(host=None, user=None):
     env.refresh = args.refresh
     env.use_ssh_config = True
     env.parallel = True
+    env.extra_files = args.extra_files
 
     with local_tmp_build():
         execute(deploy, hosts=hosts)
