@@ -4,8 +4,7 @@
 package filter
 
 import (
-	"sync/atomic"
-	"time"
+	"sync"
 
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/models"
@@ -27,8 +26,22 @@ type Filter struct {
 
 // node is the trie node.
 type node struct {
-	rule *models.Rule
-	hits uint32
+	sync.Mutex
+	rule       *models.Rule
+	hits       uint32
+	resetStamp uint32
+	interval   uint32
+}
+
+func (n *node) incrHits(m *models.Metric) uint32 {
+	n.Lock()
+	defer n.Unlock()
+	if m.Stamp >= n.resetStamp+n.interval {
+		n.resetStamp = m.Stamp / n.interval * n.interval
+		n.hits = 0
+	}
+	n.hits++
+	return n.hits
 }
 
 // Limit for buffered changed rules
@@ -77,30 +90,16 @@ func (f *Filter) initFromDB(db *storage.DB) {
 	}
 }
 
-// initRuleHitReseter starts a goroutine to reset all hit counters.
-func (f *Filter) initRuleHitReseter() {
-	ticker := time.NewTicker(time.Second * time.Duration(f.cfg.Interval))
-	go func() {
-		for _ = range ticker.C {
-			for _, v := range f.trie.Map() {
-				n := v.(*node)
-				atomic.StoreUint32(&n.hits, 0)
-			}
-		}
-	}()
-}
-
 // Init filter.
 func (f *Filter) Init(db *storage.DB) {
 	f.initFromDB(db)
 	f.initAddRuleListener()
 	f.initDelRuleListener()
-	f.initRuleHitReseter()
 }
 
 // addRule adds a rule to the filter.
 func (f *Filter) addRule(rule *models.Rule) {
-	n := &node{rule: rule, hits: 0}
+	n := &node{rule: rule, hits: 0, interval: f.cfg.Interval}
 	f.trie.Put(rule.Pattern, n)
 }
 
@@ -115,7 +114,7 @@ func (f *Filter) MatchedRules(m *models.Metric) (rules []*models.Rule) {
 	for _, v := range d {
 		n := v.(*node)
 		if f.cfg.Detector.EnableIntervalHitLimit {
-			hits := atomic.AddUint32(&n.hits, 1)
+			hits := n.incrHits(m)
 			if hits > f.cfg.Detector.IntervalHitLimit {
 				log.Debugf("%s hits over interval hit limit", n.rule.Pattern)
 				return []*models.Rule{}

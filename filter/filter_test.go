@@ -3,13 +3,13 @@
 package filter
 
 import (
+	"path/filepath"
+	"testing"
+
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util"
 	"github.com/eleme/banshee/util/log"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 func TestSimple(t *testing.T) {
@@ -48,20 +48,17 @@ func TestHitLimit(t *testing.T) {
 	cfg.Detector.IntervalHitLimit = 100
 	rule1 := &models.Rule{Pattern: "a.*.c.d"}
 	filter := New(cfg)
-	filter.initRuleHitReseter()
 	filter.addRule(rule1)
 
 	for i := uint32(0); i < cfg.Detector.IntervalHitLimit; i++ {
 		// hit rule when counter < intervalHitLimit
-		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
+		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1})
 		util.Must(t, 1 == len(rules))
-
 	}
-	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
+	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1})
 	util.Must(t, 0 == len(rules))
-	time.Sleep(time.Second * 2)
-	// after interval counter is cleared, matched rules = 1
-	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
+	// reset counter and time range when input metric time stamp is not in the current time range
+	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval})
 	util.Must(t, 1 == len(rules))
 }
 
