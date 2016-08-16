@@ -500,6 +500,10 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric, f float64) *mode
 		n.Average = m.Value
 		return n
 	}
+	if idx.Stamp > m.Stamp {
+		fmt.Println("reset idx:", idx.Stamp, m.Stamp)
+		idx.Score = m.Score
+	}
 	// Move next
 	n.Score = idx.Score*(1-f) + f*m.Score
 	n.Average = m.Average

@@ -242,21 +242,21 @@ func (al *Alerter) work() {
 	for {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
-		if al.checkAlertAt(ew.Metric) {    // Check alert interval
-			log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
-			continue
-		}
-		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
-			log.Infof("metric %v exceeds the one day limit %v", ew.Metric.Name, al.cfg.Alerter.OneDayLimit)
-			continue
-		}
-		// Avoid noises by issuing alerts only when same alert has occurred
-		// predefined times.
-		if al.checkAlertCount(ew.Metric) {
-			al.setAlertRecord(ew.Metric)
-			log.Warnf("Not enough alerts with in `AlertCheckInterval` time skipping..: %v", ew.Metric.Name)
-			continue
-		}
+		// if al.checkAlertAt(ew.Metric) {    // Check alert interval
+		// 	log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
+		// 	continue
+		// }
+		// if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
+		// 	log.Infof("metric %v exceeds the one day limit %v", ew.Metric.Name, al.cfg.Alerter.OneDayLimit)
+		// 	continue
+		// }
+		// // Avoid noises by issuing alerts only when same alert has occurred
+		// // predefined times.
+		// if al.checkAlertCount(ew.Metric) {
+		// 	al.setAlertRecord(ew.Metric)
+		// 	log.Warnf("Not enough alerts with in `AlertCheckInterval` time skipping..: %v", ew.Metric.Name)
+		// 	continue
+		// }
 		al.setAlertRecord(ew.Metric)
 		al.incrAlertNum(ew.Metric)
 		// Store event
@@ -264,6 +264,7 @@ func (al *Alerter) work() {
 			log.Warnf("failed to store event:%v, skipping..", err)
 			continue
 		}
+		continue
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {

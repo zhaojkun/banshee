@@ -28,16 +28,18 @@ package eventdb
 
 import (
 	"errors"
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util/log"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3" // Import but no use
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"sync"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/log"
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3" // Import but no use
 )
 
 // SQL db dialect
@@ -248,6 +250,7 @@ func (db *DB) adjust(stamp uint32) (err error) {
 // Put an event wraper into db.
 func (db *DB) Put(ew *EventWrapper) (err error) {
 	// Adjust storage pool.
+	fmt.Println(ew)
 	if err = db.adjust(ew.Stamp); err != nil {
 		return
 	}
