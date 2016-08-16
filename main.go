@@ -17,6 +17,7 @@ import (
 	"github.com/eleme/banshee/health"
 	"github.com/eleme/banshee/storage"
 	"github.com/eleme/banshee/util/log"
+	"github.com/eleme/banshee/util/mathutil"
 	"github.com/eleme/banshee/version"
 	"github.com/eleme/banshee/webapp"
 )
@@ -92,6 +93,14 @@ func initFilter() {
 	flt.Init(db)
 }
 
+func initMath() {
+	// Rely on config.
+	if cfg == nil {
+		panic(errors.New("filter require db and config"))
+	}
+	mathutil.Init(cfg)
+}
+
 func init() {
 	// Arguments
 	flag.Usage = usage
@@ -105,6 +114,7 @@ func init() {
 	initConfig()
 	initDB()
 	initFilter()
+	initMath()
 }
 
 func main() {

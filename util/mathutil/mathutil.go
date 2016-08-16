@@ -3,32 +3,39 @@
 // Package mathutil provides math util functions.
 package mathutil
 
-import "math"
+import (
+	"github.com/eleme/banshee/config"
+	"github.com/eleme/banshee/models"
+)
 
-// Average returns the mean value of float64 values.
-// Returns zero if the vals length is 0.
-func Average(vals []float64) float64 {
-	if len(vals) == 0 {
-		return 0
-	}
-	var sum float64
-	for i := 0; i < len(vals); i++ {
-		sum += vals[i]
-	}
-	return sum / float64(len(vals))
+// Globals
+var (
+	// Config
+	cfg *config.Config
+)
+
+func Init(config *config.Config) {
+	cfg = config
 }
 
-// StdDev returns the standard deviation of float64 values, with an input
-// average.
-// Returns zero if the vals length is 0.
-func StdDev(vals []float64, avg float64) float64 {
+// Div3Sigma sets given metric score and average when metric data is considered as normal distribution
+func Div3Sigma(m *models.Metric, bms []models.BulkMetric) {
+	var vals []float64
+	for i := 0; i < len(bms); i++ {
+		for j := 0; j < len(bms[i].Ms); j++ {
+			vals = append(vals, bms[i].Ms[j].Value)
+		}
+	}
 	if len(vals) == 0 {
-		return 0
+		m.Score = 0
+		m.Average = m.Value
+		return
 	}
-	var sum float64
-	for i := 0; i < len(vals); i++ {
-		dis := vals[i] - avg
-		sum += dis * dis
+	m.Average = Average(vals)
+	if len(vals) <= int(cfg.Detector.LeastCount) { // Number of values not enough
+		m.Score = 0
+		return
 	}
-	return math.Sqrt(sum / float64(len(vals)))
+	std := StdDev(vals, m.Average)
+	m.Score = Score(m.Value, avg, std)
 }
