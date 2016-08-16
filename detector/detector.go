@@ -295,11 +295,11 @@ func (d *Detector) analyze(idx *models.Index, m *models.Metric, rules []*models.
 	if idx != nil {
 		m.LinkTo(idx)
 	}
-	vals, err := d.values(m, fz)
+	bms, err := d.values(m, fz)
 	if err != nil {
 		return nil
 	}
-	d.div3Sigma(m, vals)
+	mathutil.Div3Sigma(m, bms)
 	return d.nextIdx(idx, m, d.pickTrendingFactor(rules))
 }
 
@@ -355,43 +355,39 @@ func (d *Detector) shouldFill0(m *models.Metric, rules []*models.Rule) bool {
 // Fill blank with zeros into history values, mainly for dispersed
 // metrics such as counters. The start and stop is for periodicity
 // reasons.
-func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []float64 {
+func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []*models.Metric {
 	i := 0 // record real-metric.
 	step := d.cfg.Interval
-	var vals []float64
+	var rms []*models.Metric
 	for start < stop {
 		if i < len(ms) {
 			m := ms[i]
 			// start is smaller than current stamp.
 			for ; start < m.Stamp; start += step {
-				if len(vals) >= 1 && vals[0] != 0 { // issue#470
-					vals = append(vals, 0)
+				if len(rms) >= 1 && rms[0].Score != 0 { // issue#470
+					rms = append(rms, &models.Metric{
+						Value: 0,
+					})
 				}
 			}
-			vals = append(vals, m.Value) // Append a real metric
+			rms = append(rms, m) //Append a real metric
 			i++
 		} else { // No more real metric.
-			if len(vals) >= 1 && vals[0] != 0 { // issue#470
-				vals = append(vals, 0)
+			if len(rms) >= 1 && rms[0].Score != 0 { // issue#470
+				rms = append(rms, &models.Metric{
+					Value: 0,
+				})
 			}
 		}
 		start += step
 	}
-	return vals
-}
-
-// Result struct help to receive multiple return values.
-type metricGetResult struct {
-	err   error
-	ms    []*models.Metric
-	start uint32
-	stop  uint32
+	return rms
 }
 
 // Get history values for the input metric, will only fetch the history
 // values with the same phase around this timestamp, within an filter
 // offset.
-func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
+func (d *Detector) values(m *models.Metric, fz bool) ([]models.BulkMetric, error) {
 	timer := util.NewTimer()
 	defer func() {
 		elapsed := timer.Elapsed()
@@ -403,7 +399,7 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 	ftimes := d.cfg.Detector.FilterTimes
 	// Get values with the same phase.
 	n := 0 // number of goroutines to luanch
-	ch := make(chan metricGetResult)
+	ch := make(chan models.BulkMetric)
 	var stamp uint32
 	if d.cfg.Detector.UsingRecentDataPoints {
 		stamp = m.Stamp
@@ -419,7 +415,7 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 		}
 		go func() {
 			ms, err := d.db.Metric.Get(m.Name, m.Link, start, stop)
-			ch <- metricGetResult{err, ms, start, stop}
+			ch <- models.BulkMetric{Err: err, Ms: ms, Start: start, Stop: stop}
 		}()
 		n++
 		if n >= ftimes {
@@ -427,65 +423,27 @@ func (d *Detector) values(m *models.Metric, fz bool) ([]float64, error) {
 		}
 	}
 	// Concat chunks.
-	var vals []float64
+	var bms []models.BulkMetric
 	var err error
 	for i := 0; i < n; i++ {
 		r := <-ch
-		if r.err != nil {
+		if r.Err != nil {
 			// Record error but DONOT return directly.
 			// Must receive n times from ch, otherwise the goroutine will
 			// be hanged and the ch won't be gc, yet memory leaks.
-			err = r.err
+			err = r.Err
 			continue
 		}
 		if err != nil {
 			continue
 		}
 		// Append to values.
-		if !fz {
-			for j := 0; j < len(r.ms); j++ {
-				vals = append(vals, r.ms[j].Value)
-			}
-		} else {
-			// Fill blank with zeros.
-			vals = append(vals, d.fill0(r.ms, r.start, r.stop)...)
+		if fz {
+			r.Ms = d.fill0(r.Ms, r.Start, r.Stop)
 		}
+		bms = append(bms, r)
 	}
-	return vals, err
-}
-
-// div3Sigma sets given metric score and average via 3-sigma.
-//	states that nearly all values (99.7%) lie within the 3 standard deviations
-//	of the mean in a normal distribution.
-func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
-	if len(vals) == 0 {
-		m.Score = 0
-		m.Average = m.Value
-		return
-	}
-	// Values average and standard deviation.
-	avg := mathutil.Average(vals)
-	std := mathutil.StdDev(vals, avg)
-	// Set metric average
-	m.Average = avg
-	// Set metric score
-	if len(vals) <= int(d.cfg.Detector.LeastCount) { // Number of values not enough
-		m.Score = 0
-		return
-	}
-	last := m.Value
-	if std == 0 { // Eadger
-		switch {
-		case last == avg:
-			m.Score = 0
-		case last > avg:
-			m.Score = 1
-		case last < avg:
-			m.Score = -1
-		}
-		return
-	}
-	m.Score = (last - avg) / (3 * std) // 3-sigma
+	return bms, err
 }
 
 // nextIdx creates the next index via the weighted exponentia moving average.
