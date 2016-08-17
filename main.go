@@ -11,13 +11,13 @@ import (
 	"os"
 
 	"github.com/eleme/banshee/alerter"
+	"github.com/eleme/banshee/algorithm"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
 	"github.com/eleme/banshee/health"
 	"github.com/eleme/banshee/storage"
 	"github.com/eleme/banshee/util/log"
-	"github.com/eleme/banshee/util/mathutil"
 	"github.com/eleme/banshee/version"
 	"github.com/eleme/banshee/webapp"
 )
@@ -93,12 +93,12 @@ func initFilter() {
 	flt.Init(db)
 }
 
-func initMath() {
+func initAlgo() {
 	// Rely on config.
 	if cfg == nil {
 		panic(errors.New("filter require db and config"))
 	}
-	mathutil.Init(cfg)
+	algo.Init(cfg)
 }
 
 func init() {
@@ -114,7 +114,7 @@ func init() {
 	initConfig()
 	initDB()
 	initFilter()
-	initMath()
+	initAlgo()
 }
 
 func main() {

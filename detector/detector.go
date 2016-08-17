@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/eleme/banshee/algorithm"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/filter"
 	"github.com/eleme/banshee/health"
@@ -18,7 +19,6 @@ import (
 	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/eleme/banshee/util"
 	"github.com/eleme/banshee/util/log"
-	"github.com/eleme/banshee/util/mathutil"
 )
 
 // Detector is to detect anomalies.
@@ -299,7 +299,7 @@ func (d *Detector) analyze(idx *models.Index, m *models.Metric, rules []*models.
 	if err != nil {
 		return nil
 	}
-	mathutil.Div3Sigma(m, bms)
+	algo.HistorySigmaIterMean(m, bms)
 	return d.nextIdx(idx, m, d.pickTrendingFactor(rules))
 }
 
