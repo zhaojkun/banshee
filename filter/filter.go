@@ -27,8 +27,11 @@ type Filter struct {
 // node is the trie node.
 type node struct {
 	sync.Mutex
-	rule       *models.Rule
-	hits       uint32
+	// Rule
+	rule *models.Rule
+	// Hit number about the rule in 'interval' seconds.
+	hits uint32
+	// resetStamp will be reset when income metric is after the time resetStamp+interval.
 	resetStamp uint32
 	interval   uint32
 }
