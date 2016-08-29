@@ -5,7 +5,7 @@ import (
 	"github.com/eleme/banshee/util/mathutil"
 )
 
-// Div3Sigma sets given metric score and average when metric data is considered as normal distribution
+// Div3Sigma sets given metric score and average with the asumption that  metrics belong to normal distribution
 func Div3Sigma(m *models.Metric, bms []models.BulkMetric) {
 	var vals []float64
 	for i := 0; i < len(bms); i++ {

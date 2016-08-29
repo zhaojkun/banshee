@@ -1,10 +1,8 @@
 package mathutil
 
-import (
-	"math"
-	"sort"
-)
+import "math"
 
+// Sum return the summation value of float64 values.
 func Sum(vals []float64) float64 {
 	var sum float64
 	for i := 0; i < len(vals); i++ {
@@ -22,34 +20,6 @@ func Average(vals []float64) float64 {
 	return Sum(vals) / float64(len(vals))
 }
 
-// AverageTrim returns the mean value of float64 values after removing n farthest from the mean value
-func AverageTrim(src []float64, n int) float64 {
-	vals := make([]float64, len(src))
-	copy(vals, src)
-	sort.Float64s(vals)
-	sum := Sum(vals)
-	for i := 0; i < n; i++ {
-		size := len(vals)
-		if size == 0 {
-			return 0
-		}
-		avg := sum / float64(size)
-		lowSpan := avg - vals[0]
-		highSpan := vals[size-1] - avg
-		if lowSpan >= highSpan {
-			sum -= vals[0]
-			vals = vals[1:]
-		} else {
-			sum -= vals[size-1]
-			vals = vals[:size-1]
-		}
-	}
-	if len(vals) == 0 {
-		return 0
-	}
-	return sum / float64(len(vals))
-}
-
 // StdDev returns the standard deviation of float64 values, with an input
 // average.
 // Returns zero if the vals length is 0.
@@ -63,6 +33,20 @@ func StdDev(vals []float64, avg float64) float64 {
 		sum += dis * dis
 	}
 	return math.Sqrt(sum / float64(len(vals)))
+}
+
+// StdAverage return the pooled variance
+func StdAverage(stds []float64, nums []int) float64 {
+	var stdAll float64
+	var num int
+	for i := 0; i < len(stds); i++ {
+		stdAll += float64(nums[i]-1) * stds[i] * stds[i]
+		num += nums[i] - 1
+	}
+	if num == 0 {
+		return 0
+	}
+	return math.Sqrt(stdAll / float64(num))
 }
 
 // Score returns the score of last value via 3-sigma,with an input avg and std.

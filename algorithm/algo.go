@@ -1,6 +1,6 @@
 // Copyright 2016 Eleme Inc. All rights reserved.
 
-// Package mathutil provides math util functions.
+// Package algo provides several anomalous detection algorithms
 package algo
 
 import "github.com/eleme/banshee/config"
@@ -11,6 +11,7 @@ var (
 	cfg *config.Config
 )
 
+// Init algorithm
 func Init(config *config.Config) {
 	cfg = config
 }

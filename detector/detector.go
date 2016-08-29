@@ -299,7 +299,7 @@ func (d *Detector) analyze(idx *models.Index, m *models.Metric, rules []*models.
 	if err != nil {
 		return nil
 	}
-	algo.HistorySigmaIterMean(m, bms)
+	algo.DivDaySigma(m, bms)
 	return d.nextIdx(idx, m, d.pickTrendingFactor(rules))
 }
 
@@ -364,7 +364,7 @@ func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []*models.Metr
 			m := ms[i]
 			// start is smaller than current stamp.
 			for ; start < m.Stamp; start += step {
-				if len(rms) >= 1 && rms[0].Score != 0 { // issue#470
+				if len(rms) >= 1 && rms[0].Value != 0 { // issue#470
 					rms = append(rms, &models.Metric{
 						Value: 0,
 					})
@@ -373,7 +373,7 @@ func (d *Detector) fill0(ms []*models.Metric, start, stop uint32) []*models.Metr
 			rms = append(rms, m) //Append a real metric
 			i++
 		} else { // No more real metric.
-			if len(rms) >= 1 && rms[0].Score != 0 { // issue#470
+			if len(rms) >= 1 && rms[0].Value != 0 { // issue#470
 				rms = append(rms, &models.Metric{
 					Value: 0,
 				})

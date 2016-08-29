@@ -8,6 +8,7 @@ type BulkMetric struct {
 	Stop  uint32
 }
 
+// ByStamp sort BulkMetric by start stamp
 type ByStamp []BulkMetric
 
 func (s ByStamp) Len() int { return len(s) }
