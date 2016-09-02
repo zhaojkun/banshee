@@ -36,9 +36,11 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 		m.Score = 0
 		return
 	}
+	for i := 0; i < len(bms[period-1].Ms); i++ {
+		todayVals = append(todayVals, bms[period-1].Ms[i].Value)
+	}
 	avg := mathutil.Average(avgs)
 	stdAvg := mathutil.StdAverage(stds, nums)
-	todayVals = daysVals[period-1]
 	iteraions := 2
 	for i := 0; i < iteraions; i++ {
 		var std float64
@@ -55,8 +57,11 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 				validVals = append(validVals, todayVals[j])
 			}
 		}
-		if len(validVals) == 0 {
-			break
+		if len(validVals) == 0 { //for today values too large or small than other days
+			todayAvg := mathutil.Average(todayVals)
+			m.Average = todayAvg
+			m.Score = averageScore(todayAvg, avgs[:len(avgs)-1])
+			return
 		}
 		avg = mathutil.Average(validVals)
 	}
@@ -79,4 +84,21 @@ func scoreFilter(bms []models.BulkMetric) (vals [][]float64, n int) {
 		threshold *= 1.4
 	}
 	return
+}
+func averageScore(last float64, vals []float64) float64 {
+	if len(vals) < 2 {
+		return 2.0
+	}
+	min := mathutil.Min(vals)
+	max := mathutil.Max(vals)
+	if max == min {
+		return 2.0
+	}
+	var score float64
+	if last > max {
+		score = (last - max) / (max - min)
+	} else if last < min {
+		score = (last - min) / (max - min)
+	}
+	return mathutil.Saturation(score, 20, -20)
 }

@@ -67,3 +67,44 @@ func Score(last float64, avg float64, std float64) float64 {
 	}
 	return (last - avg) / (3 * std) // 3-sigma
 }
+
+// Min returns the min value of float64 array
+func Min(vals []float64) float64 {
+	if len(vals) == 0 {
+		return math.Inf(-1)
+	}
+	min := math.Inf(1)
+	for _, val := range vals {
+		if val < min {
+			min = val
+		}
+	}
+	return min
+}
+
+// Max returns the max value of float64 array
+func Max(vals []float64) float64 {
+	if len(vals) == 0 {
+		return math.Inf(1)
+	}
+	max := math.Inf(-1)
+	for _, val := range vals {
+		if val > max {
+			max = val
+		}
+	}
+	return max
+}
+
+// Saturation returns val if min <= val <= max or
+//    return max if val > max or
+//    return min if val < min
+func Saturation(val, max, min float64) float64 {
+	if val > max {
+		return max
+	}
+	if val < min {
+		return min
+	}
+	return val
+}
