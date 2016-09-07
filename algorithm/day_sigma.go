@@ -1,6 +1,7 @@
 package algo
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/eleme/banshee/models"
@@ -61,10 +62,12 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 			todayAvg := mathutil.Average(todayVals)
 			m.Average = todayAvg
 			m.Score = averageScore(todayAvg, avgs[:len(avgs)-1])
+			fmt.Printf("%s using avergae score...,%v\n", m.Name, todayVals)
 			return
 		}
 		avg = mathutil.Average(validVals)
 	}
+	avg = avgs[len(avgs)-1]
 	m.Average = avg
 	m.Score = mathutil.Score(m.Value, avg, stdAvg)
 }
