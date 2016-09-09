@@ -3,9 +3,10 @@
 package mathutil
 
 import (
-	"github.com/eleme/banshee/util"
 	"math/rand"
 	"testing"
+
+	"github.com/eleme/banshee/util"
 )
 
 func TestAverage(t *testing.T) {
@@ -16,6 +17,11 @@ func TestAverage(t *testing.T) {
 func TestStdDev(t *testing.T) {
 	vals := []float64{1, 2, 2, 1}
 	util.Must(t, StdDev(vals, Average(vals)) == .5)
+}
+
+func TestAbsMin(t *testing.T) {
+	vals := []float64{10, -20, 3, -1}
+	util.Must(t, AbsMin(vals) == -1)
 }
 
 func genValues(n int) []float64 {
