@@ -44,15 +44,14 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 		m.Score = 0
 		return
 	}
-	stdAvg := mathutil.StdAverage(stds, nums)
-	avg := avgs[len(avgs)-1]
-	m.Average = avg
-	m.Score = mathutil.Score(m.Value, avg, stdAvg)
-	if -1 <= m.Score && m.Score <= 1 {
-		changed := tryAverageScore(m, bms, vals, avgs)
-		if changed {
-			log.Infof("AppID:%s now using average score", m.Name)
-		}
+	if used := tryAverageScore(m, bms, vals, avgs); used {
+		log.Infof("AppID:%s now using average score", m.Name)
+	}
+	if -1 < m.Score && m.Score < 1 {
+		stdAvg := mathutil.StdAverage(stds, nums)
+		avg := avgs[len(avgs)-1]
+		m.Average = avg
+		m.Score = mathutil.Score(m.Value, avg, stdAvg)
 	}
 	m.Score = mathutil.Saturation(m.Score, -1.0*scoreMax, scoreMax)
 }
@@ -91,10 +90,17 @@ func tryAverageScore(m *models.Metric, bms []models.BulkMetric, vals []float64, 
 			validVals = append(validVals, todayVals[i])
 		}
 	}
-	if (low <= m.Value && m.Value <= high) || (len(validVals) > len(todayVals)/2) {
+	if len(validVals) > len(todayVals)/2 {
 		return false
 	}
-	todayAvg := mathutil.Average(todayVals)
+	var todayAvg float64
+	if low <= m.Value && m.Value <= high {
+		validVals = append(validVals, m.Value)
+		todayAvg = mathutil.Average(validVals)
+	} else {
+		todayVals = append(todayVals, m.Value)
+		todayAvg = mathutil.Average(todayVals)
+	}
 	m.Average = todayAvg
 	m.Score = averageScore(todayAvg, avgs[:len(avgs)-1])
 	return true
