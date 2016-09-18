@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util/log"
 	"github.com/eleme/banshee/util/mathutil"
 )
 
@@ -44,9 +43,7 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 		m.Score = 0
 		return
 	}
-	if used := tryAverageScore(m, bms, vals, avgs); used {
-		log.Infof("AppID:%s now using average score", m.Name)
-	}
+	tryAverageScore(m, bms, vals, avgs)
 	if -1 < m.Score && m.Score < 1 {
 		stdAvg := mathutil.StdAverage(stds, nums)
 		avg := avgs[len(avgs)-1]
@@ -55,6 +52,7 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 	}
 	m.Score = mathutil.Saturation(m.Score, -1.0*scoreMax, scoreMax)
 }
+
 func scoreFilter(bms []models.BulkMetric) (vals [][]float64) {
 	threshold := 1.0
 	for i := 0; i < len(bms); i++ {
@@ -71,6 +69,7 @@ func scoreFilter(bms []models.BulkMetric) (vals [][]float64) {
 	}
 	return
 }
+
 func tryAverageScore(m *models.Metric, bms []models.BulkMetric, vals []float64, avgs []float64) bool { //for today values too large or small than other days
 	if len(avgs) <= 2 {
 		return false
@@ -90,21 +89,14 @@ func tryAverageScore(m *models.Metric, bms []models.BulkMetric, vals []float64, 
 			validVals = append(validVals, todayVals[i])
 		}
 	}
-	if len(validVals) > len(todayVals)/2 {
+	if float64(len(validVals)) > float64(len(todayVals))*2.0/3.0 {
 		return false
 	}
-	var todayAvg float64
-	if low <= m.Value && m.Value <= high {
-		validVals = append(validVals, m.Value)
-		todayAvg = mathutil.Average(validVals)
-	} else {
-		todayVals = append(todayVals, m.Value)
-		todayAvg = mathutil.Average(todayVals)
-	}
-	m.Average = todayAvg
-	m.Score = averageScore(todayAvg, avgs[:len(avgs)-1])
+	m.Average = m.Score
+	m.Score = averageScore(m.Value, avgs[:len(avgs)-1])
 	return true
 }
+
 func averageScore(last float64, vals []float64) float64 {
 	min := mathutil.Min(vals)
 	max := mathutil.Max(vals)
