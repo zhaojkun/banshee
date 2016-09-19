@@ -10,7 +10,8 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   $scope.projectId = $stateParams.project;
   $scope.past = null;
   $scope.pastUsed = false;
-
+  $scope.ticker = null;
+ 
   $scope.dateTimes = [
     {label: 'MAIN_PAST_NOW', seconds: 0},
     {label: 'MAIN_PAST_3HOURS_AGO', seconds: 3 * 3600},
@@ -104,7 +105,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   };
 
 
-  $scope.$on('$destroy', function() { $rootScope.currentMain = false; });
+  $scope.$on('$destroy', function() { $rootScope.currentMain = false; cancelTicker();});
 
   /**
    * watch filter.
@@ -328,10 +329,19 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   }
 
   function setIntervalAndRunNow(fn, ms) {
+    cancelTicker()
     fn();
-    return setInterval(fn, ms);
+    $scope.ticker = setInterval(fn, ms);
+    return $scope.ticker
   }
 
+  function cancelTicker(){
+    if($scope.ticker!=null){
+      clearInterval($scope.ticker);
+      $scope.ticker=null;
+    }
+  }
+  
   $scope.isGraphiteName = Util.isGraphiteName;
   $scope.translateGraphiteName = Util.translateGraphiteName;
 
