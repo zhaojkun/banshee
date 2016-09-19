@@ -264,6 +264,7 @@ func (al *Alerter) work() {
 			log.Warnf("failed to store event:%v, skipping..", err)
 			continue
 		}
+		al.setAlertAt(ew.Metric)
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
@@ -295,7 +296,6 @@ func (al *Alerter) work() {
 			log.Infof("send to %s with %s ok", user.Name, ew.Metric.Name)
 		}
 		if len(users) != 0 {
-			al.setAlertAt(ew.Metric)
 			health.IncrNumAlertingEvents(1)
 		}
 	}

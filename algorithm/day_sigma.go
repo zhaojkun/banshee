@@ -56,6 +56,7 @@ func DivDaySigma(m *models.Metric, bms []models.BulkMetric) {
 func scoreFilter(bms []models.BulkMetric) (vals [][]float64) {
 	threshold := 1.0
 	for i := 0; i < len(bms); i++ {
+		threshold *= scoreFactor
 		var localVals []float64
 		for j := 0; j < len(bms[i].Ms); j++ {
 			ms := bms[i].Ms[j]
@@ -65,7 +66,6 @@ func scoreFilter(bms []models.BulkMetric) (vals [][]float64) {
 			localVals = append(localVals, ms.Value)
 		}
 		vals = append(vals, localVals)
-		threshold *= scoreFactor
 	}
 	return
 }
