@@ -177,9 +177,18 @@ func (al *Alerter) checkAlertCount(m *models.Metric) bool {
 
 // checkAlertAt returns true if given metric still not reaches the minimal
 // alert interval.
-func (al *Alerter) checkAlertAt(m *models.Metric) bool {
-	v, ok := al.alertAts.Get(m.Name)
-	return ok && m.Stamp < v.(uint32)+al.cfg.Alerter.Interval
+func (al *Alerter) checkAlertAt(ew *models.EventWrapper) bool {
+	interval := al.cfg.Alerter.IntervalLowLevel
+	switch ew.Rule.Level {
+	case models.RuleLevelLow:
+		interval = al.cfg.Alerter.IntervalLowLevel
+	case models.RuleLevelMiddle:
+		interval = al.cfg.Alerter.IntervalMiddleLevel
+	case models.RuleLevelHigh:
+		interval = al.cfg.Alerter.IntervalHighLevel
+	}
+	v, ok := al.alertAts.Get(ew.Metric.Name)
+	return ok && ew.Metric.Stamp < v.(uint32)+interval
 }
 
 // setAlertRecord sets the alert record for given metric.
@@ -242,8 +251,8 @@ func (al *Alerter) work() {
 	for {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
-		if al.checkAlertAt(ew.Metric) {    // Check alert interval
-			log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
+		if al.checkAlertAt(ew) {           // Check alert interval
+			log.Infof("metric %v does not reaches the minimal alert interval", ew.Metric.Name)
 			continue
 		}
 		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit

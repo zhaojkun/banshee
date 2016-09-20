@@ -33,8 +33,12 @@ const (
 	DefaultFilterOffset float64 = 0.01
 	// Default filter times to query history metrics.
 	DefaultFilterTimes int = 4
-	// Default value of alerting interval.
-	DefaultAlerterInterval uint32 = 20 * Minute
+	// Default alerter interval for low level rules.
+	DefaultAlerterIntervalLowLevel uint32 = 20 * Minute
+	// Default alerter interval for middle level rules.
+	DefaultAlerterIntervalMiddleLevel uint32 = 10 * Minute
+	// Default alerter interval for high level rules.
+	DefaultAlerterIntervalHighLevel uint32 = 5 * Minute
 	// Default value of alerting check interval.
 	DefaultAlerterCheckInterval uint32 = Minute
 	// Default value of number of alerts after which we should send notifications.
@@ -132,7 +136,9 @@ type configAlerter struct {
 	Command                string `json:"command" yaml:"command"`
 	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
 	Workers                int    `json:"workers" yaml:"workers"`
-	Interval               uint32 `json:"interval" yaml:"interval"`
+	IntervalLowLevel       uint32 `json:"intervalLowLevel" yaml:"interval_low_level"`
+	IntervalMiddleLevel    uint32 `json:"intervalMiddleLevel" yaml:"interval_middle_level"`
+	IntervalHighLevel      uint32 `json:"intervalHighLevel" yaml:"interval_high_level"`
 	AlertCheckInterval     uint32 `json:"alert_check_interval" yaml:"alert_check_interval"`
 	NotifyAfter            int    `json:"notify_after" yaml:"notify_after"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
@@ -173,7 +179,9 @@ func New() *Config {
 	c.Alerter.Command = ""
 	c.Alerter.ExecCommandTimeout = DefaultAlertExecCommandTimeout
 	c.Alerter.Workers = 4
-	c.Alerter.Interval = DefaultAlerterInterval
+	c.Alerter.IntervalLowLevel = DefaultAlerterIntervalLowLevel
+	c.Alerter.IntervalMiddleLevel = DefaultAlerterIntervalMiddleLevel
+	c.Alerter.IntervalHighLevel = DefaultAlerterIntervalHighLevel
 	c.Alerter.AlertCheckInterval = DefaultAlerterCheckInterval
 	c.Alerter.NotifyAfter = DefaultNotifyAfter
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
@@ -229,7 +237,9 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.Command = c.Alerter.Command
 	cfg.Alerter.ExecCommandTimeout = c.Alerter.ExecCommandTimeout
 	cfg.Alerter.Workers = c.Alerter.Workers
-	cfg.Alerter.Interval = c.Alerter.Interval
+	cfg.Alerter.IntervalLowLevel = c.Alerter.IntervalLowLevel
+	cfg.Alerter.IntervalMiddleLevel = c.Alerter.IntervalMiddleLevel
+	cfg.Alerter.IntervalHighLevel = c.Alerter.IntervalHighLevel
 	cfg.Alerter.OneDayLimit = c.Alerter.OneDayLimit
 	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
 	cfg.Alerter.NotifyAfter = c.Alerter.NotifyAfter
@@ -345,7 +355,13 @@ func (c *configWebapp) validateWebapp() error {
 
 func (c *configAlerter) validateAlerter() error {
 	// Should: Interval > 0
-	if c.Interval <= 0 {
+	if c.IntervalLowLevel <= 0 {
+		return ErrAlerterInterval
+	}
+	if c.IntervalMiddleLevel <= 0 {
+		return ErrAlerterInterval
+	}
+	if c.IntervalHighLevel <= 0 {
 		return ErrAlerterInterval
 	}
 	// Should: OneDayLimit > 0

@@ -121,8 +121,10 @@ alerter:
     # right after an alert event occurs, mainly to prevent forking too many
     # processes to execute the command at the same time.
     workers: 4
-    # Minimum time interval to send messages for a single metric, default: 1200 (20min)
-    interval: 1200
+    # Minimum time interval to send messages for a single metric, defaults: 1200 (20min), 600 (10min), 300 (5min).
+    interval_low_level: 1200
+    interval_middle_level: 600
+    interval_high_level: 300
     # The interval to check if the same alert has occurred for defined times.
     alert_check_interval: 60
     # The number of alerts after which we should send notifications.
