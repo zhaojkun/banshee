@@ -124,6 +124,11 @@ func (al *Alerter) execCommand(ev *models.Event) error {
 	}
 }
 
+// execute webhook
+func (al *Alerter) triggerWebHook(ev *models.Event) error {
+
+}
+
 // work waits for detected metrics, then check each metric with all the
 // rules, the configured shell command will be executed once a rule is hit.
 func (al *Alerter) work() {
