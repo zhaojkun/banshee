@@ -5,6 +5,7 @@ package detector
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"net"
 	"path/filepath"
 	"sync"
@@ -489,8 +490,7 @@ func (d *Detector) div3Sigma(m *models.Metric, vals []float64) {
 }
 
 // nextIdx creates the next index via the weighted exponentia moving average.
-//	t[0] = x[1], f: 0~1
-//	t[n] = t[n-1] * (1 - f) + f * x[n]
+//   factor will fade along with the time span between idx and metric
 // Index score is the trending description of metric score.
 func (d *Detector) nextIdx(idx *models.Index, m *models.Metric, f float64) *models.Index {
 	n := &models.Index{Name: m.Name, Stamp: m.Stamp}
@@ -501,7 +501,9 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric, f float64) *mode
 		return n
 	}
 	// Move next
-	n.Score = idx.Score*(1-f) + f*m.Score
+	steps := math.Abs(math.Floor(float64(m.Stamp-idx.Stamp)/float64(d.cfg.Interval) + 0.5))
+	factor := math.Pow(1-f, steps)
+	n.Score = idx.Score*factor + (1-factor)*m.Score
 	n.Average = m.Average
 	n.Link = idx.Link
 	return n
