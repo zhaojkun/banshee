@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/eleme/banshee/alerter"
+	"github.com/eleme/banshee/algorithm"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
@@ -92,6 +93,14 @@ func initFilter() {
 	flt.Init(db)
 }
 
+func initAlgo() {
+	// Rely on config.
+	if cfg == nil {
+		panic(errors.New("filter require db and config"))
+	}
+	algo.Init(cfg)
+}
+
 func init() {
 	// Arguments
 	flag.Usage = usage
@@ -105,6 +114,7 @@ func init() {
 	initConfig()
 	initDB()
 	initFilter()
+	initAlgo()
 }
 
 func main() {
