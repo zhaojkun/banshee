@@ -12,6 +12,7 @@ var (
 	scoreFactor     = 1.4
 	scoreMaxAverage = math.Pow(scoreFactor, 4)
 	scoreMax        = math.Pow(scoreFactor, 8)
+	maxAdjUnValid   = 3
 )
 
 // DivDaySigma sets given metric score and average with the asumption that every day metrics belong to
@@ -83,10 +84,16 @@ func tryAverageScore(m *models.Metric, bms []models.BulkMetric, vals []float64, 
 	std := mathutil.StdDev(vals, avg)
 	low := avg - 3*std
 	high := avg + 3*std
-	var validVals []float64
+	var (
+		dropped   int
+		validVals []float64
+	)
 	for i := 0; i < len(todayVals); i++ {
-		if low <= todayVals[i] && todayVals[i] <= high {
+		if dropped >= maxAdjUnValid || (low <= todayVals[i] && todayVals[i] <= high) {
 			validVals = append(validVals, todayVals[i])
+			dropped = 0
+		} else {
+			dropped++
 		}
 	}
 	if float64(len(validVals)) > float64(len(todayVals))*2.0/3.0 {
