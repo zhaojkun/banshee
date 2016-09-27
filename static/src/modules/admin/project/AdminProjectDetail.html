@@ -128,6 +128,42 @@
               </div> <!-- ./Table -->
             </md-content>
           </md-tab> <!-- ./Users -->
+
+	  <!-- WebHooks -->
+          <md-tab label="{{ 'ADMIN_PROJECT_WEBHOOKS_TEXT' | translate }}" ng-click="loadWebHooks()">
+            <md-content class="md-padding">
+              <div ng-style="{'text-align': 'right'}" layout-padding>
+                <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_WEBHOOK_ADD_TEXT' | translate }}" ng-click="openModal($event, 'addWebHookToProject')">
+                  <md-icon class="fa fa-plus-circle" ng-style="{'font-size': '21px'}"></md-icon>
+                  <md-tooltip md-autohide>{{ 'ADMIN_WEBHOOK_ADD_TEXT' | translate }}</md-tooltip>
+                </md-button>
+              </div>
+              <!-- Table -->
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                  <md-progress-linear md-mode="indeterminate" ng-if="!loadWebHooksDone"></md-progress-linear>
+                    <tr ng-if="!webhooks || !webhooks.length">
+                      <td colspan="3"> {{ 'NOT_FOUND_ANY_RESULT' | translate }}</td>
+                    </tr>
+                    <tr ng-repeat="webhook in webhooks">
+                      <td ng-bind="$index+1" class="th50"></td>
+                      <td>
+                        <a ng-bind="webhook.name" ui-sref='banshee.admin.webhook.detail({id: webhook.id})' class="md-body-2"></a>
+                      </td>
+                      <td class="text-right">
+                        <md-button class="md-raised md-warn md-mini" aria-label="Remove WebHook" ng-click="deleteWebHook($event, webhook.id, $index)" >
+                          <md-icon class="fa fa-trash-o" ng-style="{'font-size': '21px'}"></md-icon>
+                          <md-tooltip md-autohide>{{ 'ADMIN_USER_REMOVE_TEXT' | translate }}</md-tooltip>
+                        </md-button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> <!-- ./Table -->
+            </md-content>
+          </md-tab> <!-- ./WebHooks -->
+	  
           <!-- Edit -->
           <md-tab label="{{ 'ADMIN_PROJECT_EDIT_TEXT' | translate }}">
             <md-content class="md-padding">
