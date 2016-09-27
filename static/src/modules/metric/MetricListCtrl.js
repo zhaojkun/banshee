@@ -6,41 +6,41 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   var initOpt;
   var isInit = false;
 
-  $rootScope.currentMain = true;
+  $rootScope.currentMetric = true;
   $scope.projectId = $stateParams.project;
   $scope.past = null;
   $scope.pastUsed = false;
 
   $scope.dateTimes = [
-    {label: 'MAIN_PAST_NOW', seconds: 0},
-    {label: 'MAIN_PAST_3HOURS_AGO', seconds: 3 * 3600},
-    {label: 'MAIN_PAST_6HOURS_AGO', seconds: 6 * 3600},
-    {label: 'MAIN_PAST_1DAY_AGO', seconds: 24 * 3600},
-    {label: 'MAIN_PAST_2DAYS_AGO', seconds: 48 * 3600},
-    {label: 'MAIN_PAST_3DAYS_AGO', seconds: 3 * 24 * 3600},
-    {label: 'MAIN_PAST_4DAYS_AGO', seconds: 4 * 24 * 3600},
-    {label: 'MAIN_PAST_5DAYS_AGO', seconds: 5 * 24 * 3600},
-    {label: 'MAIN_PAST_6DAYS_AGO', seconds: 6 * 24 * 3600},
-    {label: 'MAIN_PAST_7DAYS_AGO', seconds: 7 * 24 * 3600}
+    {label: 'METRIC_PAST_NOW', seconds: 0},
+    {label: 'METRIC_PAST_3HOURS_AGO', seconds: 3 * 3600},
+    {label: 'METRIC_PAST_6HOURS_AGO', seconds: 6 * 3600},
+    {label: 'METRIC_PAST_1DAY_AGO', seconds: 24 * 3600},
+    {label: 'METRIC_PAST_2DAYS_AGO', seconds: 48 * 3600},
+    {label: 'METRIC_PAST_3DAYS_AGO', seconds: 3 * 24 * 3600},
+    {label: 'METRIC_PAST_4DAYS_AGO', seconds: 4 * 24 * 3600},
+    {label: 'METRIC_PAST_5DAYS_AGO', seconds: 5 * 24 * 3600},
+    {label: 'METRIC_PAST_6DAYS_AGO', seconds: 6 * 24 * 3600},
+    {label: 'METRIC_PAST_7DAYS_AGO', seconds: 7 * 24 * 3600}
   ];
 
   $scope.limitList = [
-    {label: 'MAIN_LIMIT_1', val: 1},
-    {label: 'MAIN_LIMIT_30', val: 30},
-    {label: 'MAIN_LIMIT_50', val: 50},
-    {label: 'MAIN_LIMIT_100', val: 100},
-    {label: 'MAIN_LIMIT_500', val: 500},
-    {label: 'MAIN_LIMIT_1000', val: 1000}
+    {label: 'METRIC_LIMIT_1', val: 1},
+    {label: 'METRIC_LIMIT_30', val: 30},
+    {label: 'METRIC_LIMIT_50', val: 50},
+    {label: 'METRIC_LIMIT_100', val: 100},
+    {label: 'METRIC_LIMIT_500', val: 500},
+    {label: 'METRIC_LIMIT_1000', val: 1000}
   ];
 
   $scope.sortList = [
-    {label: 'MAIN_TREND_UP', val: 'up'},
-    {label: 'MAIN_TREND_DOWN', val: 'down'}
+    {label: 'METRIC_TREND_UP', val: 'up'},
+    {label: 'METRIC_TREND_DOWN', val: 'down'}
   ];
 
   $scope.typeList = [
-    {label: 'MAIN_TYPE_VALUE', val: 'v'},
-    {label: 'MAIN_TYPE_SCORE', val: 'm'}
+    {label: 'METRIC_TYPE_VALUE', val: 'v'},
+    {label: 'METRIC_TYPE_SCORE', val: 'm'}
   ];
 
   $scope.autoComplete = {searchText: ''};
@@ -104,7 +104,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   };
 
 
-  $scope.$on('$destroy', function() { $rootScope.currentMain = false; });
+  $scope.$on('$destroy', function() { $rootScope.currentMetric = false; });
 
   /**
    * watch filter.
@@ -199,7 +199,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       var className = getClassNameByTrend(currentEl.score, currentEl.stamp);
       var str;
       var _box = ['<div class="box"><span>' +
-                  $translate.instant('MAIN_METRIC_RULES_TEXT') +
+                  $translate.instant('METRIC_METRIC_RULES_TEXT') +
                   '<span class="icon-tr"></span></span><ul>'];
 
       for (var i = 0; i < currentEl.matchedRules.length; i++) {

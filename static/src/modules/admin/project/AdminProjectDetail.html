@@ -4,8 +4,8 @@
     <section class="panel-container">
       <md-toolbar>
         <div class="md-toolbar-tools">
-          <h3 class="md-button md-ink-ripple" ui-sref="banshee.main({project: projectId})" ng-style="{'text-transform': 'none'}">
-            <a ui-sref="banshee.main({project: projectId})" ng-bind="project.name"></a>
+          <h3 class="md-button md-ink-ripple" ui-sref="banshee.metric({project: projectId})" ng-style="{'text-transform': 'none'}">
+            <a ui-sref="banshee.metric({project: projectId})" ng-bind="project.name"></a>
           </h3>
         </div>
       </md-toolbar>
@@ -45,7 +45,7 @@
                     <tr ng-repeat="rule in rules" ng-style="isRuleDisabledWorksNow(rule)?{'background-color': '#eee'}:{}">
                       <td class="padding-left-16" ng-bind="$index+1"></td>
                       <td>
-                        <a ui-sref="banshee.main({pattern: rule.pattern})">
+                        <a ui-sref="banshee.metric({pattern: rule.pattern})">
                           <kbd ng-if="!isRuleDisabledWorksNow(rule)" ng-bind="rule.pattern" ng-style="{'font-weight': 'bold'}"></kbd>
                           <kbd ng-if="isRuleDisabledWorksNow(rule)" ng-bind="rule.pattern" class="del" ng-style="{'color': '#ddd'}"></kbd>
                         </a>
@@ -60,7 +60,7 @@
                         <md-tooltip md-autohide>{{ translateRuleRepr(rule) }}</md-tooltip>
                       </td>
                       <td>
-                        <a ui-sref="banshee.main({pattern: rule.pattern})">
+                        <a ui-sref="banshee.metric({pattern: rule.pattern})">
                           <kbd ng-if="rule.numMetrics<=config.detector.intervalHitLimit" ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold'}"></kbd>
                           <kbd ng-if="rule.numMetrics>config.detector.intervalHitLimit" ng-bind="rule.numMetrics" ng-style="{'font-weight': 'bold', 'color': 'red'}">
                             <md-tooltip md-autohide>{{ translateRuleNumMetricsWarn() }}</md-tooltip>
@@ -218,7 +218,7 @@
                       </td>
                       <td><a ng-click="goToRuleID(event.ruleID)" ng-style="{'cursor': 'pointer'}">{{ getEventRuleComment(event) }}</a></td>
                       <td>
-                        <a ng-click="goToMain(event.name, event.stamp)" ng-style="{'cursor': 'pointer'}">{{ event.name }}</a>,
+                        <a ng-click="goToMetric(event.name, event.stamp)" ng-style="{'cursor': 'pointer'}">{{ event.name }}</a>,
                         <a href="{{getGraphiteUrl(event.name)}}" ng-if="config.webapp.graphiteUrl.length>0" target="_blank">
                           {{ 'METRIC_CHART_TEXT' | translate  }}
                         </a>
@@ -232,6 +232,6 @@
             </md-content>
           </md-tab> <!-- ./Events -->
       </section> <!-- ./Panel content -->
-    </section> <!-- Main panel -->
+    </section> <!-- Metric panel -->
   </div>
 </div>

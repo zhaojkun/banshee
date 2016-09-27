@@ -20,7 +20,7 @@ angular.module('banshee', [
   require('./directives'),
 
   require('./modules/layout'),
-  require('./modules/main'),
+  require('./modules/metric'),
   require('./modules/admin')
 
 ]).config(require('./config'))

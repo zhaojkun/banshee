@@ -3,8 +3,8 @@
  */
 /*@ngInject*/
 module.exports = function($scope, $state, $translate, Config) {
-  $scope.goMain = function() {
-    $state.go('banshee.main', {project: '', pattern: '', past: ''},
+  $scope.goToAdmin = function() {
+    $state.go('banshee.admin.project', {project: '', pattern: '', past: ''},
               {reload: true});
   };
 
