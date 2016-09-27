@@ -3,12 +3,13 @@
 package webapp
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mattn/go-sqlite3"
-	"net/http"
-	"strconv"
 )
 
 type getProjectsResult struct {
@@ -377,6 +378,151 @@ func deleteProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 	// Delete user.
 	if err := db.Admin.DB().Model(proj).Association("Users").Delete(user).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+}
+
+// getProjectWebHooks gets project webhooks.
+func getProjectWebHooks(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Params
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		ResponseError(w, ErrProjectID)
+		return
+	}
+	// Query
+	var webhooks []models.WebHook
+	if err := db.Admin.DB().Model(&models.Project{ID: id}).Association("WebHooks").Find(&webhooks).Error; err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	ResponseJSONOK(w, webhooks)
+}
+
+// addProjectWebHookRequest is the request of addProjectWebHook
+type addProjectWebHookRequest struct {
+	Name string `json:"name"`
+}
+
+// projectWebHook is the tempory select result for table `project_webhooks`
+type projectWebHook struct {
+	WebHookID int `sql:"webhook_id"`
+	ProjectID int `sql:"project_id"`
+}
+
+// addProjectWebHook adds a webhook to a project.
+func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Params
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		ResponseError(w, ErrProjectID)
+		return
+	}
+	// Request
+	req := &addProjectWebHookRequest{}
+	if err := RequestBind(r, req); err != nil {
+		ResponseError(w, ErrBadRequest)
+		return
+	}
+	// Find webhook.
+	webhook := &models.WebHook{}
+	if err := db.Admin.DB().Where("name = ?", req.Name).First(webhook).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrWebHookNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+	// Find proj
+	proj := &models.Project{}
+	if err := db.Admin.DB().First(proj, id).Error; err != nil {
+		if err == gorm.RecordNotFound {
+			ResponseError(w, ErrNotFound)
+			return
+		}
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	// Note: Gorm only insert values to join-table if the primary key not in
+	// the join-table. So we select the record at first here.
+	if err := db.Admin.DB().Table("project_webhooks").Where("webhook_id = ? and project_id = ?", webhook.ID, proj.ID).Find(&projectWebHook{}).Error; err == nil {
+		ResponseError(w, ErrDuplicateProjectWebHook)
+		return
+	}
+	// Append user.
+	if err := db.Admin.DB().Model(proj).Association("WebHooks").Append(webhook).Error; err != nil {
+		if err == gorm.RecordNotFound {
+			// User or Project not found.
+			ResponseError(w, ErrNotFound)
+			return
+		}
+		// Duplicate primay key.
+		sqliteErr, ok := err.(sqlite3.Error)
+		if ok {
+			switch sqliteErr.ExtendedCode {
+			case sqlite3.ErrConstraintUnique:
+				ResponseError(w, ErrDuplicateProjectWebHook)
+				return
+			case sqlite3.ErrConstraintPrimaryKey:
+				ResponseError(w, ErrDuplicateProjectWebHook)
+				return
+			}
+		}
+		// Unexcepted error.
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+}
+
+// deleteProjectWebHook deletes a webhook from a project.
+func deleteProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Params
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		ResponseError(w, ErrProjectID)
+		return
+	}
+	webhookID, err := strconv.Atoi(ps.ByName("webhook_id"))
+	if err != nil {
+		ResponseError(w, ErrWebHookID)
+		return
+	}
+	// Find webhook.
+	webhook := &models.WebHook{}
+	if err := db.Admin.DB().First(webhook, webhookID).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrUserNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+	// Find proj.
+	proj := &models.Project{}
+	if err := db.Admin.DB().First(proj, id).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrProjectNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+	// Delete webhook.
+	if err := db.Admin.DB().Model(proj).Association("WebHooks").Delete(webhook).Error; err != nil {
 		switch err {
 		case gorm.RecordNotFound:
 			ResponseError(w, ErrNotFound)

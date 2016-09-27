@@ -40,6 +40,8 @@ var (
 	ErrRulePatternContainsSpace = errors.New("rule pattern contains spaces")
 	ErrRulePatternFormat        = errors.New("rule pattern format is invalid")
 	ErrRuleLevel                = errors.New("rule level is invalid")
+	ErrWebHookURLEmpty          = errors.New("webhook url is empty")
+	ErrWebHookURLFormat         = errors.New("webhook url format is invalid")
 	ErrMetricNameEmpty          = errors.New("metric name is empty")
 	ErrMetricNameTooLong        = errors.New("metric name is too long")
 	ErrMetricStampTooSmall      = errors.New("metric stamp is too small")
@@ -97,6 +99,19 @@ func ValidateUserEmail(email string) error {
 	if !strings.Contains(email, "@") {
 		// Invalid format.
 		return ErrUserEmailFormat
+	}
+	return nil
+}
+
+// ValidateWebHookURL validates webhook url.
+func ValidateWebHookURL(url string) error {
+	if len(url) == 0 {
+		// Empty
+		return ErrWebHookURLEmpty
+	}
+	if !strings.Contains(url, "http") {
+		// Invalid format.
+		return ErrWebHookURLFormat
 	}
 	return nil
 }
