@@ -1,0 +1,37 @@
+<md-dialog aria-label="AddUser" class="form-dialog" ng-cloak>
+  <form name="form" class="form-horizontal" ng-submit="submit()" onvalidate>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 ng-bind="titles[opt]"></h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon class="fa fa-times-circle" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <md-content layout-padding>
+        <div>
+          <md-autocomplete
+            md-selected-item="autoComplete.selectedItem"
+            md-search-text="autoComplete.searchText"
+            md-items="webhook in webhooks | filter: {name: autoComplete.searchText}"
+            md-item-text="webhook.name"
+            md-min-length="0"
+            placeholder="{{ 'ADMIN_PROJECT_WEBHOOK_ADD_HINT_TEXT' | translate }}">
+            <md-item-template>
+              <span md-highlight-text="autoComplete.searchText" md-highlight-flags="^i">{{webhook.name}}</span>
+            </md-item-template>
+            <md-not-found>
+              {{ 'NOT_FOUND_ANY_RESULT' | translate }}
+            </md-not-found>
+          </md-autocomplete>
+        </div>
+      </md-content>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()"> {{ 'CANCEL' | translate }} </md-button>
+      <md-button md-no-ink class="md-primary" ng-disabled="form.$invalid" type="submit"> {{ 'SUBMIT' | translate }} </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

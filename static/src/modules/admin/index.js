@@ -52,22 +52,38 @@ var app =
                      }
                    }
                  })
-                 
-                 // Config router
+              
+              // WebHook router
+                 .state('banshee.admin.webhook', {
+                   url: '/webhook',
+                   templateUrl: 'modules/admin/webhook/AdminWebHookList.html',
+                   controller: 'AdminWebHookListCtrl'
+                 })
+                 .state('banshee.admin.webhook.detail', {
+                   url: '/:id',
+                   views: {
+                     '@banshee': {
+                       templateUrl: 'modules/admin/webhook/AdminWebHookDetail.html',
+                       controller: 'AdminWebHookDetailCtrl'
+                     }
+                   }
+                 })
+              
+              // Config router
                  .state('banshee.admin.config', {
                    url: '/config',
                    templateUrl: 'modules/admin/config/config.html',
                    controller: 'AdminConfigCtrl'
                  })
-                 
-                 // Info router
+              
+              // Info router
                  .state('banshee.admin.info', {
                    url: '/info',
                    templateUrl: 'modules/admin/info/info.html',
                    controller: 'AdminInfoCtrl'
                  });
-             })
-
+          })
+  
   // Controller
       .controller('AdminTeamListCtrl',require('./team/AdminTeamListCtrl'))
       .controller('AdminTeamDetailCtrl',require('./team/AdminTeamDetailCtrl'))
@@ -87,6 +103,10 @@ var app =
       .controller('UserAddModalCtrl', require('./user/UserAddModalCtrl'))
   
       .controller('AdminConfigCtrl', require('./config/AdminConfigCtrl'))
-      .controller('AdminInfoCtrl', require('./info/AdminInfoCtrl'));
+      .controller('AdminInfoCtrl', require('./info/AdminInfoCtrl'))
+      .controller('AdminWebHookListCtrl', require('./webhook/AdminWebHookListCtrl'))
+      .controller('AdminWebHookDetailCtrl',require('./webhook/AdminWebHookDetailCtrl'))
+      .controller('WebHookAddModalCtrl', require('./webhook/WebHookAddModalCtrl'));
 
-module.exports = app.name;
+
+  module.exports = app.name;
