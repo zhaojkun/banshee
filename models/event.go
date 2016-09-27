@@ -63,6 +63,7 @@ type EventWrapper struct {
 	*Event
 	Project               *Project `json:"project"`
 	User                  *User    `json:"user"`
+	WebHook               *WebHook `json:"webhook"`
 	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
 }
 
