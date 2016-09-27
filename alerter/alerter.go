@@ -276,12 +276,14 @@ func (al *Alerter) work() {
 			continue
 		}
 		var users []models.User
+		var notified bool
 		if users, err = al.getUsersByProj(ew.Project); err != nil {
 			log.Errorf("get user from project %v: %v", ew.Project.Name, err)
 			continue
 		}
 		for _, user := range users {
 			ew.User = &user
+			ew.WebHook = nil
 			if ew.Rule.Level < user.RuleLevel {
 				continue
 			}
@@ -293,9 +295,19 @@ func (al *Alerter) work() {
 				log.Errorf("exec %s: %v", al.cfg.Alerter.Command, err)
 				continue
 			}
+			notified = true
 			log.Infof("send to %s with %s ok", user.Name, ew.Metric.Name)
 		}
-		if len(users) != 0 {
+		for _, hook := range ew.Project.WebHooks {
+			ew.WebHook = hook
+			ew.User = nil
+			if err = al.execCommand(ew); err != nil {
+				log.Errorf("exec %s: %v", al.cfg.Alerter.Command, err)
+				continue
+			}
+			notified = true
+		}
+		if notified {
 			health.IncrNumAlertingEvents(1)
 		}
 	}

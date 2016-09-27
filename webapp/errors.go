@@ -24,15 +24,23 @@ var (
 	ErrUnique     = NewWebError(http.StatusForbidden, "Value should be unique")
 	ErrNotFound   = NewWebError(http.StatusNotFound, "Not found")
 	// Project
-	ErrProjectID            = NewWebError(http.StatusBadRequest, "Bad project id")
-	ErrProjectNotFound      = NewWebError(http.StatusNotFound, "Project not found")
-	ErrDuplicateProjectName = NewWebError(http.StatusForbidden, "Duplicate project name")
-	ErrDuplicateProjectUser = NewWebError(http.StatusForbidden, "Duplicate user to project")
-	ErrProjectUniversalUser = NewWebError(http.StatusForbidden, "Cannot add universal user to project")
+	ErrProjectID               = NewWebError(http.StatusBadRequest, "Bad project id")
+	ErrProjectNotFound         = NewWebError(http.StatusNotFound, "Project not found")
+	ErrDuplicateProjectName    = NewWebError(http.StatusForbidden, "Duplicate project name")
+	ErrDuplicateProjectUser    = NewWebError(http.StatusForbidden, "Duplicate user to project")
+	ErrProjectUniversalUser    = NewWebError(http.StatusForbidden, "Cannot add universal user to project")
+	ErrDuplicateProjectWebHook = NewWebError(http.StatusForbidden, "Duplicate webhook to project")
+
 	// User
 	ErrUserID            = NewWebError(http.StatusBadRequest, "Bad user id")
 	ErrUserNotFound      = NewWebError(http.StatusNotFound, "User not found")
 	ErrDuplicateUserName = NewWebError(http.StatusForbidden, "Duplicate user name")
+
+	// WebHook
+	ErrWebHookID            = NewWebError(http.StatusBadRequest, "Bad webhook id")
+	ErrWebHookNotFound      = NewWebError(http.StatusNotFound, "WebHook not found")
+	ErrDuplicateWebHookName = NewWebError(http.StatusForbidden, "Duplicate webhook name")
+
 	// Rule
 	ErrRuleID               = NewWebError(http.StatusBadRequest, "Bad rule id")
 	ErrDuplicateRulePattern = NewWebError(http.StatusForbidden, "Duplicate rule pattern")
