@@ -12,6 +12,7 @@ app
   .factory('httpInterceptor', require('./httpInterceptor'))
   .factory('Project', require('./Project'))
   .factory('User', require('./User'))
+  .factory('WebHook', require('./WebHook'))
   .factory('Rule', require('./Rule'))
   .factory('Config', require('./Config'))
   .factory('Metric', require('./Metric'))

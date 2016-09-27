@@ -1,9 +1,10 @@
 /*@ngInject*/
 module.exports =
     function($scope, $location, $mdDialog, $state, $stateParams, $translate,
-             toastr, Project, Rule, User, Config, Util) {
+             toastr, Project, Rule, User,WebHook, Config, Util) {
   var projectId = $scope.projectId = $stateParams.id;
   var allUsers = [];
+  var allWebHooks=[];
 
   $scope.loadData = function() {
 
@@ -47,6 +48,24 @@ module.exports =
     }, 500);
   };
 
+  $scope.loadWebHooksDone = false;
+  $scope.loadWebHooks = function() {
+    if ($scope.loadWebHooksDone) {
+      return;
+    }
+    setTimeout(function() {
+      // get users of project
+      Project.getWebHooksByProjectId({id: projectId})
+          .$promise.then(function(res) { $scope.webhooks= res; });
+
+      // get all users
+      WebHook.getAllWebHooks().$promise.then(function(res) { allWebHooks = res; });
+      $scope.loadWebHooksDone = true;
+    }, 500);
+  };
+
+
+      
   $scope.edit = function() {
     Project.edit($scope.project).$promise.then(function() {
       toastr.success($translate.instant('SAVE_SUCCESS'));
@@ -81,6 +100,23 @@ module.exports =
       Project.deleteUserFromProject({id: projectId, userId: userId})
           .$promise.then(function() {
         $scope.users.splice(index, 1);
+        toastr.success($translate.instant('DELETE_SUCCESS'));
+      }).catch (function(err) { toastr.error(err.msg); });
+    });
+  };
+
+  $scope.deleteWebHook = function(event, webhookId, index) {
+     var confirm = $mdDialog.confirm()
+                      .title($translate.instant('ADMIN_WEBHOOK_REMOVE_TEXT'))
+                      .textContent($translate.instant('ADMIN_WEBHOOK_REMOVE_WARN'))
+                      .ariaLabel($translate.instant('ADMIN_WEBHOOK_REMOVE_TEXT'))
+                      .targetEvent(event)
+                      .ok($translate.instant('YES'))
+                      .cancel($translate.instant('NO'));
+    $mdDialog.show(confirm).then(function() {
+      Project.deleteWebHookFromProject({id: projectId, webhookId: webhookId})
+          .$promise.then(function() {
+        $scope.webhooks.splice(index, 1);
         toastr.success($translate.instant('DELETE_SUCCESS'));
       }).catch (function(err) { toastr.error(err.msg); });
     });
@@ -121,7 +157,7 @@ module.exports =
   };
 
   $scope.openModal = function(event, opt, project) {
-    var ctrl, template, users;
+    var ctrl, template, users,webhooks;
 
     if (opt === 'addRule') {
       ctrl = 'RuleModalCtrl';
@@ -139,6 +175,12 @@ module.exports =
       users = filterUsers();
     }
 
+    if (opt == 'addWebHookToProject'){
+      ctrl = 'WebHookModalCtrl';
+      template = 'modules/admin/project/webHookModal.html';
+      webhooks = filterWebHooks();
+    }
+
     $mdDialog
         .show({
           controller: ctrl,
@@ -149,7 +191,7 @@ module.exports =
           fullscreen: true,
           locals: {
             params:
-                {opt: opt, obj: angular.copy(project) || '', users: users}
+            {opt: opt, obj: angular.copy(project) || '', users: users,webhooks:webhooks}
           }
         })
         .then(function(res) {
@@ -159,6 +201,10 @@ module.exports =
       if (opt === 'addUserToProject') {
         $scope.users.push(res);
       }
+      if (opt === 'addWebHookToProject') {
+        $scope.webhooks.push(res);
+      }
+
     });
   };
 
@@ -202,6 +248,20 @@ module.exports =
     return $scope.users.map(function(el) { return el.id; });
   }
 
+  function filterWebHooks() {
+    var webhooksIds = getWebHooksId();
+    return allWebHooks.map(function(el) {
+      if (webhooksIds.indexOf(el.id) < 0) {
+        return el;
+      }
+    });
+  }
+  function getWebHooksId() {
+    return $scope.webhooks.map(function(el) { return el.id; });
+  }
+
+
+      
   $scope.buildRepr = Util.buildRepr;
   $scope.ruleCheck = Util.ruleCheck;
   $scope.dateToString = Util.dateToString;

@@ -13,6 +13,11 @@ module.exports = function($resource) {
     addUserToProject: {method: 'POST', url: '/api/project/:id/user'},
     deleteUserFromProject:
         {method: 'DELETE', url: '/api/project/:id/user/:userId'},
+    getWebHooksByProjectId:
+        {method: 'GET', url: '/api/project/:id/webhooks', isArray: true},
+    addWebHookToProject: {method: 'POST', url: '/api/project/:id/webhook'},
+    deleteWebHookFromProject:
+        {method: 'DELETE', url: '/api/project/:id/webhook/:webhookId'},
     getEventsByProjectId:
         {method: 'GET', url: '/api/project/:id/events', isArray: true},
   });

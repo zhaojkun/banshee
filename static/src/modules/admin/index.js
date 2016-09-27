@@ -44,6 +44,23 @@ var app =
                      }
                    })
 
+
+	       // WebHook router
+                   .state('banshee.admin.webhook', {
+                     url: '/webhook',
+                     templateUrl: 'modules/admin/webhook/AdminWebHookList.html',
+                     controller: 'AdminWebHookListCtrl'
+                   })
+                   .state('banshee.admin.webhook.detail', {
+                     url: '/:id',
+                     views: {
+                       '@banshee': {
+                         templateUrl: 'modules/admin/webhook/AdminWebHookDetail.html',
+                         controller: 'AdminWebHookDetailCtrl'
+                       }
+                     }
+                   })
+
                    // Config router
                    .state('banshee.admin.config', {
                      url: '/config',
@@ -66,12 +83,22 @@ var app =
                     require('./project/AdminProjectDetailCtrl'))
         .controller('ProjectModalCtrl', require('./project/ProjectModalCtrl'))
         .controller('UserModalCtrl', require('./project/UserModalCtrl'))
+        .controller('WebHookModalCtrl', require('./project/WebHookModalCtrl'))
         .controller('RuleModalCtrl', require('./project/RuleModalCtrl'))
 
         .controller('AdminUserListCtrl', require('./user/AdminUserListCtrl'))
+
         .controller('AdminUserDetailCtrl',
                     require('./user/AdminUserDetailCtrl'))
+
         .controller('UserAddModalCtrl', require('./user/UserAddModalCtrl'))
+
+        .controller('AdminWebHookListCtrl', require('./webhook/AdminWebHookListCtrl'))
+        .controller('AdminWebHookDetailCtrl',
+                    require('./webhook/AdminWebHookDetailCtrl'))
+
+        .controller('WebHookAddModalCtrl', require('./webhook/WebHookAddModalCtrl'))
+
 
         .controller('AdminConfigCtrl', require('./config/AdminConfigCtrl'))
         .controller('AdminInfoCtrl', require('./info/AdminInfoCtrl'));

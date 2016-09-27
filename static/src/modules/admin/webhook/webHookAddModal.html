@@ -1,0 +1,45 @@
+<md-dialog aria-label="Create" class="form-dialog" ng-cloak>
+  <form name="form" class="form-horizontal" ng-submit="submit()" onvalidate>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 translate="ADMIN_WEBHOOK_CREATE_MODAL_TITLE"></h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon class="fa fa-times-circle" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <md-content layout-padding>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label translate="ADMIN_WEBHOOK_NAME"></label>
+          <input type="text" name="webhookName" ng-model="webhook.name" required>
+          <div ng-messages="form.webhookName.$error" ng-if="form.webhookName.$dirty">
+            <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
+          </div>
+        </md-input-container>
+	<md-input-container class="md-block" flex-gt-sm>
+		<label>Type</label>
+		<md-select name="type" ng-model="webhook.type" required>
+			<md-option value="webhook">WebHook</md-option>
+			<md-option value="slack">Slack</md-option>
+		</md-select>
+		<div ng-message="form.type.$error" ng-if="form.type.$dirty">
+			<div ng-message="required"></div>
+		</div>
+	</md-input-container>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label translate="ADMIN_WEBHOOK_URL"></label>
+          <input type="text" name="url" ng-model="webhook.url" required>
+          <div ng-messages="form.url.$error" ng-if="form.url.$dirty">
+            <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
+          </div>
+        </md-input-container>
+      </md-content>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()" translate="CANCEL"></md-button>
+      <md-button md-no-ink class="md-primary" ng-disabled="form.$invalid" type="submit" translate="SUBMIT"></md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>
