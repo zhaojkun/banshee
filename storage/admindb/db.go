@@ -65,4 +65,5 @@ func (db *DB) migrate() error {
 	team := &models.Team{}
 	webHook := &models.WebHook{}
 	return db.db.AutoMigrate(rule, user, proj, team, webHook).Error
+
 }
