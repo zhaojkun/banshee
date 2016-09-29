@@ -3,12 +3,13 @@
 package webapp
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mattn/go-sqlite3"
-	"net/http"
-	"strconv"
 )
 
 type getProjectsResult struct {
@@ -60,7 +61,12 @@ type createProjectRequest struct {
 }
 
 // createProject creates a project.
-func createProject(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func createProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		ResponseError(w, ErrProjectID)
+	}
+	//Todo check teamid
 	// Request
 	req := &createProjectRequest{}
 	if err := RequestBind(r, req); err != nil {
@@ -73,7 +79,7 @@ func createProject(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 	// Save.
-	proj := &models.Project{Name: req.Name}
+	proj := &models.Project{Name: req.Name, TeamID: id}
 	if err := db.Admin.DB().Create(proj).Error; err != nil {
 		sqliteErr, ok := err.(sqlite3.Error)
 		if ok {
