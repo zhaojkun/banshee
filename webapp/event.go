@@ -3,12 +3,13 @@
 package webapp
 
 import (
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/storage/eventdb"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/storage/eventdb"
+	"github.com/julienschmidt/httprouter"
 )
 
 func getEventsByProjectID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

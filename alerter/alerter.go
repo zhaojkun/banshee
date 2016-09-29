@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/eleme/banshee/bus"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/health"
 	"github.com/eleme/banshee/models"
@@ -265,6 +266,7 @@ func (al *Alerter) work() {
 			continue
 		}
 		al.setAlertAt(ew.Metric)
+		bus.Publish("alerter", ew)
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
