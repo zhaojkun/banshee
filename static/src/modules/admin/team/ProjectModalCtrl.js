@@ -1,5 +1,5 @@
 /*@ngInject*/
-module.exports = function ($scope,$stateParams, toastr, $mdDialog, Project, params) {
+module.exports = function ($scope,$stateParams, toastr, $mdDialog, Project) {
 
   $scope.project = {};
 
