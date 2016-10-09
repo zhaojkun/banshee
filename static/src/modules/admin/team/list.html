@@ -1,0 +1,66 @@
+<div id="admin-project-list">
+  <div class="col-lg-12">
+    <!-- START panel-->
+    <div class="panel-container">
+      <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h3 translate="ADMIN_TEAM_LIST_TITLE"></h3>
+          <span flex></span>
+          <md-button class="md-icon-button" aria-label="{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}" ng-click="openModal($event)">
+            <md-tooltip md-autohide>{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}</md-tooltip>
+            <md-icon class="fa fa-plus-circle" ng-style="{'font-size': '20px'}"></md-icon>
+          </md-button>
+        </div>
+      </md-toolbar>
+      <div class="panel-content">
+        <!-- START table-responsive-->
+        <div class="table-title">
+          <form>
+            <md-autocomplete class="search-team" md-selected-item="autoComplete.selectedItem" md-search-text="autoComplete.searchText" md-selected-item-change="searchTeam(team)" md-items="team in teams | filter: {name: autoComplete.searchText}" md-item-text="team.name" md-min-length="0" md-floating-label="{{ 'ADMIN_TEAM_SEARCH_TEXT' | translate }}" flex="45">
+              <md-item-template>
+                <span md-highlight-text="autoComplete.searchText" md-highlight-flags="^i">{{team.name}}</span>
+              </md-item-template>
+              <md-not-found>
+                {{ 'NOT_FOUND_ANY_RESULT' | translate }}
+              </md-not-found>
+            </md-autocomplete>
+          </form>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th translate="ADMIN_TEAM_NAME"></th>
+                <th translate="ADMIN_TEAM_NUM_PROJECTS"></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <md-progress-linear md-mode="indeterminate" ng-if="!teams"></md-progress-linear>
+              <tr ng-if="!teams || !teams.length">
+                <td colspan="3">
+                  {{ 'NOT_FOUND_ANY_RESULT' | translate }}
+                </td>
+                <tr>
+                  <tr ng-repeat="team in teams">
+                    <td ng-bind="team.id"></td>
+                    <td>
+                      <a ng-bind="team.name" ui-sref='banshee.admin.team.detail({id: team.id})' class="md-body-2"></a>
+                    </td>
+                    <td ng-bind="team.numProjects"></td>
+                    <td style="text-align: right;" ng-style="{'padding': '0px 10px'}">
+                      <md-button class="md-raised md-mini" ui-sref='banshee.admin.team.detail({id: team.id})' aria-label="edit team">
+                        <i class="fa fa-pencil"></i>
+                      </md-button>
+                    </td>
+                  </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- END table-responsive-->
+      </div>
+    </div>
+    <!-- END panel-->
+  </div>
+</div>

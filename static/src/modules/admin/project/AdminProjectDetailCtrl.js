@@ -99,7 +99,7 @@ module.exports =
     $mdDialog.show(confirm).then(function() {
       Project.delete ({id: $scope.project.id}).$promise.then(function() {
         toastr.success($translate.instant('DELETE_SUCCESS'));
-        $state.go('banshee.admin.project');
+        $state.go('banshee.admin.team.project');
       }).catch (function(err) { toastr.error(err.msg); });
     });
 
@@ -215,7 +215,7 @@ module.exports =
     return event.pattern;
   };
   $scope.goToRuleID = function(ruleId) {
-    $state.go('banshee.admin.project.detail',
+    $state.go('banshee.admin.team.project.detail',
               {id: $scope.projectId, rule: ruleId}, {reload: true});
   };
   $scope.goToMetric = function(metricName, stamp) {
