@@ -54,6 +54,7 @@ func Start(c *config.Config, d *storage.DB, f *filter.Filter) {
 	router.DELETE("/api/team/:id", auth.handler(deleteTeam))
 	router.GET("/api/team/:id/projects", getTeamProjects)
 	router.POST("/api/team/:id/project", auth.handler(createProject))
+	router.GET("/api/projects", getProjects)
 	router.GET("/api/project/:id", getProject)
 	router.PATCH("/api/project/:id", auth.handler(updateProject))
 	router.DELETE("/api/project/:id", auth.handler(deleteProject))

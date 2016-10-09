@@ -205,7 +205,7 @@ func getTeamProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	var results []getTeamProjectsResult
 	err = db.Admin.DB().Table("projects").
 		Joins("LEFT JOIN rules ON rules.project_id = projects.id").
-		Where("team_id", id).
+		Where("team_id = ?", id).
 		Select("projects.id as id, projects.name as name, count(rules.id) as num_rules").
 		Group("projects.id").Scan(&results).Error
 	if err != nil {

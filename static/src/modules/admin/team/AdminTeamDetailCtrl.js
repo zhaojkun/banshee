@@ -3,7 +3,6 @@ module.exports =
 function($scope, $location, $mdDialog, $state, $stateParams, $translate,
         toastr, Project, Rule, User, Config, Util, Team) {
           var teamId = $scope.teamId = $stateParams.id;
-          var allUsers = [];
 
           $scope.loadData = function() {
             // get project
