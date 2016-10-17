@@ -88,6 +88,31 @@ func TestGetByProjectID(t *testing.T) {
 	util.Must(t, ew.ID == "20160525155330.1")
 }
 
+func TestGetRange(t *testing.T) {
+	// Open db.
+	filename := "db-testing"
+	opts := &Options{Period: 86400, Expiration: 86400 * 7}
+	db, _ := Open(filename, opts)
+	defer os.RemoveAll(filename)
+	defer db.Close()
+	// Nothing.
+	ews, err := db.GetRange(0, 0, 1464162569)
+	util.Must(t, err == nil)
+	util.Must(t, len(ews) == 0)
+	// Put some.
+	db.Put(&EventWrapper{ID: "20160525155330.1", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162569})
+	db.Put(&EventWrapper{ID: "20160525155330.2", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162579})
+	db.Put(&EventWrapper{ID: "20160525155330.3", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162589})
+	db.Put(&EventWrapper{ID: "20160525155330.4", RuleID: 1, ProjectID: 1, Level: 2, Name: "foo", Stamp: 1464162599})
+	// Get again.
+	ews, err = db.GetRange(0, 0, 1464162599)
+	util.Must(t, err == nil)
+	util.Must(t, len(ews) == 3) // right is closed
+	// Test the value
+	ew := ews[0]
+	util.Must(t, ew.ID == "20160525155330.1")
+}
+
 func TestGetAcrossStorages(t *testing.T) {
 	// Open db.
 	fileName := "db-testing"
@@ -109,6 +134,19 @@ func TestGetAcrossStorages(t *testing.T) {
 	util.Must(t, ews[0].Stamp == base)
 	util.Must(t, ews[1].Stamp == base+db.opts.Period*1)
 	util.Must(t, ews[2].Stamp == base+db.opts.Period*2)
+
+	// Force creating 2 storages.
+	db.Put(&EventWrapper{ID: "20160525155730.6", RuleID: 2, ProjectID: 2, Level: 1, Name: "bar", Stamp: base})
+	db.Put(&EventWrapper{ID: "20160525155730.7", RuleID: 3, ProjectID: 3, Level: 0, Name: "bar", Stamp: base + db.opts.Period*2})
+	// Get by time range.
+	ews, err = db.GetRange(0, base, base+db.opts.Period*3)
+	util.Must(t, err == nil)
+	util.Must(t, len(ews) == 5)
+	util.Must(t, ews[0].Stamp == base && ews[0].Name == "foo")
+	util.Must(t, ews[1].Stamp == base && ews[1].Name == "bar")
+	util.Must(t, ews[2].Stamp == base+db.opts.Period*1 && ews[2].Name == "foo")
+	util.Must(t, ews[3].Stamp == base+db.opts.Period*2 && ews[3].Name == "foo")
+	util.Must(t, ews[4].Stamp == base+db.opts.Period*2 && ews[4].Name == "bar")
 }
 
 func TestStorageExpire(t *testing.T) {
