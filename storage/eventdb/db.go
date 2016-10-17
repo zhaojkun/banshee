@@ -312,6 +312,14 @@ func (s *storage) getByProjectID(projectID, lowestLevel int, start, end uint32) 
 	return
 }
 
+// getRange returns event wrappers by lowest level and time range.
+func (s *storage) getRange(lowestLevel int, start, end uint32) (ews []EventWrapper, err error) {
+	if err = s.db.Where("stamp >= ? AND stamp < ? AND level >= ?", start, end, lowestLevel).Find(&ews).Error; err != nil {
+		return
+	}
+	return
+}
+
 // GetByProjectID returns event wrappers by project id and time range.
 func (db *DB) GetByProjectID(projectID, lowestLevel int, start, end uint32) (ews []EventWrapper, err error) {
 	db.lock.RLock()
@@ -319,6 +327,20 @@ func (db *DB) GetByProjectID(projectID, lowestLevel int, start, end uint32) (ews
 	for _, opt := range db.getRangeOpts(start, end) {
 		var chunk []EventWrapper
 		if chunk, err = opt.s.getByProjectID(projectID, lowestLevel, opt.start, opt.end); err != nil {
+			return
+		}
+		ews = append(ews, chunk...)
+	}
+	return
+}
+
+// GetRange returns event wrappers by lowest level and time range.
+func (db *DB) GetRange(lowestLevel int, start, end uint32) (ews []EventWrapper, err error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+	for _, opt := range db.getRangeOpts(start, end) {
+		var chunk []EventWrapper
+		if chunk, err = opt.s.getRange(lowestLevel, opt.start, opt.end); err != nil {
 			return
 		}
 		ews = append(ews, chunk...)

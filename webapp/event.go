@@ -52,3 +52,49 @@ func getEventsByProjectID(w http.ResponseWriter, r *http.Request, ps httprouter.
 	}
 	ResponseJSONOK(w, ews)
 }
+
+func getEvents(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	values := r.URL.Query()
+	n, err := strconv.Atoi(values.Get("past"))
+	if err != nil {
+		n = 3600 * 24 // 1 day
+	}
+	past := uint32(n)
+	if past > cfg.Expiration {
+		ResponseError(w, ErrEventPast)
+		return
+	}
+
+	level, err := strconv.Atoi(r.URL.Query().Get("level"))
+	if err != nil {
+		level = 0 // low
+	}
+	if err := models.ValidateRuleLevel(level); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
+
+	now := uint32(time.Now().Unix())
+	var end uint32
+	ed, err := strconv.Atoi(values.Get("end"))
+	if err != nil {
+		end = now
+	} else {
+		end = uint32(ed)
+	}
+	start := end - past
+	if start < now-cfg.Expiration {
+		ResponseError(w, ErrEventTimeRange)
+		return
+	}
+
+	ews, err := db.Event.GetRange(level, start, end)
+	if err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	if ews == nil {
+		ews = make([]eventdb.EventWrapper, 0)
+	}
+	ResponseJSONOK(w, ews)
+}

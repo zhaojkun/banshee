@@ -44,7 +44,8 @@ var (
 	// Metric
 	ErrMetricNotFound = NewWebError(http.StatusNotFound, "Metric not found")
 	// Event
-	ErrEventPast = NewWebError(http.StatusBadRequest, "Bad event time past")
+	ErrEventPast      = NewWebError(http.StatusBadRequest, "Bad event time past")
+	ErrEventTimeRange = NewWebError(http.StatusBadRequest, "Bad event time range")
 )
 
 // NewWebError creates a WebError.
