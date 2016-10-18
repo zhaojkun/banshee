@@ -2,7 +2,7 @@
   <form name="header-form" ng-submit="submit()" novalidate>
     <md-toolbar>
       <div class="md-toolbar-tools">
-        <h3 class="md-button md-ink-ripple" ng-click="goMain()" translate="LAYOUT_HEADER_TITLE">
+        <h3 class="md-button md-ink-ripple" ng-click="goToAdmin()" translate="LAYOUT_HEADER_TITLE">
         </h3>
         <span flex></span>
         <md-button href="{{privateDocUrl}}" ng-if="privateDocUrl.length>0"> {{ 'HEADER_DOCS_LINK_TEXT' | translate }}</md-button>
@@ -10,9 +10,9 @@
         </md-button>
         <md-button ng-click="changeLanguage('en')" ng-if="getLanguage()=='zh'"> English
         </md-button>
-        <md-button aria-label="Administration" ui-sref="banshee.admin.project" ng-if="includes('banshee.main')" translate="LAYOUT_HEADER_ADMIN_TEXT">
+        <md-button aria-label="Administration" ui-sref="banshee.admin.project" ng-if="includes('banshee.metric')" translate="LAYOUT_HEADER_ADMIN_TEXT">
         </md-button>
-        <md-button aria-label="Main" ui-sref="banshee.main" ng-if="includes('banshee.admin')" translate="LAYOUT_HEADER_INDEX_TEXT">
+        <md-button aria-label="Metric" ui-sref="banshee.metric" ng-if="includes('banshee.admin')" translate="LAYOUT_HEADER_METRIC_TEXT">
         </md-button>
       </div>
     </md-toolbar>

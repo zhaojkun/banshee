@@ -2,8 +2,7 @@ var app =
     angular.module('banshee.admin', [])
         /*@ngInject*/
         .config(
-             function($stateProvider) {
-
+          function($stateProvider) {
                // State
                $stateProvider.state('banshee.admin', {
                                       url: '/admin',

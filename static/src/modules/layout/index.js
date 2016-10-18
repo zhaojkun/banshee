@@ -5,9 +5,9 @@ var app = angular.module('banshee.layout', [])
   /*@ngInject*/
   .config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider
-      .when('/', '/main')
-      .when('', '/main')
-      .otherwise('/main');
+      .when('/', '/admin/project')
+      .when('', '/admin/project')
+      .otherwise('/admin/project');
 
     $stateProvider.state('banshee', {
       url: '',
