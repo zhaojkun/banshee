@@ -13,7 +13,7 @@ module.exports = function ($scope,$stateParams, toastr, $mdDialog, Project) {
 
   $scope.create = function() {
     var params = angular.copy($scope.project);
-    params.teamId = $stateParams.id;
+    params.teamId = $stateParams.teamID;
     Project.save(params).$promise
       .then(function(res) {
         $mdDialog.hide(res);

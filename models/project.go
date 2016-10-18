@@ -17,5 +17,5 @@ type Project struct {
 	SilentTimeStart int  `json:"silentTimeStart"`
 	SilentTimeEnd   int  `json:"silentTimeEnd"`
 	// Team belongs to
-	TeamID int `sql:"index;not null" json:"teamID"`
+	TeamID int `sql:"index;not null;DEFAULT:1" json:"teamID"`
 }

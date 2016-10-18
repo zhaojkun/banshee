@@ -5,7 +5,7 @@
       <md-toolbar>
         <div class="md-toolbar-tools">
           <h3 class="md-button md-ink-ripple" ui-sref="banshee.metric({project: projectId})" ng-style="{'text-transform': 'none'}">
-            <a ui-sref="banshee.metric({project: projectId})" ng-bind="project.name"></a>
+            <a ui-sref="banshee.metric({project: projectId})" ng-bind="team.name + ':'+ project.name"></a>
           </h3>
         </div>
       </md-toolbar>
@@ -140,6 +140,14 @@
                     <div ng-messages="form.projectName.$error" ng-if="form.projectName.$dirty">
                       <div ng-message="required">{{ 'FIELD_IS_REQUIRED' | translate }}</div>
                     </div>
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                    <label> {{ 'ADMIN_TEAM_TITLE' | translate }} </label>
+                    <md-select ng-model="project.teamID">
+                      <md-option ng-repeat="item in teams" ng-value="item.id" >
+                        {{ item.name | translate }}
+                      </md-option>
+                    </md-select>
                   </md-input-container>
                   <md-input-container class="md-block" flex-gt-sm>
                   <label> {{ 'ADMIN_PROJEC_SILENT_START' | translate }} </label>

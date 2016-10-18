@@ -4,31 +4,27 @@ var app =
         .config(
           function($stateProvider) {
                // State
-               $stateProvider.state('banshee.admin', {
-                                      url: '/admin',
-                                           template: '<ui-view></ui-view>',
-                                      abstract: true
-                                    })
-
-                 // Project router
+            $stateProvider
+                 .state('banshee.admin', {
+                   url: '/admin',
+                   template: '<ui-view></ui-view>',
+                   abstract: true
+                 })
+              
+              // Project router
                  .state('banshee.admin.team',{
                    url: '/team',
-                   templateUrl: "modules/admin/team/list.html",
-                   controller: "AdminTeamListCtrl"
+                   templateUrl: 'modules/admin/team/list.html',
+                   controller: 'AdminTeamListCtrl'
                  })
-                 .state('banshee.admin.team.detail',{
-                   url: '/:id',
+                 .state('banshee.admin.team.project',{
+                   url: '/:teamID/project',
                    views: {
                      '@banshee':{
                        templateUrl: 'modules/admin/team/AdminTeamDetail.html',
                        controller: 'AdminTeamDetailCtrl'
                      }
                    }
-                 })
-                 .state('banshee.admin.team.project', {
-                   url: '/project',
-                   templateUrl: 'modules/admin/project/list.html',
-                   controller: 'AdminProjectListCtrl'
                  })
                  .state('banshee.admin.team.project.detail', {
                    url: '/:id?rule',

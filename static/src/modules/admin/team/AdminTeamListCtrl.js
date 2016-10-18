@@ -13,8 +13,8 @@ module.exports = function($scope, $modal, $mdDialog, $state, $timeout, Team) {
   
   $scope.searchTeam = function(item) {
     $timeout(function() {
-      $state.go('banshee.admin.team.detail', {
-        id: item.id
+      $state.go('banshee.admin.team.project', {
+        teamID: item.id
       });
     }, 200);
   };

@@ -16,6 +16,7 @@ type getProjectsResult struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	NumRules int    `json:"numRules"`
+	TeamID   int    `json:"teamID"`
 }
 
 // getProjects returns all projects.
@@ -23,7 +24,7 @@ func getProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var results []getProjectsResult
 	err := db.Admin.DB().Table("projects").
 		Joins("LEFT JOIN rules ON rules.project_id = projects.id").
-		Select("projects.id as id, projects.name as name, count(rules.id) as num_rules").
+		Select("projects.id as id, projects.name as name,projects.team_id as team_id, count(rules.id) as num_rules").
 		Group("projects.id").Scan(&results).Error
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
@@ -107,6 +108,7 @@ type updateProjectRequest struct {
 	EnableSilent    bool   `json:"enableSilent"`
 	SilentTimeStart int    `json:"silentTimeStart"`
 	SilentTimeEnd   int    `json:"silentTimeEnd"`
+	TeamID          int    `json:"teamID"`
 }
 
 // updateProject updates a project.
@@ -152,6 +154,7 @@ func updateProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	proj.EnableSilent = req.EnableSilent
 	proj.SilentTimeStart = req.SilentTimeStart
 	proj.SilentTimeEnd = req.SilentTimeEnd
+	proj.TeamID = req.TeamID
 	if err := db.Admin.DB().Save(proj).Error; err != nil {
 		if err == gorm.RecordNotFound {
 			// Not found.

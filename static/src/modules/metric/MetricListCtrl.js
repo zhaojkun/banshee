@@ -11,6 +11,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
   $scope.past = null;
   $scope.pastUsed = false;
 
+                            
   $scope.dateTimes = [
     {label: 'METRIC_PAST_NOW', seconds: 0},
     {label: 'METRIC_PAST_3HOURS_AGO', seconds: 3 * 3600},
@@ -103,7 +104,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
     buildCubism();
   };
 
-
   $scope.$on('$destroy', function() { $rootScope.currentMetric = false; });
 
   /**
@@ -113,7 +113,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
     $scope.$watchGroup(
         ['filter.datetime', 'filter.limit', 'filter.sort', 'filter.type'],
         function() { buildCubism(); });
-  }
+  };
 
 
   function loadData() {
@@ -127,6 +127,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
             $scope.autoComplete.searchText = el.name;
             $scope.initProject = el;
             $scope.project = el;
+            $scope.teamID = el.teamID;
           }
         });
       }

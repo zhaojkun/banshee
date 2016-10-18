@@ -1,7 +1,7 @@
 /*@ngInject*/
 module.exports =
     function($scope, $location, $mdDialog, $state, $stateParams, $translate,
-             toastr, Project, Rule, User, Config, Util) {
+             toastr, Project, Rule, User, Config, Util,Team) {
   var projectId = $scope.projectId = $stateParams.id;
   var allUsers = [];
 
@@ -25,6 +25,14 @@ module.exports =
         }
       }
     });
+
+    Team.get({id: $stateParams.teamID})
+      .$promise.then(function(res) {$scope.team = res;});
+    
+    Team.getAllTeams().$promise
+      .then(function(res) {
+        $scope.teams = res;
+      });
 
     // get config
     Config.get().$promise.then(function(res) { $scope.config = res; });

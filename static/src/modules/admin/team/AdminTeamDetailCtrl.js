@@ -2,12 +2,12 @@
 module.exports =
 function($scope, $location, $mdDialog, $state, $stateParams, $translate,
         toastr, Project, Rule, User, Config, Util, Team) {
-          var teamId = $scope.teamId = $stateParams.id;
+          var teamId = $scope.teamId = $stateParams.teamID;
 
           $scope.loadData = function() {
             // get project
             Team.get({
-              id: $stateParams.id
+              id: $stateParams.teamID
             })
               .$promise.then(function(res) {
                 $scope.team = res;

@@ -46,7 +46,7 @@
                   <tr ng-repeat="team in teams">
                     <td ng-bind="team.id"></td>
                     <td>
-                      <a ng-bind="team.name" ui-sref='banshee.admin.team.detail({id: team.id})' class="md-body-2"></a>
+                      <a ng-bind="team.name" ui-sref='banshee.admin.team.project({teamID: team.id})' class="md-body-2"></a>
                     </td>
                     <td ng-bind="team.numProjects"></td>
                     <td style="text-align: right;" ng-style="{'padding': '0px 10px'}">
