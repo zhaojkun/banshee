@@ -6,7 +6,7 @@
         <div class="md-toolbar-tools">
           <h3 translate="ADMIN_TEAM_LIST_TITLE"></h3>
           <span flex></span>
-          <md-button class="md-icon-button" aria-label="{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}" ng-click="openModal($event)">
+          <md-button class="md-icon-button" aria-label="{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}" ng-click="create($event)">
             <md-tooltip md-autohide>{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}</md-tooltip>
             <md-icon class="fa fa-plus-circle" ng-style="{'font-size': '20px'}"></md-icon>
           </md-button>
@@ -50,7 +50,7 @@
                     </td>
                     <td ng-bind="team.numProjects"></td>
                     <td style="text-align: right;" ng-style="{'padding': '0px 10px'}">
-                      <md-button class="md-raised md-mini" ui-sref='banshee.admin.team.detail({id: team.id})' aria-label="edit team">
+                      <md-button class="md-raised md-mini" ng-click="edit($event,team)"  aria-label="edit team">
                         <i class="fa fa-pencil"></i>
                       </md-button>
                     </td>

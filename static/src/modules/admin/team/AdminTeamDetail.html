@@ -4,7 +4,7 @@
     <section class="panel-container">
       <md-toolbar>
         <div class="md-toolbar-tools">
-          <h3 translate="ADMIN_PROJECT_LIST_TITLE"></h3>
+          <h3>{{ 'ADMIN_TEAM_TITLE' | translate}}:   {{team.name}}</h3>
           <span flex></span>
           <md-button
               class="md-icon-button"
@@ -20,7 +20,7 @@
         <!-- tabs -->
         <md-tabs md-dynamic-height md-border-bottom>
           <!-- Rules -->
-          <md-tab label="Project">
+          <md-tab label="Projects">
             <md-content class="md-padding">
               <div class="table-responsive">
                 <table class="table">

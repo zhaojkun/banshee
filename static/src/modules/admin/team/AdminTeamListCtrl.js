@@ -19,7 +19,7 @@ module.exports = function($scope, $modal, $mdDialog, $state, $timeout, Team) {
     }, 200);
   };
   
-  $scope.openModal = function(event) {
+  $scope.create = function(event) {
     $mdDialog.show({
       controller: 'TeamModalCtrl',
       templateUrl: 'modules/admin/team/teamModal.html',
@@ -29,6 +29,21 @@ module.exports = function($scope, $modal, $mdDialog, $state, $timeout, Team) {
       fullscreen: true,
     }).then(function(team) {
       $scope.teams.push(team);
+    });
+  };
+
+  $scope.edit = function(event,team) {
+    $mdDialog.show({
+      controller: 'TeamModalCtrl',
+      templateUrl: 'modules/admin/team/teamModal.html',
+      parent: angular.element(document.body),
+      targetEvent: event,
+      clickOutsideToClose: true,
+      fullscreen: true,
+      bindToController: true,
+      locals: {
+        team: team,
+      }
     });
   };
   $scope.loadData();

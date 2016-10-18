@@ -2,7 +2,8 @@
   <form name="form" class="form-horizontal" ng-submit="submit()" onvalidate>
     <md-toolbar>
       <div class="md-toolbar-tools">
-        <h2 translate="ADMIN_TEAM_CREATE_TEXT"></h2>
+        <h2 ng-if="!isEdit">{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}</h2>
+        <h2 ng-if="isEdit">{{ 'ADMIN_TEAM_EDIT_TEXT' | translate }}</h2>
         <span flex></span>
         <md-button class="md-icon-button" ng-click="cancel()">
           <md-icon class="fa fa-times-circle" aria-label="Close dialog"></md-icon>
