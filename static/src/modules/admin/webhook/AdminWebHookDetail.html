@@ -25,7 +25,7 @@
 				 <md-option value="webhook">WebHook</md-option>
 				 <md-option value="slack">Slack</md-option>
 			 </md-select>
-			 <div ng-message="form.type.$error" ng-if="form.type.$dirty">
+			 <div ng-messages="form.type.$error" ng-if="form.type.$dirty">
 				 <div ng-message="required"></div>
 			 </div>
 		 </md-input-container>
@@ -63,10 +63,10 @@
                     <tr ng-repeat="project in projects">
                       <td ng-bind="$index+1" class="td50"></td>
                       <td>
-                        <a ng-bind="project.name" ui-sref='banshee.admin.project.detail({id: project.id})' class="md-body-2"></a>
+                        <a ng-bind="project.name" ui-sref='banshee.admin.team.project.detail({id: project.id,teamID: project.teamID})' class="md-body-2"></a>
                       </td>
                       <td class="text-right">
-                        <a ui-sref='banshee.admin.project.detail({id: project.id})'>
+                        <a ui-sref='banshee.admin.team.project.detail({id: project.id,teamID: project.teamID})'>
                           <md-button class="md-raised md-primary md-mini" aria-label="edit project">
                             <i class="fa fa-pencil"></i>
                           </md-button>
