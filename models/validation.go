@@ -45,6 +45,19 @@ var (
 	ErrMetricStampTooSmall      = errors.New("metric stamp is too small")
 )
 
+// ValidateTeamName validates project name
+func ValidateTeamName(name string) error {
+	if len(name) == 0 {
+		// Empty
+		return ErrProjectNameEmpty
+	}
+	if len(name) > MaxProjectNameLen {
+		// Too long
+		return ErrProjectNameTooLong
+	}
+	return nil
+}
+
 // ValidateProjectName validates project name
 func ValidateProjectName(name string) error {
 	if len(name) == 0 {

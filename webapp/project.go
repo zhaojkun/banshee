@@ -3,18 +3,20 @@
 package webapp
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mattn/go-sqlite3"
-	"net/http"
-	"strconv"
 )
 
 type getProjectsResult struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	NumRules int    `json:"numRules"`
+	TeamID   int    `json:"teamID"`
 }
 
 // getProjects returns all projects.
@@ -22,7 +24,7 @@ func getProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var results []getProjectsResult
 	err := db.Admin.DB().Table("projects").
 		Joins("LEFT JOIN rules ON rules.project_id = projects.id").
-		Select("projects.id as id, projects.name as name, count(rules.id) as num_rules").
+		Select("projects.id as id, projects.name as name,projects.team_id as team_id, count(rules.id) as num_rules").
 		Group("projects.id").Scan(&results).Error
 	if err != nil {
 		ResponseError(w, NewUnexceptedWebError(err))
@@ -60,7 +62,12 @@ type createProjectRequest struct {
 }
 
 // createProject creates a project.
-func createProject(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func createProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		ResponseError(w, ErrProjectID)
+	}
+	//Todo check teamid
 	// Request
 	req := &createProjectRequest{}
 	if err := RequestBind(r, req); err != nil {
@@ -73,7 +80,7 @@ func createProject(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 		return
 	}
 	// Save.
-	proj := &models.Project{Name: req.Name}
+	proj := &models.Project{Name: req.Name, TeamID: id}
 	if err := db.Admin.DB().Create(proj).Error; err != nil {
 		sqliteErr, ok := err.(sqlite3.Error)
 		if ok {
@@ -101,6 +108,7 @@ type updateProjectRequest struct {
 	EnableSilent    bool   `json:"enableSilent"`
 	SilentTimeStart int    `json:"silentTimeStart"`
 	SilentTimeEnd   int    `json:"silentTimeEnd"`
+	TeamID          int    `json:"teamID"`
 }
 
 // updateProject updates a project.
@@ -146,6 +154,7 @@ func updateProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	proj.EnableSilent = req.EnableSilent
 	proj.SilentTimeStart = req.SilentTimeStart
 	proj.SilentTimeEnd = req.SilentTimeEnd
+	proj.TeamID = req.TeamID
 	if err := db.Admin.DB().Save(proj).Error; err != nil {
 		if err == gorm.RecordNotFound {
 			// Not found.

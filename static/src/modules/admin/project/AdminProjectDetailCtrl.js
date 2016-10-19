@@ -1,7 +1,7 @@
 /*@ngInject*/
 module.exports =
     function($scope, $location, $mdDialog, $state, $stateParams, $translate,
-             toastr, Project, Rule, User, Config, Util) {
+             toastr, Project, Rule, User, Config, Util,Team) {
   var projectId = $scope.projectId = $stateParams.id;
   var allUsers = [];
 
@@ -25,6 +25,14 @@ module.exports =
         }
       }
     });
+
+    Team.get({id: $stateParams.teamID})
+      .$promise.then(function(res) {$scope.team = res;});
+    
+    Team.getAllTeams().$promise
+      .then(function(res) {
+        $scope.teams = res;
+      });
 
     // get config
     Config.get().$promise.then(function(res) { $scope.config = res; });
@@ -99,7 +107,7 @@ module.exports =
     $mdDialog.show(confirm).then(function() {
       Project.delete ({id: $scope.project.id}).$promise.then(function() {
         toastr.success($translate.instant('DELETE_SUCCESS'));
-        $state.go('banshee.admin.project');
+        $state.go('banshee.admin.team.project');
       }).catch (function(err) { toastr.error(err.msg); });
     });
 
@@ -215,7 +223,7 @@ module.exports =
     return event.pattern;
   };
   $scope.goToRuleID = function(ruleId) {
-    $state.go('banshee.admin.project.detail',
+    $state.go('banshee.admin.team.project.detail',
               {id: $scope.projectId, rule: ruleId}, {reload: true});
   };
   $scope.goToMetric = function(metricName, stamp) {

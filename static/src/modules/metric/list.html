@@ -16,7 +16,7 @@
             <span translate>METRIC_CONTAINER_BAR_TITLE_PATTERN</span>: *
           </h3>
           <span flex></span>
-          <md-button class="md-icon-button md-ink-ripple" aria-label="link" ui-sref="banshee.admin.project.detail({id: projectId})" ng-if="filter.project && project">
+          <md-button class="md-icon-button md-ink-ripple" aria-label="link" ui-sref="banshee.admin.team.project.detail({teamID:teamID,id: projectId})" ng-if="filter.project && project">
             <md-icon class="fa fa-cog"></md-icon>
           </md-button>
         </div>
@@ -36,15 +36,6 @@
                 </div>
               </md-input-container>
             </form>
-            <md-autocomplete class="search-project" md-selected-item="autoComplete.selectedItem" md-search-text="autoComplete.searchText" md-selected-item-change="searchProject(project)" md-items="project in projects | filter: {name: autoComplete.searchText}" md-item-text="project.name"
-            md-min-length="0" md-floating-label="{{ 'METRIC_SEARCH_PROJECT_LABEL_TEXT' | translate }}" flex="45">
-              <md-item-template>
-                <span md-highlight-text="autoComplete.searchText" md-highlight-flags="^i">{{project.name}}</span>
-              </md-item-template>
-              <md-not-found>
-                {{ 'NOT_FOUND_ANY_RESULT' | translate }}
-              </md-not-found>
-            </md-autocomplete>
           </div>
           <md-input-container>
             <md-select ng-model="filter.datetime" aria-label="datetime">

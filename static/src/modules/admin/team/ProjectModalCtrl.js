@@ -1,8 +1,7 @@
 /*@ngInject*/
-module.exports = function ($scope, toastr, $mdDialog, Project, params) {
-  $scope.opt = params.opt;
+module.exports = function ($scope,$stateParams, toastr, $mdDialog, Project) {
 
-  $scope.project = params.obj ? params.obj : {};
+  $scope.project = {};
 
   $scope.cancel = function() {
     $mdDialog.cancel();
@@ -13,7 +12,9 @@ module.exports = function ($scope, toastr, $mdDialog, Project, params) {
   };
 
   $scope.create = function() {
-    Project.save($scope.project).$promise
+    var params = angular.copy($scope.project);
+    params.teamId = $stateParams.teamID;
+    Project.save(params).$promise
       .then(function(res) {
         $mdDialog.hide(res);
       })

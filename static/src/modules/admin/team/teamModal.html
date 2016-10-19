@@ -1,0 +1,31 @@
+<md-dialog aria-label="Create" class="form-dialog" ng-cloak>
+  <form name="form" class="form-horizontal" ng-submit="submit()" onvalidate>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 ng-if="!isEdit">{{ 'ADMIN_TEAM_CREATE_TEXT' | translate }}</h2>
+        <h2 ng-if="isEdit">{{ 'ADMIN_TEAM_EDIT_TEXT' | translate }}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon class="fa fa-times-circle" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <md-content layout-padding>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label translate="ADMIN_TEAM_NAME"></label>
+          <input name="teamName" ng-model="team.name" required>
+          <div ng-messages="form.teamName.$error">
+            <div ng-message="required" ng-if="form.teamName.$dirty">
+              {{ 'FIELD_IS_REQUIRED' | translate }}
+            </div>
+          </div>
+        </md-input-container>
+      </md-content>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+    <md-button ng-click="cancel()">{{ 'CANCEL'  | translate}}</md-button>
+    <md-button md-no-ink class="md-primary" ng-disabled="form.$invalid" type="submit">{{ 'SUBMIT' | translate }}</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

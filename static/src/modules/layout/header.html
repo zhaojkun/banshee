@@ -10,7 +10,8 @@
         </md-button>
         <md-button ng-click="changeLanguage('en')" ng-if="getLanguage()=='zh'"> English
         </md-button>
-        <md-button aria-label="Administration" ui-sref="banshee.admin.project" ng-if="includes('banshee.metric')" translate="LAYOUT_HEADER_ADMIN_TEXT">
+
+        <md-button aria-label="Administration" ui-sref="banshee.admin.team" ng-if="includes('banshee.metric')" translate="LAYOUT_HEADER_ADMIN_TEXT">
         </md-button>
         <md-button aria-label="Metric" ui-sref="banshee.metric" ng-if="includes('banshee.admin')" translate="LAYOUT_HEADER_METRIC_TEXT">
         </md-button>
