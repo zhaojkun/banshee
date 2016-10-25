@@ -121,8 +121,8 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       var projectId = parseInt($stateParams.project);
       $scope.projects = res;
       var teams = {}
-      for(let i in $scope.projects){
-        let project = $scope.projects[i];
+      for(var i in $scope.projects){
+        var project = $scope.projects[i];
         teams[project.id] = project.teamID
       }
       $scope.teams = teams;
@@ -209,7 +209,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
 
       for (var i = 0; i < currentEl.matchedRules.length; i++) {
         var rule = currentEl.matchedRules[i];
-        var teamID = $scope.teams==null?-1:$scope.teams[rule.projectID];
+        var teamID = $scope.teams===null?-1:$scope.teams[rule.projectID];
         _box.push('<li><a href="#/admin/team/'+teamID+'/project/' + rule.projectID + '?rule=' +
                   rule.id + '">' + rule.pattern + '</a></li>');
       }
