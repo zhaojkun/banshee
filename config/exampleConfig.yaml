@@ -101,6 +101,8 @@ webapp:
     # Website default language to use, should be one of "en" and "zh",
     # default: en.
     language: en
+    #
+    url_prefix: ""
     # Private url of the document about the monitor. default: ""
     private_doc_url: ""
     # Graphite or grafana url formatter.

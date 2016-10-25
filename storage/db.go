@@ -3,13 +3,14 @@
 package storage
 
 import (
+	"os"
+	"path"
+
 	"github.com/eleme/banshee/storage/admindb"
 	"github.com/eleme/banshee/storage/eventdb"
 	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/eleme/banshee/storage/metricdb"
 	"github.com/eleme/banshee/util/log"
-	"os"
-	"path"
 )
 
 // DB file mode.
