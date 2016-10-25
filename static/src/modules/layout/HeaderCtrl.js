@@ -4,7 +4,7 @@
 /*@ngInject*/
 module.exports = function($scope, $state, $translate, Config) {
   $scope.goToAdmin = function() {
-    $state.go('banshee.admin.project', {project: '', pattern: '', past: ''},
+    $state.go('banshee.admin.team', {project: '', pattern: '', past: ''},
               {reload: true});
   };
 

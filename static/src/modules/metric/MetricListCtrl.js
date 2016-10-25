@@ -120,7 +120,12 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
     Project.getAllProjects().$promise.then(function(res) {
       var projectId = parseInt($stateParams.project);
       $scope.projects = res;
-
+      var teams = {}
+      for(let i in $scope.projects){
+        let project = $scope.projects[i];
+        teams[project.id] = project.teamID
+      }
+      $scope.teams = teams;
       if (projectId) {
         $scope.projects.forEach(function(el) {
           if (el.id === projectId) {
@@ -188,7 +193,6 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
 
     return chart.plot(metrics);
   }
-
   function refreshTitle(data) {
     var _titles = d3.selectAll('.title')[0];
     if (isInit) {
@@ -205,7 +209,8 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
 
       for (var i = 0; i < currentEl.matchedRules.length; i++) {
         var rule = currentEl.matchedRules[i];
-        _box.push('<li><a href="#/admin/project/' + rule.projectID + '?rule=' +
+        var teamID = $scope.teams==null?-1:$scope.teams[rule.projectID];
+        _box.push('<li><a href="#/admin/team/'+teamID+'/project/' + rule.projectID + '?rule=' +
                   rule.id + '">' + rule.pattern + '</a></li>');
       }
       _box.push('</ul></div>');
