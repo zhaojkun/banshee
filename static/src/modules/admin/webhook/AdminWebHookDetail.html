@@ -1,0 +1,90 @@
+<div id="admin-webhook-detail">
+  <div class="col-lg-12">
+    <!-- main panel -->
+    <section class="panel-container">
+      <!-- Panel content -->
+      <section class="panel-content">
+        <!-- tabs --->
+        <md-tabs md-dynamic-height md-border-bottom>
+          <!-- WebHook -->
+          <md-tab label="{{ 'ADMIN_WEBHOOK_EDIT_TITLE' | translate }}" >
+            <md-content class="md-padding">
+              <!-- Form -->
+              <form name="form" ng-submit="edit()" novalidate>
+                <md-content layout-padding>
+                  <md-input-container class="md-block" flex-gt-sm>
+                    <label translate="ADMIN_WEBHOOK_NAME"></label>
+                    <input type="text" name="webHookName" ng-model="webhook.name" required>
+                    <div ng-messages="form.webHookName.$error" ng-if="form.webHookName.$dirty">
+                      <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
+                    </div>
+                  </md-input-container>
+		  <md-input-container class="md-block" flex-gt-sm>
+			 <label translate="ADMIN_WEBHOOK_TABLE_HEAD_TYPE"></label>
+			 <md-select name="type" ng-model="webhook.type" required>
+				 <md-option value="webhook">WebHook</md-option>
+				 <md-option value="slack">Slack</md-option>
+			 </md-select>
+			 <div ng-messages="form.type.$error" ng-if="form.type.$dirty">
+				 <div ng-message="required"></div>
+			 </div>
+		 </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                    <label translate="ADMIN_WEBHOOK_URL"></label>
+                    <input type="text" name="url" ng-model="webhook.url" required>
+                    <div ng-messages="form.url.$error" ng-if="form.url.$dirty">
+                      <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
+                    </div>
+                  </md-input-container>
+                  <md-input-container>
+                    <md-button class="md-raised" aria-label="Save WebHook" type="submit" ng-disabled="form.$invalid">
+                      {{ 'SAVE' | translate }}
+                    </md-button>
+                    <md-button class="md-raised md-warn" aria-label="Delete WebHook" type="button" ng-click="deleteWebHook($event)">
+                      {{ 'DELETE' | translate }}
+                    </md-button>
+                  </md-input-container>
+                </md-content>
+              </form>
+              <!-- ./Form -->
+            </md-content>
+          </md-tab>
+          <!-- ./WebHook -->
+          <md-tab label="{{ 'ADMIN_WEBHOOK_PROJECTS_TITLE' | translate }}" ng-click="loadWebHookProjects()">
+            <md-content class="md-padding">
+              <!-- Table -->
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                  <md-progress-linear md-mode="indeterminate" ng-if="!projects"></md-progress-linear>
+                    <tr ng-if="!projects || !projects.length">
+                      <td colspan="3"> {{ 'NOT_FOUND_ANY_RESULT' | translate }} </td>
+                    </tr>
+                    <tr ng-repeat="project in projects">
+                      <td ng-bind="$index+1" class="td50"></td>
+                      <td>
+                        <a ng-bind="project.name" ui-sref='banshee.admin.team.project.detail({id: project.id,teamID: project.teamID})' class="md-body-2"></a>
+                      </td>
+                      <td class="text-right">
+                        <a ui-sref='banshee.admin.team.project.detail({id: project.id,teamID: project.teamID})'>
+                          <md-button class="md-raised md-primary md-mini" aria-label="edit project">
+                            <i class="fa fa-pencil"></i>
+                          </md-button>
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- ./Table -->
+            </md-content>
+          </md-tab>
+          <!-- ./WebHooks -->
+        </md-tabs>
+        <!-- ./tabs -->
+      </section>
+      <!-- ./Panel content -->
+    </section>
+    <!-- Main panel -->
+  </div>
+</div>

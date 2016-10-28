@@ -9,15 +9,18 @@ app.config(function($httpProvider) {
 });
 
 app
-    .factory('httpInterceptor', require('./httpInterceptor'))
-    .factory('Team', require('./Team'))
-    .factory('Project', require('./Project'))
-    .factory('User', require('./User'))
-    .factory('Rule', require('./Rule'))
-    .factory('Config', require('./Config'))
-    .factory('Metric', require('./Metric'))
-    .factory('Info', require('./Info'))
-    .factory('Version', require('./Version'))
-    .factory('Util', require('./Util'));
+  .factory('httpInterceptor', require('./httpInterceptor'))
+  .factory('Team', require('./Team'))
+  .factory('Project', require('./Project'))
+  .factory('User', require('./User'))
+  .factory('WebHook', require('./WebHook'))
+  .factory('Rule', require('./Rule'))
+  .factory('Config', require('./Config'))
+  .factory('Metric', require('./Metric'))
+  .factory('Info', require('./Info'))
+  .factory('Version', require('./Version'))
+  .factory('Util', require('./Util'))
+  ;
+
 
 module.exports = app.name;

@@ -124,6 +124,7 @@ type configWebapp struct {
 	Auth          []string `json:"auth" yaml:"auth"`
 	Static        string   `json:"static" yaml:"static"`
 	Language      string   `json:"language" yaml:"language"`
+	URLPrefix     string   `json:"urlPrefix" yaml:"url_prefix"`
 	PrivateDocURL string   `json:"privateDocUrl" yaml:"private_doc_url"`
 	GraphiteURL   string   `json:"graphiteUrl" yaml:"graphite_url"`
 }

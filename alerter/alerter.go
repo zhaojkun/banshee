@@ -229,6 +229,11 @@ func (al *Alerter) getUsersByProj(proj *models.Project) (users []models.User, er
 	return
 }
 
+func (al *Alerter) getWebHooksByProj(proj *models.Project) (webHooks []models.WebHook, err error) {
+	err = al.db.Admin.DB().Model(proj).Related(&webHooks, "WebHooks").Error
+	return
+}
+
 // storeEvent stores an event into db.
 func (al *Alerter) storeEvent(ev *models.Event) (err error) {
 	if err = al.db.Event.Put(eventdb.NewEventWrapper(ev)); err != nil {
@@ -295,7 +300,24 @@ func (al *Alerter) work() {
 			}
 			log.Infof("send to %s with %s ok", user.Name, ew.Metric.Name)
 		}
-		if len(users) != 0 {
+		var webHooks []models.WebHook
+		if webHooks, err = al.getWebHooksByProj(ew.Project); err != nil {
+			log.Errorf("get webhook from project %v: %v", ew.Project.Name, err)
+			continue
+		}
+		ew.User = nil
+		for _, hook := range webHooks {
+			notifier, ok := Notifiers[hook.Type]
+			if !ok {
+				log.Warnf("not found notifier %s", hook.Name)
+				continue
+			}
+			err := notifier.Notify(hook, ew)
+			if err != nil {
+				log.Errorf("notifier %s: %v", hook.Name, err)
+			}
+		}
+		if len(users) != 0 || len(ew.Project.WebHooks) != 0 {
 			health.IncrNumAlertingEvents(1)
 		}
 	}
