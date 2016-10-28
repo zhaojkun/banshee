@@ -92,6 +92,7 @@ type Config struct {
 	Detector   configDetector `json:"detector" yaml:"detector"`
 	Webapp     configWebapp   `json:"webapp" yaml:"webapp"`
 	Alerter    configAlerter  `json:"alerter" yaml:"alerter"`
+	Notifier   configNotifier `json:"notifier" yaml:"notifier"`
 }
 
 type configStorage struct {
@@ -138,6 +139,10 @@ type configAlerter struct {
 	NotifyAfter            int    `json:"notify_after" yaml:"notify_after"`
 	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
 	DefaultSilentTimeRange []int  `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
+}
+
+type configNotifier struct {
+	SlackURL string `json:"slackURL" yaml:"slack_url"`
 }
 
 // New creates a Config with default values.

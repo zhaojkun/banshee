@@ -29,10 +29,11 @@
 				 <div ng-message="required"></div>
 			 </div>
 		 </md-input-container>
-                  <md-input-container class="md-block" flex-gt-sm>
-                    <label translate="ADMIN_WEBHOOK_URL"></label>
-                    <input type="text" name="url" ng-model="webhook.url" required>
-                    <div ng-messages="form.url.$error" ng-if="form.url.$dirty">
+                 <md-input-container class="md-block" flex-gt-sm>
+                   <label ng-if="webhook.type!='slack'" translate="ADMIN_WEBHOOK_URL"></label>
+                   <label ng-if="webhook.type=='slack'" translate="ADMIN_WEBHOOK_SLACK"></label>
+                   <input type="text" name="url" ng-model="webhook.url" required>
+                   <div ng-messages="form.url.$error" ng-if="form.url.$dirty">
                       <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
                     </div>
                   </md-input-container>
