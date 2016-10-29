@@ -122,10 +122,6 @@ func ValidateWebHookURL(url string) error {
 		// Empty
 		return ErrWebHookURLEmpty
 	}
-	if !strings.Contains(url, "http") {
-		// Invalid format.
-		return ErrWebHookURLFormat
-	}
 	return nil
 }
 

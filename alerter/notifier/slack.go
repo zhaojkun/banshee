@@ -34,6 +34,7 @@ func (s *Slack) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	title := fmt.Sprintf("%s - %s", ew.Project.Name, mTitle)
 	data := map[string]interface{}{
 		"username": s.name,
+		"channel":  hook.URL,
 		"attachments": []map[string]interface{}{
 			{
 				"title": title,
@@ -43,7 +44,7 @@ func (s *Slack) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 		},
 	}
 	body, _ := json.Marshal(data)
-	req, err := http.NewRequest("POST", hook.URL, bytes.NewReader(body))
+	req, err := http.NewRequest("POST", cfg.Notifier.SlackURL, bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
 	_, err = http.DefaultClient.Do(req)
 	return err

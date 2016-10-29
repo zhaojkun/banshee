@@ -101,7 +101,7 @@ webapp:
     # Website default language to use, should be one of "en" and "zh",
     # default: en.
     language: en
-    #
+    # Webapp URL Prefix
     url_prefix: ""
     # Private url of the document about the monitor. default: ""
     private_doc_url: ""
@@ -133,3 +133,9 @@ alerter:
     one_day_limit: 10
     # Default silent time range, default: [0, 6] (means 00:00 ~ 06:00)
     default_silent_time_range: [0, 6]
+
+notifier:
+    # Slack webhook endpoint
+    # Example: "http://hooks.slack.com/services/service_name/token"
+    slack_url: ""
+   
