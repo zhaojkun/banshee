@@ -501,28 +501,64 @@ Event
      ...
    ]
    ```
+   
+WebHook
+-----
 
-2. Get events by time range. (default `past`: `3600*24`, default `end`: `now`):
+1. When it triggers an event, the information will be posted to the webhook's endpoint:
 
-   ```
-   GET /api/events?end=<number>&past=<number>
-   200
-   [
-     {
-       "id": "f2d44be1b10dd44875f86a9c1eacfac912ecc45e",
-       "ruleID": 10,
-       "projectID": 12,
-       "level": 2,
-       "comment": "Add note",
-       "name": "timer.count_ps.note.add",
-       "stamp": 1464166573,
-       "score": 1.7112404844428821,
-       "average": 1.2682274247491634,
-       "value": 21.4
-     },
-     ...
-   ]
-   ```
+  ```
+  HTTP Method: POST
+  Content-Type: application/json  
+  PayLoad :
+  {
+    "id": "ab372c88c08ada73bd35feea740896d340de770e",
+    "index": {
+      "name": "timer.count_ps.note.add",
+      "stamp": 1477361415,
+      "score": 0,
+      "average": 1111,
+      "link": 1,
+      "matchedRules": null
+    },
+    "metric": {
+      "name": "timer.count_ps.note.add",
+      "stamp": 1477361415,
+      "value": 1111,
+      "score": 0,
+      "average": 1111,
+      "link": 1
+    },
+    "rule": {
+      "id": 155,
+      "projectID": 14,
+      "pattern": "timer.count_ps.note.add",
+      "trendUp": false,
+      "trendDown": false,
+      "thresholdMax": 30,
+      "thresholdMin": 0,
+      "numMetrics": 1,
+      "comment": "add note",
+      "level": 2,
+      "disabled": false,
+      "disabledFor": 0,
+      "disabledAt": "2016-11-02T11:00:10.611135452+08:00",
+      "trackIdle": false,
+      "neverFillZero": false
+    },
+    "project": {
+      "id": 14,
+      "name": "note",
+      "enableSilent": true,
+      "silentTimeStart": 0,
+      "silentTimeEnd": 6,
+      "teamID": 4
+    },
+    "user": null,
+    "ruleTranslatedComment": "add note"
+    }
+
+  ```
 
 Misc
 ----
