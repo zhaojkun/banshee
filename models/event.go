@@ -61,8 +61,9 @@ func (ev *Event) TranslateRuleComment() string {
 // EventWrapper is a wrapper of Event for tmp usage.
 type EventWrapper struct {
 	*Event
+	Team                  *Team    `json:"team"`
 	Project               *Project `json:"project"`
-	User                  *User    `json:"user"`
+	User                  *User    `json:"user,omitempty"`
 	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
 }
 

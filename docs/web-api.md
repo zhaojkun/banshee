@@ -518,8 +518,7 @@ WebHook
       "stamp": 1477361415,
       "score": 0,
       "average": 1111,
-      "link": 1,
-      "matchedRules": null
+      "link": 1
     },
     "metric": {
       "name": "timer.count_ps.note.add",
@@ -545,6 +544,10 @@ WebHook
       "disabledAt": "2016-11-02T11:00:10.611135452+08:00",
       "trackIdle": false,
       "neverFillZero": false
+      },
+   "team": {
+     "id": 4,
+     "name": "note"
     },
     "project": {
       "id": 14,
@@ -554,7 +557,6 @@ WebHook
       "silentTimeEnd": 6,
       "teamID": 4
     },
-    "user": null,
     "ruleTranslatedComment": "add note"
     }
 
