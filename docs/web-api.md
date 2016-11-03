@@ -505,7 +505,7 @@ Event
 WebHook
 -----
 
-1. When it triggers an event, the information will be posted to the webhook's endpoint:
+1. When there is an event, the following payload will be sent to given URL:
 
   ```
   HTTP Method: POST
