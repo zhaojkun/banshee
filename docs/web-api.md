@@ -502,6 +502,28 @@ Event
    ]
    ```
    
+2. Get events by time range. (default `past`: `3600*24`, default `end`: `now`):
+
+   ```
+   GET /api/events?end=<number>&past=<number>
+   200
+   [
+     {
+       "id": "f2d44be1b10dd44875f86a9c1eacfac912ecc45e",
+       "ruleID": 10,
+       "projectID": 12,
+       "level": 2,
+       "comment": "Add note",
+       "name": "timer.count_ps.note.add",
+       "stamp": 1464166573,
+       "score": 1.7112404844428821,
+       "average": 1.2682274247491634,
+       "value": 21.4
+     },
+     ...
+   ]
+   ```   
+   
 WebHook
 -----
 
