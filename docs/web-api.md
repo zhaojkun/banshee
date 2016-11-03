@@ -501,7 +501,6 @@ Event
      ...
    ]
    ```
-   
 2. Get events by time range. (default `past`: `3600*24`, default `end`: `now`):
 
    ```
@@ -522,8 +521,8 @@ Event
      },
      ...
    ]
-   ```   
-   
+   ```
+
 WebHook
 -----
 
@@ -531,17 +530,11 @@ WebHook
 
   ```
   HTTP Method: POST
-  Content-Type: application/json  
+  Content-Type: application/json
   PayLoad :
   {
     "id": "ab372c88c08ada73bd35feea740896d340de770e",
-    "index": {
-      "name": "timer.count_ps.note.add",
-      "stamp": 1477361415,
-      "score": 0,
-      "average": 1111,
-      "link": 1
-    },
+    "comment": "add note",
     "metric": {
       "name": "timer.count_ps.note.add",
       "stamp": 1477361415,
@@ -567,10 +560,6 @@ WebHook
       "trackIdle": false,
       "neverFillZero": false
       },
-   "team": {
-     "id": 4,
-     "name": "note"
-    },
     "project": {
       "id": 14,
       "name": "note",
@@ -578,10 +567,12 @@ WebHook
       "silentTimeStart": 0,
       "silentTimeEnd": 6,
       "teamID": 4
-    },
-    "ruleTranslatedComment": "add note"
+      },
+    "team": {
+      "id": 4,
+      "name": "note"
+     }
     }
-
   ```
 
 Misc

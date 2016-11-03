@@ -12,9 +12,25 @@ import (
 // WebHook notifier
 type WebHook struct{}
 
+// Event is the webhook payload
+type Event struct {
+	ID      string          `json:"id"`
+	Comment string          `json:"comment"`
+	Metric  *models.Metric  `json:"metric"`
+	Rule    *models.Rule    `json:"rule"`
+	Project *models.Project `json:"project"`
+	Team    *models.Team    `json:"team"`
+}
+
 // Notify event
 func (w *WebHook) Notify(hook models.WebHook, ew *models.EventWrapper) error {
-	body, _ := json.Marshal(ew)
+	evt := Event{}
+	evt.ID = ew.ID
+	evt.Comment = ew.RuleTranslatedComment
+	evt.Metric = ew.Metric
+	evt.Team = ew.Team
+	evt.Project = ew.Project
+	body, _ := json.Marshal(evt)
 	req, err := http.NewRequest("POST", hook.URL, bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
 	_, err = http.DefaultClient.Do(req)
