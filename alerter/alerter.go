@@ -216,6 +216,15 @@ func (al *Alerter) getProjByRule(rule *models.Rule) (proj *models.Project, err e
 	return
 }
 
+// getTeamByProj returns the team for given project.
+func (al *Alerter) getTeamByProj(proj *models.Project) (team *models.Team, err error) {
+	team = &models.Team{}
+	if err = al.db.Admin.DB().Model(proj).Related(team).Error; err != nil {
+		return
+	}
+	return
+}
+
 // getUsersByProj returns the users for given project.
 func (al *Alerter) getUsersByProj(proj *models.Project) (users []models.User, err error) {
 	var univs []models.User
@@ -280,6 +289,10 @@ func (al *Alerter) work() {
 			log.Infof("project %v stay in silent at %v ", ew.Project.Name, time.Now())
 			continue
 		}
+		if ew.Team, err = al.getTeamByProj(ew.Project); err != nil {
+			log.Errorf("get team from project %v: %v", ew.Project.Name, err)
+			continue
+		}
 		var users []models.User
 		if users, err = al.getUsersByProj(ew.Project); err != nil {
 			log.Errorf("get user from project %v: %v", ew.Project.Name, err)
@@ -316,6 +329,8 @@ func (al *Alerter) work() {
 			if err != nil {
 				log.Errorf("notifier %s: %v", hook.Name, err)
 			}
+			log.Infof("send to webhook %s with %s ok", hook.Name, ew.Metric.Name)
+
 		}
 		if len(users) != 0 || len(ew.Project.WebHooks) != 0 {
 			health.IncrNumAlertingEvents(1)

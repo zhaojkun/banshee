@@ -19,7 +19,7 @@ type Index struct {
 	// Link between index and metric.
 	Link uint32 `json:"link"`
 	// Matched rules.
-	MatchedRules []*Rule `json:"matchedRules"`
+	MatchedRules []*Rule `json:"matchedRules,omitempty"`
 }
 
 // WriteMetric writes metric to index.
