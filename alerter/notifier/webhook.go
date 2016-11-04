@@ -28,6 +28,7 @@ func (w *WebHook) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	evt.ID = ew.ID
 	evt.Comment = ew.RuleTranslatedComment
 	evt.Metric = ew.Metric
+	evt.Rule = ew.Rule
 	evt.Team = ew.Team
 	evt.Project = ew.Project
 	body, _ := json.Marshal(evt)
