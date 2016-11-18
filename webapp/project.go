@@ -459,7 +459,7 @@ func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		}
 	}
 	if webhook.Universal {
-		ResponseError(w, ErrProjectUniversalUser)
+		ResponseError(w, ErrProjectUniversalWebHook)
 		return
 	}
 	// Find proj
