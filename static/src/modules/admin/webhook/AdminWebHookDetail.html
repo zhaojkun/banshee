@@ -36,7 +36,27 @@
                    <div ng-messages="form.url.$error" ng-if="form.url.$dirty">
                       <div ng-message="required" translate="FIELD_IS_REQUIRED"></div>
                     </div>
-                  </md-input-container>
+                 </md-input-container>
+                 <div layout="row" ng-style="{'padding': 0}">
+                    <md-input-container flex="20" class="md-block">
+                      <label>{{ 'ADMIN_USER_IS_UNIVERSAL' | translate }}</label>
+                    </md-input-container>
+                    <md-input-container class="md-block" flex-gt-sm>
+                      <md-checkbox ng-model="webhook.universal"> {{ 'ADMIN_USER_UNIVERSAL' | translate }} </md-checkbox>
+                    </md-input-container>
+                  </div>
+                 <div layout="row" ng-style="{'padding': 0}">
+                    <md-input-container flex="20" class="md-block">
+                      <label>{{ 'ADMIN_USER_RULE_LEVEL' | translate }}</label>
+                    </md-input-container>
+                    <md-input-container flex="80" class="md-block">
+                      <md-radio-group ng-model="webhook.ruleLevel" layout="row">
+                        <md-radio-button ng-value="0"> {{ 'ADMIN_USER_RULE_LEVEL_LOW' | translate }} </md-radio-button>
+                        <md-radio-button ng-value="1"> {{ 'ADMIN_USER_RULE_LEVEL_MIDDLE' | translate }} </md-radio-button>
+                        <md-radio-button ng-value="2"> {{ 'ADMIN_USER_RULE_LEVEL_HIGH' | translate }} </md-radio-button>
+                      </md-radio-group>
+                    </md-input-container>
+                  </div>
                   <md-input-container>
                     <md-button class="md-raised" aria-label="Save WebHook" type="submit" ng-disabled="form.$invalid">
                       {{ 'SAVE' | translate }}

@@ -12,6 +12,10 @@ type WebHook struct {
 	Type string `json:"type"`
 	// Email
 	URL string `json:"url"`
+	// Universal
+	Universal bool `sql:"index;DEFAULT:false" json:"universal"`
+	// Rule level to receive
+	RuleLevel int `sql:"not null;DEFAULT:0" json:"ruleLevel"`
 	// WebHooks can been subscribed by many projects.
 	Projects []*Project `gorm:"many2many:project_webhooks" json:"-"`
 }

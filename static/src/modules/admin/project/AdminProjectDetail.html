@@ -152,7 +152,8 @@
                         <a ng-bind="webhook.name" ui-sref='banshee.admin.webhook.detail({id: webhook.id})' class="md-body-2"></a>
                       </td>
                       <td class="text-right">
-                        <md-button class="md-raised md-warn md-mini" aria-label="Remove WebHook" ng-click="deleteWebHook($event, webhook.id, $index)" >
+                        <label class="label label-success" ng-if="webhook.universal">{{ 'ADMIN_PROJECT_USER_UNIVERSAL' | translate }}</label>
+                        <md-button class="md-raised md-warn md-mini" aria-label="Remove WebHook" ng-click="deleteWebHook($event, webhook.id, $index)" ng-if="!webhook.universal">
                           <md-icon class="fa fa-trash-o" ng-style="{'font-size': '21px'}"></md-icon>
                           <md-tooltip md-autohide>{{ 'ADMIN_USER_REMOVE_TEXT' | translate }}</md-tooltip>
                         </md-button>
