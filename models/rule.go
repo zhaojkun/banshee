@@ -3,9 +3,10 @@
 package models
 
 import (
-	"github.com/eleme/banshee/config"
 	"path/filepath"
 	"time"
+
+	"github.com/eleme/banshee/config"
 )
 
 // Rule Levels
@@ -24,7 +25,7 @@ type Rule struct {
 	// Project belongs to
 	ProjectID int `sql:"index;not null" json:"projectID"`
 	// Pattern is a wildcard string
-	Pattern string `sql:"size:400;not null;unique" json:"pattern"`
+	Pattern string `sql:"size:400;not null" json:"pattern"`
 	// Trend
 	TrendUp   bool `json:"trendUp"`
 	TrendDown bool `json:"trendDown"`
