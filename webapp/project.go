@@ -411,6 +411,13 @@ func getProjectWebHooks(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		ResponseError(w, NewUnexceptedWebError(err))
 		return
 	}
+
+	var univs []models.WebHook
+	if err := db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	webhooks = append(webhooks, univs...)
 	ResponseJSONOK(w, webhooks)
 }
 
@@ -450,6 +457,10 @@ func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 			ResponseError(w, NewUnexceptedWebError(err))
 			return
 		}
+	}
+	if webhook.Universal {
+		ResponseError(w, ErrProjectUniversalWebHook)
+		return
 	}
 	// Find proj
 	proj := &models.Project{}

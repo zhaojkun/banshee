@@ -133,6 +133,14 @@ func (al *Alerter) getUniversalUsers() (univs []models.User, err error) {
 	return
 }
 
+// getUniversalWebHooks returns universal webhooks.
+func (al *Alerter) getUniversalWebHooks() (univs []models.WebHook, err error) {
+	if err = al.db.Admin.DB().Where("universal = ?", true).Find(&univs).Error; err != nil {
+		return
+	}
+	return
+}
+
 // checkOneDayAlerts returns true if given metric exceeds the one day
 // limit.
 func (al *Alerter) checkOneDayAlerts(m *models.Metric) bool {
@@ -239,7 +247,12 @@ func (al *Alerter) getUsersByProj(proj *models.Project) (users []models.User, er
 }
 
 func (al *Alerter) getWebHooksByProj(proj *models.Project) (webHooks []models.WebHook, err error) {
+	var univs []models.WebHook
+	if univs, err = al.getUniversalWebHooks(); err != nil {
+		return
+	}
 	err = al.db.Admin.DB().Model(proj).Related(&webHooks, "WebHooks").Error
+	webHooks = append(webHooks, univs...)
 	return
 }
 
@@ -320,6 +333,9 @@ func (al *Alerter) work() {
 		}
 		ew.User = nil
 		for _, hook := range webHooks {
+			if ew.Rule.Level < hook.RuleLevel {
+				continue
+			}
 			notifier, ok := Notifiers[hook.Type]
 			if !ok {
 				log.Warnf("not found notifier %s", hook.Name)

@@ -29,6 +29,7 @@ var (
 	ErrDuplicateProjectName    = NewWebError(http.StatusForbidden, "Duplicate project name")
 	ErrDuplicateProjectUser    = NewWebError(http.StatusForbidden, "Duplicate user to project")
 	ErrProjectUniversalUser    = NewWebError(http.StatusForbidden, "Cannot add universal user to project")
+	ErrProjectUniversalWebHook = NewWebError(http.StatusForbidden, "Cannot add universal webhook to project")
 	ErrDuplicateProjectWebHook = NewWebError(http.StatusForbidden, "Duplicate webhook to project")
 
 	// User

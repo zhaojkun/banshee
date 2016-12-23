@@ -44,6 +44,8 @@
                 <th translate="ADMIN_WEBHOOK_TABLE_HEAD_NAME"></th>
 		<th translate="ADMIN_WEBHOOK_TABLE_HEAD_TYPE"></th>
                 <th translate="ADMIN_WEBHOOK_TABLE_HEAD_SETTING"></th>
+                <th translate="ADMIN_USER_TABLE_HEAD_UNIVERSAL"></th>
+                <th translate="ADMIN_USER_TABLE_HEAD_RULE_LEVEL"></th>
                 <th></th>
               </tr>
             </thead>
@@ -64,6 +66,15 @@
                 </td>
                 <td>
                   <span ng-bind="webhook.url"></span>
+                </td>
+                <td>
+                  <span ng-if="webhook.universal">{{ 'YES' | translate }}</span>
+                  <span ng-if="!webhook.universal">{{ 'NO' | translate }}</span>
+                </td>
+                <td>
+                  <span ng-if="webhook.ruleLevel==0">{{ 'ADMIN_USER_RULE_LEVEL_LOW' | translate }}</span>
+                  <span ng-if="webhook.ruleLevel==1">{{ 'ADMIN_USER_RULE_LEVEL_MIDDLE' | translate }}</span>
+                  <span ng-if="webhook.ruleLevel==2">{{ 'ADMIN_USER_RULE_LEVEL_HIGH' | translate }}</span>
                 </td>
                 <td style="text-align: right;">
                   <md-button class="md-raised md-primary md-mini"  ui-sref='banshee.admin.webhook.detail({id: webhook.id})' aria-label="edit webhook">

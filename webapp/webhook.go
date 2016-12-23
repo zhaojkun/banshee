@@ -47,9 +47,11 @@ func getWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // createWebHook request
 type createWebHookRequest struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	URL  string `json:"url"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	URL       string `json:"url"`
+	RuleLevel int    `json:"ruleLevel"`
+	Universal bool   `json:"universal"`
 }
 
 // createWebHook creats a webhook.
@@ -69,11 +71,17 @@ func createWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := models.ValidateRuleLevel(req.RuleLevel); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
 	// Save
 	webhook := &models.WebHook{
-		Name: req.Name,
-		Type: req.Type,
-		URL:  req.URL,
+		Name:      req.Name,
+		Type:      req.Type,
+		URL:       req.URL,
+		Universal: req.Universal,
+		RuleLevel: req.RuleLevel,
 	}
 	if err := db.Admin.DB().Create(webhook).Error; err != nil {
 		// Write errors.
@@ -132,9 +140,11 @@ func deleteWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 // updateWebHook request
 type updateWebHookRequest struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-	URL  string `json:"url"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	URL       string `json:"url"`
+	RuleLevel int    `json:"ruleLevel"`
+	Universal bool   `json:"universal"`
 }
 
 // updateWebHook updates a webhook.
@@ -160,6 +170,10 @@ func updateWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := models.ValidateRuleLevel(req.RuleLevel); err != nil {
+		ResponseError(w, NewValidationWebError(err))
+		return
+	}
 	// Find
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().First(webhook, id).Error; err != nil {
@@ -176,6 +190,8 @@ func updateWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	webhook.Name = req.Name
 	webhook.Type = req.Type
 	webhook.URL = req.URL
+	webhook.Universal = req.Universal
+	webhook.RuleLevel = req.RuleLevel
 	if err := db.Admin.DB().Save(webhook).Error; err != nil {
 		if err == gorm.RecordNotFound {
 			// User not found.
@@ -223,10 +239,17 @@ func getWebHookProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 	// Query
 	var projs []models.Project
-	// Get related projects for this webhook.
-	if err := db.Admin.DB().Model(webhook).Association("Projects").Find(&projs).Error; err != nil {
-		ResponseError(w, NewUnexceptedWebError(err))
-		return
+	if webhook.Universal {
+		if err := db.Admin.DB().Find(&projs).Error; err != nil {
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	} else {
+		// Get related projects for this webhook.
+		if err := db.Admin.DB().Model(webhook).Association("Projects").Find(&projs).Error; err != nil {
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
 	}
 	ResponseJSONOK(w, projs)
 }
