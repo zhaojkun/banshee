@@ -102,12 +102,12 @@ func (d *Detector) handle(conn net.Conn) {
 		line := scanner.Text()
 		m, err := parseMetric(line) // Parse
 		if err != nil {
-			log.Errorf("parse error: %v, skipping..", err)
+			log.Errorf("parse error %v : %v, skipping..", line, err)
 			continue
 		}
 		if err = m.Validate(); err != nil {
-			log.Errorf("invalid metric: %v, skipping..", err)
-			return
+			log.Errorf("invalid metric %v : %v, skipping..", m.Name, err)
+			continue
 		}
 		d.process(m, true)
 	}

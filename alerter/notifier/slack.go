@@ -23,7 +23,7 @@ func (s *Slack) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	graphiteMetricName := graphiteName(ew.Metric.Name)
 	graphiteURL := getGrafanaPanelURL(graphiteMetricName)
 	ruleURL := getRuleURL(ew.Project.TeamID, ew.Project.ID, ew.Rule.ID)
-	grafanaLinkText := fmt.Sprintf("<%s|grafana图标>", graphiteURL)
+	grafanaLinkText := fmt.Sprintf("<%s|grafana图表>", graphiteURL)
 	ruleLinkText := fmt.Sprintf("<%s|调整规则>", ruleURL)
 	content := fmt.Sprintf("%s %s %s", text, grafanaLinkText, ruleLinkText)
 	mTitle := ew.Metric.Name
