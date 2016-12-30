@@ -67,6 +67,10 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewValidationWebError(err))
 		return
 	}
+	if err := db.Admin.DB().Where("project_id = ? AND pattern = ?", projectID, req.Pattern).First(&models.Rule{}).Error; err == nil {
+		ResponseError(w, ErrDuplicateRulePattern)
+		return
+	}
 	// Find project.
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, projectID).Error; err != nil {
@@ -105,9 +109,6 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				return
 			case sqlite3.ErrConstraintPrimaryKey:
 				ResponseError(w, ErrPrimaryKey)
-				return
-			case sqlite3.ErrConstraintUnique:
-				ResponseError(w, ErrDuplicateRulePattern)
 				return
 			}
 		}
