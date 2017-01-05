@@ -71,3 +71,18 @@ func TestAlertRecordAlertNotifyAfterConfigSetNotifyAfterToOne(t *testing.T) {
 	util.Must(t, !a.checkAlertCount(ew))
 	a.setAlertRecord(ew)
 }
+
+func TestAlertRecordAlertNotifyWithDifferentRule(t *testing.T) {
+	cfg := config.New()
+	cfg.Alerter.NotifyAfter = 1
+	a := &Alerter{cfg: cfg, alertRecords: safemap.New(), lock: &sync.RWMutex{}}
+	ew := models.NewWrapperOfEvent(&models.Event{
+		Rule:   &models.Rule{},
+		Metric: &models.Metric{Name: "test", Stamp: 80, Value: 80},
+	})
+	util.Must(t, a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
+	util.Must(t, !a.checkAlertCount(ew))
+	ew.Rule.ID = 2
+	util.Must(t, a.checkAlertCount(ew))
+}
