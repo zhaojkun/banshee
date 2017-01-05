@@ -5,6 +5,7 @@ package alerter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os/exec"
 	"sync"
 	"sync/atomic"
@@ -141,10 +142,14 @@ func (al *Alerter) getUniversalWebHooks() (univs []models.WebHook, err error) {
 	return
 }
 
+func (al *Alerter) eventCacheKey(ew *models.EventWrapper) string {
+	return fmt.Sprintf("%d%s", ew.Rule.ID, ew.Metric.Name)
+}
+
 // checkOneDayAlerts returns true if given metric exceeds the one day
 // limit.
-func (al *Alerter) checkOneDayAlerts(m *models.Metric) bool {
-	v, ok := al.alertNums.Get(m.Name)
+func (al *Alerter) checkOneDayAlerts(ew *models.EventWrapper) bool {
+	v, ok := al.alertNums.Get(al.eventCacheKey(ew))
 	if ok && atomic.LoadUint32(v.(*uint32)) > al.cfg.Alerter.OneDayLimit {
 		return true
 	}
@@ -152,11 +157,12 @@ func (al *Alerter) checkOneDayAlerts(m *models.Metric) bool {
 }
 
 // incrAlertNum increases alert number by 1 for given metric.
-func (al *Alerter) incrAlertNum(m *models.Metric) {
-	v, ok := al.alertNums.Get(m.Name)
+func (al *Alerter) incrAlertNum(ew *models.EventWrapper) {
+	cacheKey := al.eventCacheKey(ew)
+	v, ok := al.alertNums.Get(cacheKey)
 	if !ok {
 		n := uint32(1)
-		al.alertNums.Set(m.Name, &n)
+		al.alertNums.Set(cacheKey, &n)
 		return
 	}
 	atomic.AddUint32(v.(*uint32), 1)
@@ -164,19 +170,19 @@ func (al *Alerter) incrAlertNum(m *models.Metric) {
 
 // checkAlertCount returns true if given metric has issued an alert
 // with in a minimal given period.
-func (al *Alerter) checkAlertCount(m *models.Metric) bool {
+func (al *Alerter) checkAlertCount(ew *models.EventWrapper) bool {
 	if al.cfg.Alerter.NotifyAfter <= 0 {
 		return false
 	}
 	al.lock.RLock()
 	defer al.lock.RUnlock()
-	v, ok := al.alertRecords.Get(m.Name)
+	v, ok := al.alertRecords.Get(al.eventCacheKey(ew))
 	if !ok {
 		return true
 	}
 	alerted := 0
 	for _, timeStamp := range v.([]uint32) {
-		if timeStamp > 0 && m.Stamp-timeStamp < al.cfg.Alerter.AlertCheckInterval {
+		if timeStamp > 0 && ew.Metric.Stamp-timeStamp < al.cfg.Alerter.AlertCheckInterval {
 			alerted++
 		}
 	}
@@ -185,34 +191,35 @@ func (al *Alerter) checkAlertCount(m *models.Metric) bool {
 
 // checkAlertAt returns true if given metric still not reaches the minimal
 // alert interval.
-func (al *Alerter) checkAlertAt(m *models.Metric) bool {
-	v, ok := al.alertAts.Get(m.Name)
-	return ok && m.Stamp < v.(uint32)+al.cfg.Alerter.Interval
+func (al *Alerter) checkAlertAt(ew *models.EventWrapper) bool {
+	v, ok := al.alertAts.Get(al.eventCacheKey(ew))
+	return ok && ew.Metric.Stamp < v.(uint32)+al.cfg.Alerter.Interval
 }
 
 // setAlertRecord sets the alert record for given metric.
-func (al *Alerter) setAlertRecord(m *models.Metric) {
+func (al *Alerter) setAlertRecord(ew *models.EventWrapper) {
 	if al.cfg.Alerter.NotifyAfter <= 0 {
 		return
 	}
+	cacheKey := al.eventCacheKey(ew)
 	var records []uint32
 	al.lock.Lock()
 	defer al.lock.Unlock()
-	v, ok := al.alertRecords.Get(m.Name)
+	v, ok := al.alertRecords.Get(cacheKey)
 	if ok {
 		records = v.([]uint32)
 	} else {
 		records = make([]uint32, al.cfg.Alerter.NotifyAfter)
 	}
 	if len(records) >= al.cfg.Alerter.NotifyAfter {
-		records = append(records[1:], m.Stamp)
+		records = append(records[1:], ew.Metric.Stamp)
 	}
-	al.alertRecords.Set(m.Name, records)
+	al.alertRecords.Set(cacheKey, records)
 }
 
 // setAlertAt sets the alert timestamp for given metric.
-func (al *Alerter) setAlertAt(m *models.Metric) {
-	al.alertAts.Set(m.Name, m.Stamp)
+func (al *Alerter) setAlertAt(ew *models.EventWrapper) {
+	al.alertAts.Set(al.eventCacheKey(ew), ew.Metric.Stamp)
 }
 
 // getProjByRule returns the project for given rule.
@@ -269,29 +276,29 @@ func (al *Alerter) work() {
 	for {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
-		if al.checkAlertAt(ew.Metric) {    // Check alert interval
+		if al.checkAlertAt(ew) {           // Check alert interval
 			log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
 			continue
 		}
-		if al.checkOneDayAlerts(ew.Metric) { // Check one day limit
+		if al.checkOneDayAlerts(ew) { // Check one day limit
 			log.Infof("metric %v exceeds the one day limit %v", ew.Metric.Name, al.cfg.Alerter.OneDayLimit)
 			continue
 		}
 		// Avoid noises by issuing alerts only when same alert has occurred
 		// predefined times.
-		if al.checkAlertCount(ew.Metric) {
-			al.setAlertRecord(ew.Metric)
+		if al.checkAlertCount(ew) {
+			al.setAlertRecord(ew)
 			log.Warnf("Not enough alerts with in `AlertCheckInterval` time skipping..: %v", ew.Metric.Name)
 			continue
 		}
-		al.setAlertRecord(ew.Metric)
-		al.incrAlertNum(ew.Metric)
+		al.setAlertRecord(ew)
+		al.incrAlertNum(ew)
 		// Store event
 		if err := al.storeEvent(ev); err != nil {
 			log.Warnf("failed to store event:%v, skipping..", err)
 			continue
 		}
-		al.setAlertAt(ew.Metric)
+		al.setAlertAt(ew)
 		// Do alert.
 		var err error
 		if ew.Project, err = al.getProjByRule(ew.Rule); err != nil {
