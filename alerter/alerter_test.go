@@ -25,12 +25,14 @@ func TestAlertRecordAlertNotifyAfterConfigDisabled(t *testing.T) {
 	cfg := config.New()
 	cfg.Alerter.NotifyAfter = 0
 	a := &Alerter{cfg: cfg, alertRecords: safemap.New(), lock: &sync.RWMutex{}}
-	metrics := &models.Metric{Name: "test", Stamp: 0, Value: 80}
-
+	ew := models.NewWrapperOfEvent(&models.Event{
+		Rule:   &models.Rule{},
+		Metric: &models.Metric{Name: "test", Stamp: 0, Value: 80},
+	})
 	for i := 0; i <= 100; i++ {
-		metrics.Stamp = uint32(i)
-		util.Must(t, !a.checkAlertCount(metrics))
-		a.setAlertRecord(metrics)
+		ew.Metric.Stamp = uint32(i)
+		util.Must(t, !a.checkAlertCount(ew))
+		a.setAlertRecord(ew)
 	}
 }
 
@@ -38,18 +40,20 @@ func TestAlertRecordAlertNotifyAfterConfigSetNotifyAfterToTwo(t *testing.T) {
 	cfg := config.New()
 	cfg.Alerter.NotifyAfter = 2
 	a := &Alerter{cfg: cfg, alertRecords: safemap.New(), lock: &sync.RWMutex{}}
+	ew := models.NewWrapperOfEvent(&models.Event{
+		Rule:   &models.Rule{},
+		Metric: &models.Metric{Name: "test", Stamp: 80, Value: 80},
+	})
 
-	metrics := &models.Metric{Name: "test", Stamp: 80, Value: 80}
-	util.Must(t, a.checkAlertCount(metrics))
-	a.setAlertRecord(metrics)
+	util.Must(t, a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
+	ew.Metric.Stamp = 81
+	util.Must(t, a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
 
-	metrics.Stamp = 81
-	util.Must(t, a.checkAlertCount(metrics))
-	a.setAlertRecord(metrics)
-
-	metrics.Stamp = 82
-	util.Must(t, !a.checkAlertCount(metrics))
-	a.setAlertRecord(metrics)
+	ew.Metric.Stamp = 82
+	util.Must(t, !a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
 
 }
 
@@ -57,12 +61,13 @@ func TestAlertRecordAlertNotifyAfterConfigSetNotifyAfterToOne(t *testing.T) {
 	cfg := config.New()
 	cfg.Alerter.NotifyAfter = 1
 	a := &Alerter{cfg: cfg, alertRecords: safemap.New(), lock: &sync.RWMutex{}}
-
-	metrics := &models.Metric{Name: "test", Stamp: 80, Value: 80}
-	util.Must(t, a.checkAlertCount(metrics))
-	a.setAlertRecord(metrics)
-
-	metrics.Stamp = 81
-	util.Must(t, !a.checkAlertCount(metrics))
-	a.setAlertRecord(metrics)
+	ew := models.NewWrapperOfEvent(&models.Event{
+		Rule:   &models.Rule{},
+		Metric: &models.Metric{Name: "test", Stamp: 80, Value: 80},
+	})
+	util.Must(t, a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
+	ew.Metric.Stamp = 81
+	util.Must(t, !a.checkAlertCount(ew))
+	a.setAlertRecord(ew)
 }
