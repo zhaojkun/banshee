@@ -3,14 +3,15 @@
 package webapp
 
 import (
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/storage/indexdb"
-	"github.com/julienschmidt/httprouter"
 	"math"
 	"net/http"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/storage/indexdb"
+	"github.com/julienschmidt/httprouter"
 )
 
 type indexByScore []*models.Index
@@ -84,7 +85,7 @@ func getMetricIndexes(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	// Matched rules
 	for _, idx := range idxs {
 		m := &models.Metric{Name: idx.Name}
-		idx.MatchedRules = flt.MatchedRules(m)
+		idx.MatchedRules = flt.MatchedRules(m, false)
 	}
 	ResponseJSONOK(w, idxs)
 }
@@ -141,6 +142,6 @@ func getMetricRules(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	}
 	// Find matched rules
 	m := &models.Metric{Name: name}
-	rules := flt.MatchedRules(m)
+	rules := flt.MatchedRules(m, false)
 	ResponseJSONOK(w, rules)
 }
