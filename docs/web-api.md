@@ -55,29 +55,88 @@ Config
    }
    ```
 
+Team
+-------
+
+1. Get all teams.
+
+    ```
+    GET /api/teams
+    
+    200
+    [
+        {
+            "id": 1,
+            "name": "Default",
+            "numProjects": 0
+        },
+        ...
+    ]
+    ```
+2. Create team (basic auth required).
+
+   ```
+   POST /api/team -d {"name": "myNewTeam"}   
+   
+   200
+   {
+       "id": 2,
+       "name": "myNewTeam"
+   }
+   ```
+3. Get team by id.
+
+    ```
+    GET /api/team/:id
+    
+    200
+    {
+        "id": 1,
+        "name": "Default"
+    }
+    ```
+4. Update team by id (basic auth required).
+
+    ```
+    PATCH /api/team/:id -d {"name": "newName"}
+    
+    200
+    {
+        "id": 1,
+        "name": "newName"
+    }
+    ```
+5. Delete team by id (basic auth required).
+   
+   ```
+   DELETE /api/team/:id
+   
+   200
+   ```
+
 Project
 -------
 
-1. Get all projects.
+1. Get projects by team id.
+
+    ```
+    GET /api/team/:id/projects
+    
+    200
+    [
+        {
+            "id": 1,
+            "name": "test",
+            "numRules": 2,
+        },
+        ...
+    ]
+     ```
+     
+2. Create project by team id (basic auth required).
 
    ```
-   GET /api/projects
-
-   200
-   [
-     {
-        "id": 1,
-        "name": "test",
-        "numRules": 2
-     },
-     ...
-   ]
-   ```
-
-2. Create project (basic auth required).
-
-   ```
-   POST /api/project -d {"name": "myNewProject"}
+   POST /api/team/:id/project -d {"name": "myNewProject"}
 
    200
    {
@@ -85,7 +144,8 @@ Project
      "name": "foo",
      "enableSilent": false,
      "silentTimeEnd": 0,
-     "silentTimeStart": 0
+     "silentTimeStart": 0,
+     "teamID": 1
    }
    ```
 
@@ -100,22 +160,24 @@ Project
      "id": 1,
      "name": "test",
      "silentTimeEnd": 0,
-     "silentTimeStart": 0
+     "silentTimeStart": 0,
+     "teamID": 1
    }
    ```
 
 4. Update project (basic auth required).
 
    ```
-   PATCH /api/project/:id -d {"name": "newName"}
+   PATCH /api/project/:id -d {"name": "newName","teamID":1,"silentTimeStart":1,"silentTimeEnd":10}
 
    200
    {
      "enableSilent": false,
      "id": 1,
      "name": "newName",
-     "silentTimeEnd": 0,
-     "silentTimeStart": 0
+     "silentTimeEnd": 10,
+     "silentTimeStart": 1,
+     "teamID": 1
    }
    ```
 
@@ -139,12 +201,30 @@ Project
        "id": 1,
        "name": "test",
        "silentTimeEnd": 0,
-       "silentTimeStart": 0
+       "silentTimeStart": 0,
+       "teamID": 1
      },
      ...
    ]
    ```
 
+7. Get all projects 
+   
+   ```
+   GET /api/projects
+   
+   200
+   [
+       {
+           "id": 1,
+           "name": "test",
+           "numRules": 2,
+           "teamID": 1
+       },
+       ...
+   ]
+   ```
+   
 User
 ----
 
