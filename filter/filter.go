@@ -170,11 +170,11 @@ func (f *Filter) delRule(rule *models.Rule) {
 }
 
 // MatchedRules returns the matched rules by metric name.
-func (f *Filter) MatchedRules(m *models.Metric) (rules []*models.Rule) {
+func (f *Filter) MatchedRules(m *models.Metric, shouldLimitHit bool) (rules []*models.Rule) {
 	d := f.trie.Matched(m.Name)
 	for _, v := range d {
 		n := v.(*node)
-		if f.cfg.Detector.EnableIntervalHitLimit {
+		if shouldLimitHit && f.cfg.Detector.EnableIntervalHitLimit {
 			hits := n.incrHits(m)
 			if hits > f.cfg.Detector.IntervalHitLimit {
 				log.Debugf("%s hits over interval hit limit", n.pattern)

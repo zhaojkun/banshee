@@ -158,7 +158,7 @@ func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
 func (d *Detector) match(m *models.Metric) (bool, []*models.Rule) {
 	// Check rules.
 	timer := util.NewTimer() // Filter timer
-	rules := d.flt.MatchedRules(m)
+	rules := d.flt.MatchedRules(m, true)
 	elapsed := timer.Elapsed()
 	health.AddFilterCost(elapsed)
 	if len(rules) == 0 { // Hit no rules.
