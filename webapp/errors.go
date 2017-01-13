@@ -23,6 +23,12 @@ var (
 	ErrPrimaryKey = NewWebError(http.StatusForbidden, "Primarykey voilated")
 	ErrUnique     = NewWebError(http.StatusForbidden, "Value should be unique")
 	ErrNotFound   = NewWebError(http.StatusNotFound, "Not found")
+
+	//Team
+	ErrTeamID            = NewWebError(http.StatusBadRequest, "Bad team id")
+	ErrTeamNotFound      = NewWebError(http.StatusNotFound, "Team not found")
+	ErrDuplicateTeamName = NewWebError(http.StatusForbidden, "Duplicate team name")
+
 	// Project
 	ErrProjectID               = NewWebError(http.StatusBadRequest, "Bad project id")
 	ErrProjectNotFound         = NewWebError(http.StatusNotFound, "Project not found")

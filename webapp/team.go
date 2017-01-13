@@ -35,7 +35,7 @@ func getTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Params
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		ResponseError(w, ErrProjectID)
+		ResponseError(w, ErrTeamID)
 		return
 	}
 	// Query db.
@@ -43,7 +43,7 @@ func getTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := db.Admin.DB().First(team, id).Error; err != nil {
 		switch err {
 		case gorm.RecordNotFound:
-			ResponseError(w, ErrProjectNotFound)
+			ResponseError(w, ErrTeamNotFound)
 			return
 		default:
 			ResponseError(w, NewUnexceptedWebError(err))
@@ -84,7 +84,7 @@ func createTeam(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 				ResponseError(w, ErrPrimaryKey)
 				return
 			case sqlite3.ErrConstraintUnique:
-				ResponseError(w, ErrDuplicateProjectName)
+				ResponseError(w, ErrDuplicateTeamName)
 				return
 			}
 		}
@@ -104,7 +104,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Params
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		ResponseError(w, ErrProjectID)
+		ResponseError(w, ErrTeamID)
 		return
 	}
 	// Request
@@ -123,7 +123,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := db.Admin.DB().First(team, id).Error; err != nil {
 		switch err {
 		case gorm.RecordNotFound:
-			ResponseError(w, ErrProjectNotFound)
+			ResponseError(w, ErrTeamNotFound)
 			return
 		default:
 			ResponseError(w, NewUnexceptedWebError(err))
@@ -135,7 +135,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := db.Admin.DB().Save(team).Error; err != nil {
 		if err == gorm.RecordNotFound {
 			// Not found.
-			ResponseError(w, ErrProjectNotFound)
+			ResponseError(w, ErrTeamNotFound)
 			return
 		}
 		// Writer errors.
@@ -146,7 +146,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				ResponseError(w, ErrNotNull)
 				return
 			case sqlite3.ErrConstraintUnique:
-				ResponseError(w, ErrDuplicateProjectName)
+				ResponseError(w, ErrDuplicateTeamName)
 				return
 			}
 		}
@@ -161,7 +161,7 @@ func deleteTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Params
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		ResponseError(w, ErrProjectID)
+		ResponseError(w, ErrTeamID)
 		return
 	}
 	team := &models.Team{ID: id}
@@ -179,7 +179,7 @@ func deleteTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := db.Admin.DB().Delete(team).Error; err != nil {
 		switch err {
 		case gorm.RecordNotFound:
-			ResponseError(w, ErrProjectNotFound)
+			ResponseError(w, ErrTeamNotFound)
 			return
 		default:
 			ResponseError(w, NewUnexceptedWebError(err))
@@ -199,7 +199,7 @@ func getTeamProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	// Params
 	id, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		ResponseError(w, ErrProjectID)
+		ResponseError(w, ErrTeamID)
 		return
 	}
 	var results []getTeamProjectsResult

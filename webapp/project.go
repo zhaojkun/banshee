@@ -63,11 +63,28 @@ type createProjectRequest struct {
 
 // createProject creates a project.
 func createProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+	teamID, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {
-		ResponseError(w, ErrProjectID)
+		ResponseError(w, ErrTeamID)
+		return
 	}
-	//Todo check teamid
+	if teamID <= 0 {
+		// TeamID is invalid.
+		ResponseError(w, ErrTeamID)
+		return
+	}
+	// Find team.
+	team := &models.Team{}
+	if err := db.Admin.DB().First(team, teamID).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrTeamNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
 	// Request
 	req := &createProjectRequest{}
 	if err := RequestBind(r, req); err != nil {
@@ -80,7 +97,7 @@ func createProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	// Save.
-	proj := &models.Project{Name: req.Name, TeamID: id}
+	proj := &models.Project{Name: req.Name, TeamID: teamID}
 	if err := db.Admin.DB().Create(proj).Error; err != nil {
 		sqliteErr, ok := err.(sqlite3.Error)
 		if ok {
@@ -134,6 +151,23 @@ func updateProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		// Validate if silent is disabled and start and end both are zero.
 		if err := models.ValidateProjectSilentRange(req.SilentTimeStart, req.SilentTimeEnd); err != nil {
 			ResponseError(w, NewValidationWebError(err))
+			return
+		}
+	}
+	if req.TeamID <= 0 {
+		// TeamID is invalid.
+		ResponseError(w, ErrTeamID)
+		return
+	}
+	// Find team.
+	team := &models.Team{}
+	if err := db.Admin.DB().First(team, req.TeamID).Error; err != nil {
+		switch err {
+		case gorm.RecordNotFound:
+			ResponseError(w, ErrTeamNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
 			return
 		}
 	}
