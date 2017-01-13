@@ -240,6 +240,7 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
 	cfg.Alerter.NotifyAfter = c.Alerter.NotifyAfter
 	cfg.Alerter.AlertCheckInterval = c.Alerter.AlertCheckInterval
+	cfg.Notifier.SlackURL = c.Notifier.SlackURL
 	return cfg
 }
 
