@@ -167,6 +167,11 @@ Web HTTP API
 
 Please checkout [docs/web-api.md](docs/web-api.md).
 
+Docker Image
+------------
+
+Please checkout [docker/README.md](docker).
+
 Authors
 -------
 
