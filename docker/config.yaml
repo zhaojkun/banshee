@@ -1,0 +1,141 @@
+# Metrics incoming time interval, in seconds. default: 10
+# Currently, all metrics use the same interval.
+interval: 10
+
+# Metrics period, in seconds, default: 86400 (1 day)
+# Currently, all metrics use the same period.
+period: 86400
+
+# Metric expiration, in seconds, default: 604800 (7 days)
+# Banshee only stores datapoints for a certain time, history datapoints
+# are persist on disk to detect incoming datapoints.
+# This value should be divided by period cleanly.
+expiration: 604800
+
+storage:
+    # Storage data directory path, default: ./data
+    # If the configured path dose not exist, banshee would create one with
+    # this path.
+    path: ./data
+
+detector:
+    # Port for detector tcp server, default: 2015
+    port: 2015
+    # Detection weighted moving average factors for different rule levels.
+    # Each factor should be a number between 0 and 1.
+    # Defaults: 0.1, 0.2, 0.3.
+    # The factor larger, the timeliness better, but more noise. We are using
+    # the default setting.
+    trending_factor_low_level: 0.1
+    trending_factor_middle_level: 0.2
+    trending_factor_high_level: 0.3
+    # Percentage of the filter history offset to period, should be a number
+    # between 0 and 1, default: 0.01
+    # The time span to filter in a single period is: filter_offset * period,
+    # so setting this value larger means more history datapoints would be quried,
+    # detection would be slower but preciser.
+    filter_offset: 0.01
+    # Number of times to filter history metrics, default: 4
+    # In the case that period is 1 day and expiration is 7 days, setting this value
+    # to 4 means filter history datapoints in latest 4 days. And this value should
+    # be an integer smaller than expiration/period.
+    # Setting this value larger, also, the detection would be slower but preciser.
+    filter_times: 4
+    # Least count of datapoints to start detection for a single metric,
+    # default: 30
+    # We are using the default value, the first 30 incoming datapoints for
+    # every metric would be trusted by detector.
+    least_count: 30
+    # A list of wildcard patterns to refuse metrics by name, default: []
+    # Example: ["statsd.*"]
+    blacklist: []
+    # Whether enable the filter interval hit limit, default: true
+    # Setting this value to true means a rule can match at most a certain number of
+    # metrics in an interval. Once the limitation reached, later matched metrics
+    # would be ignored.
+    enable_interval_hit_limit: true
+    # Limitation of incoming datapoints for a single rule in an interval,
+    # default: 512.
+    # This setting is to prevent a single rule matching too many metrics.
+    interval_hit_limit: 512
+    # Default values of thresholdMaxs, the thresholdMax is the maximum value
+    # to trigger an alert rule. default: {}
+    # Example: {"counter.*": 10}, which means trending up counters below 10
+    # never trigger alerts for rules without a non-zero thresholdMax.
+    # Note that this setting has no effect on trending down metric events.
+    default_threshold_maxs: {}
+    # Default values of thresholdMins, the thresholdMin is the minimum value
+    # to trigger an alert rule. default: {}
+    # Example: {"counter.*": 10}, which means trending down counters above 10
+    # never trigger alerts for rules without a non-zero thresholdMin.
+    # Note that this setting has no effect on trending up metric events.
+    default_threshold_mins: {}
+    # A list of wildcard patterns, for any matched metrics, banshee would fill
+    # the blank gaps by zeros in detection. default: []
+    # Example: ["counter.*"], which means banshee would fill blank zeros after
+    # filter counters history datapoints.
+    fill_blank_zeros: []
+    # A list of wildcard patterns, for any matched metrics, banshee would alert
+    # an event if they are idle or inactive. default: []
+    # NOTE: this setting only works for high level rules.
+    # Example: ["timer.count_ps.*"]
+    idle_metric_check_list: []
+    # Time interval in seconds to check idle metrics, default: 60
+    idle_metric_check_interval: 60
+    # Limitation of times to track idle metrics, a metric would be tracked for
+    # at most certain times once it is checked as idle. default: 60
+    idle_metric_track_limit: 60
+    # Detection warning timeout in millseconds, default: 300
+    warning_timeout: 300
+    # Whether to take recent data points into detection calculation.
+    using_recent_data_points: true
+
+webapp:
+    # Port for webapp http server, default: 2016
+    port: 2016
+    # Website basic auth username and password. Setting username to an empty
+    # string means disabling auth, default: [admin, admin]
+    auth: [admin, admin]
+    # Static files directory path, default: static/dist
+    static: static/dist
+    # Website default language to use, should be one of "en" and "zh",
+    # default: en.
+    language: en
+    # Webapp URL Prefix
+    url_prefix: ""
+    # Private url of the document about the monitor. default: ""
+    private_doc_url: ""
+    # Graphite or grafana url formatter.
+    # Example: "http://mygraphite-host.com/render?target=%s"
+    graphite_url: ""
+
+alerter:
+    # Command to be executed to send alert messages, default: ""
+    # Example: "python sender.py"
+    # Reference: https://godoc.org/github.com/eleme/banshee/alerter
+    command: "./exampleCommand"
+    # Command execution timeout in seconds, default: 5
+    # If the alert command execution exceeds this timeout, it would be killed.
+    exec_command_time_out: 5
+    # Number of workers to send alert messages by executing the alerter
+    # command. default: 4
+    # We use a certain count of workers to execute command but not executing
+    # right after an alert event occurs, mainly to prevent forking too many
+    # processes to execute the command at the same time.
+    workers: 4
+    # Minimum time interval to send messages for a single metric, default: 1200 (20min)
+    interval: 1200
+    # The interval to check if the same alert has occurred for defined times.
+    alert_check_interval: 60
+    # The number of alerts after which we should send notifications.
+    notify_after: 1
+    # Maximum number of alert times for a single metric in one day, default: 10
+    one_day_limit: 10
+    # Default silent time range, default: [0, 6] (means 00:00 ~ 06:00)
+    default_silent_time_range: [0, 6]
+
+notifier:
+    # Slack webhook endpoint
+    # Example: "http://hooks.slack.com/services/service_name/token"
+    slack_url: ""
+   

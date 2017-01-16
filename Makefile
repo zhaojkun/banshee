@@ -26,4 +26,7 @@ static:
 	make -C static deps
 	make -C static build
 
-.PHONY: deps test lint vet changelog static
+docker:
+	cd docker; docker build -t banshee .
+
+.PHONY: deps test lint vet changelog static docker
