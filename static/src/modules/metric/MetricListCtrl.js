@@ -226,7 +226,7 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
       }
 
       str = [
-        '<a href="#/main?pattern=' + currentEl.name + '" class="' + className +
+        '<a href="#/metric?pattern=' + currentEl.name + '" class="' + className +
             '">',
         getTextByTrend(currentEl.score),
         currentEl.name,

@@ -22,18 +22,18 @@ func TestSimple(t *testing.T) {
 	filter.addRule(rule1)
 	filter.addRule(rule2)
 	// Test
-	rules1 := filter.MatchedRules(&models.Metric{Name: "nothing"})
+	rules1 := filter.MatchedRules(&models.Metric{Name: "nothing"}, true)
 	util.Must(t, 0 == len(rules1))
 
-	rules2 := filter.MatchedRules(&models.Metric{Name: "a.b.c.e"})
+	rules2 := filter.MatchedRules(&models.Metric{Name: "a.b.c.e"}, true)
 	util.Must(t, 1 == len(rules2))
 	util.Must(t, rules2[0] == rule2)
 
-	rules3 := filter.MatchedRules(&models.Metric{Name: "a.e.c.d"})
+	rules3 := filter.MatchedRules(&models.Metric{Name: "a.e.c.d"}, true)
 	util.Must(t, 1 == len(rules3))
 	util.Must(t, rules3[0] == rule1)
 
-	rules4 := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"})
+	rules4 := filter.MatchedRules(&models.Metric{Name: "a.b.c.d"}, true)
 	util.Must(t, 2 == len(rules4))
 }
 
@@ -52,13 +52,13 @@ func TestHitLimit(t *testing.T) {
 
 	for i := uint32(0); i < cfg.Detector.IntervalHitLimit; i++ {
 		// hit rule when counter < intervalHitLimit
-		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1})
+		rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1}, true)
 		util.Must(t, 1 == len(rules))
 	}
-	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1})
+	rules := filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval - 1}, true)
 	util.Must(t, 0 == len(rules))
 	// reset counter and time range when input metric time stamp is not in the current time range
-	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval})
+	rules = filter.MatchedRules(&models.Metric{Name: "a.b.c.d", Stamp: cfg.Interval}, true)
 	util.Must(t, 1 == len(rules))
 }
 
@@ -84,7 +84,7 @@ func BenchmarkRules1kBest(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		filter.MatchedRules(&models.Metric{Name: "x.b.c." + string(i&1024)})
+		filter.MatchedRules(&models.Metric{Name: "x.b.c." + string(i&1024)}, true)
 	}
 }
 
@@ -97,7 +97,7 @@ func BenchmarkRules1kWorst(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&1024)})
+		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&1024)}, true)
 	}
 }
 
@@ -110,6 +110,6 @@ func BenchmarkRules2kWorst(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&65535)})
+		filter.MatchedRules(&models.Metric{Name: "a.b.c." + string(i&65535)}, true)
 	}
 }
