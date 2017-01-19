@@ -7,9 +7,9 @@ var (
 	// Error
 	ErrInterval                        = errors.New("interval should be an integer between 1s~10min")
 	ErrPeriod                          = errors.New("period should be an integer greater than interval")
-	ErrPeriodTooSmall                  = errors.New("period at least 1 hour")
-	ErrExpiration                      = errors.New("expiration should be an integer greater than 5 * period")
-	ErrExpirationDivPeriodClean        = errors.New("expiration should be divided by period cleanly")
+	ErrPeriodTooSmall                  = errors.New("period should be at least 1 hour")
+	ErrExpiration                      = errors.New("expiration should be an integer greater than (or equal to) 5 * period")
+	ErrExpirationDivPeriodClean        = errors.New("expiration should be a multiple of period")
 	ErrDetectorPort                    = errors.New("invalid detector.port")
 	ErrDetectorTrendingFactor          = errors.New("detector.trending_factor should be a float between 0 and 1")
 	ErrDetectorFilterTimes             = errors.New("detector.filter_times should be smaller")
