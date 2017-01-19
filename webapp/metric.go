@@ -83,11 +83,16 @@ func getMetricIndexes(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		idxs = idxs[:limit]
 	}
 	// Matched rules
+	var idxWithRules []*models.Index
 	for _, idx := range idxs {
 		m := &models.Metric{Name: idx.Name}
-		idx.MatchedRules = flt.MatchedRules(m, false)
+		rules := flt.MatchedRules(m, false)
+		if len(rules) > 0 {
+			idx.MatchedRules = rules
+			idxWithRules = append(idxWithRules, idx)
+		}
 	}
-	ResponseJSONOK(w, idxs)
+	ResponseJSONOK(w, idxWithRules)
 }
 
 // getMetrics returns metric values.
