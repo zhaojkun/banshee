@@ -188,7 +188,7 @@ module.exports =
       template = 'modules/admin/project/webHookModal.html';
       webhooks = filterWebHooks();
     }
-
+    
     $mdDialog
         .show({
           controller: ctrl,
@@ -215,7 +215,31 @@ module.exports =
 
     });
   };
-
+      
+  $scope.exportRules = function(){
+    console.log("aaaa");
+    Project.getRulesByProjectId({id: projectId}).$promise.then(function(res) {
+      Util.saveContentToFile(JSON.stringify(res),"rules.json");
+    });
+  };
+  
+  $scope.importRules = function(event){
+    var ctrl = "RuleUploadCtrl";
+    var template = 'modules/admin/project/ruleUploadModal.html';
+    $mdDialog
+      .show({
+        controller: ctrl,
+        templateUrl: template,
+        parent: angular.element(document.body),
+        targetEvent: event,
+        clickOutsideToClose: true,
+        fullscreen: true,
+      })
+      .then(function(res) {
+        
+    });
+    
+  };
   $scope.translateRuleRepr = function(rule) {
     return Util.translateRuleRepr(rule, $scope.config, $translate);
   };
@@ -314,9 +338,9 @@ module.exports =
 
   $scope.loadEvents = function() {
     Project
-        .getEventsByProjectId(
+      .getEventsByProjectId(
              {id: projectId, past: $scope.eventPast, level: $scope.eventLevel})
-        .$promise.then(function(res) { $scope.events = res; });
+      .$promise.then(function(res) { $scope.events = res; });
   };
 
   $scope.watchEventLoadParams = function() {
@@ -336,7 +360,7 @@ module.exports =
     var fmt = $scope.config.webapp.graphiteUrl;
     return Util.format(fmt, Util.getGraphiteName(name));
   };
-
+      
   $scope.loadData();
 
   $scope.foldNumber = Util.foldNumber;

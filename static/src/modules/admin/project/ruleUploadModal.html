@@ -1,0 +1,41 @@
+<md-dialog class="form-dialog ruleUploadModal" ng-cloak>
+  <!-- Add Rule Form -->
+  <form name="form" class="form-horizontal" ng-submit="submit()" novalidate>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Import Rules</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon class="fa fa-times-circle" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <!-- Dialog Content -->
+    <md-dialog-content>
+      <md-content layout-padding>
+        <md-input-container class="md-block" flex-gt-sm>
+          <input type="file" id = "rule_file" ng-model="rule_file" name="rule_file" ng-change="change()"/>
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>{{ 'ADMIN_RULE_COMMENT' | translate }}</label>
+          <input type="text" name="comment" ng-model="rule.comment">
+        </md-input-container>
+        <div layout="row" flex="100">
+          <md-input-container flex="15" class="md-block">
+            <label>{{ 'ADMIN_RULE_PREVIEW' | translate }}</label>
+          </md-input-container>
+          <md-input-container flex="85" class="md-block">
+            <code ng-bind="buildRepr(rule)"></code>
+            <md-tooltip md-autohide>{{ translateRuleRepr(rule) }}</md-tooltip>
+          </md-input-container>
+        </div>
+      </md-content>
+    </md-dialog-content> <!-- Dialog Content -->
+    <!-- Dialog Buttons -->
+    <md-dialog-actions layout="row">
+    <md-button ng-click="cancel()"> {{ 'CANCEL' | translate}} </md-button>
+    <md-button md-no-ink class="md-primary" ng-disabled="form.$invalid" type="submit"> {{ 'SUBMIT' | translate }} </md-button>
+    </md-dialog-actions> <!-- ./Dialog Buttons-->
+  </form> <!-- ./Add Rule Form -->
+</md-dialog>
+

@@ -96,6 +96,7 @@ var app =
         require('./project/AdminProjectDetailCtrl'))
       .controller('UserModalCtrl', require('./project/UserModalCtrl'))
       .controller('RuleModalCtrl', require('./project/RuleModalCtrl'))
+      .controller('RuleUploadCtrl', require('./project/RuleUploadCtrl'))
       .controller('WebHookModalCtrl', require('./project/WebHookModalCtrl'))
   
       .controller('AdminUserListCtrl', require('./user/AdminUserListCtrl'))

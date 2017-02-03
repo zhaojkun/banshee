@@ -161,6 +161,8 @@
   "ADMIN_RULE_DISABLED_WARN": "its metrics will still income, but related alertings will be muted",
   "ADMIN_RULE_NEVER_FILL_ZERO": "Never fill zeros",
   "ADMIN_RULE_TRACK_IDLE": "Track idle metrics",
+  "ADMIN_RULE_UPLOAD_TEXT": "Import rules",
+  "ADMIN_RULE_DOWNLOAD_TEXT": "Export rules",
   "ADMIN_RULE_ADD_TEXT": "Add Rule",
   "ADMIN_RULE_EDIT_TEXT": "Edit Rule",
   "ADMIN_RULE_DELETE_TEXT": "Delete Rule",

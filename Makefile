@@ -27,6 +27,6 @@ static:
 	make -C static build
 
 docker:
-	cd docker; docker build -t banshee .
+	cd docker; docker build --no-cache -t banshee .
 
 .PHONY: deps test lint vet changelog static docker

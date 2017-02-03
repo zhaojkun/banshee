@@ -161,6 +161,8 @@
   "ADMIN_RULE_DISABLED_WARN": "所匹配的指标仍会继续流入，但其报警不再生效",
   "ADMIN_RULE_NEVER_FILL_ZERO": "永不填零",
   "ADMIN_RULE_TRACK_IDLE": "空值告警",
+  "ADMIN_RULE_UPLOAD_TEXT": "批量导入规则",
+  "ADMIN_RULE_DOWNLOAD_TEXT": "批量导出规则",
   "ADMIN_RULE_ADD_TEXT": "添加规则",
   "ADMIN_RULE_EDIT_TEXT": "编辑规则",
   "ADMIN_RULE_DELETE_TEXT": "删除规则",
