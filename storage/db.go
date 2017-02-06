@@ -3,8 +3,12 @@
 package storage
 
 import (
+	"errors"
+	"io/ioutil"
 	"os"
 	"path"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/eleme/banshee/storage/admindb"
 	"github.com/eleme/banshee/storage/eventdb"
@@ -18,10 +22,15 @@ const filemode = 0755
 
 // Child db filename.
 const (
-	admindbFileName  = "admin"
-	indexdbFileName  = "index"
-	metricdbFileName = "metric"
-	eventdbFileName  = "event"
+	optionlockFileName = "option.lock"
+	admindbFileName    = "admin"
+	indexdbFileName    = "index"
+	metricdbFileName   = "metric"
+	eventdbFileName    = "event"
+)
+
+var (
+	errPeriodNotMatched = errors.New("period has been changed,you should migrate data firstly")
 )
 
 // Options is to open DB.
@@ -29,6 +38,22 @@ type Options struct {
 	Period       uint32
 	Expiration   uint32
 	FilterOffset float64
+}
+
+func (p *Options) validateWithYamlFile(fileName string) error {
+	b, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+	var opts Options
+	err = yaml.Unmarshal(b, &opts)
+	if err != nil {
+		return err
+	}
+	if opts.Period != p.Period {
+		return errPeriodNotMatched
+	}
+	return nil
 }
 
 // DB handles the storage on leveldb.
@@ -48,6 +73,17 @@ func Open(fileName string, opts *Options) (*DB, error) {
 		log.Debugf("create dir %s", fileName)
 		err := os.Mkdir(fileName, filemode)
 		if err != nil {
+			return nil, err
+		}
+	}
+	// Check with lock file
+	lockFilePath := path.Join(fileName, optionlockFileName)
+	err = opts.validateWithYamlFile(lockFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			b, _ := yaml.Marshal(opts)
+			ioutil.WriteFile(lockFilePath, b, 0644)
+		} else {
 			return nil, err
 		}
 	}

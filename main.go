@@ -12,7 +12,7 @@ import (
 
 	"github.com/eleme/banshee/alerter"
 	"github.com/eleme/banshee/alerter/notifier"
-	"github.com/eleme/banshee/algorithm"
+	algo "github.com/eleme/banshee/algorithm"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
@@ -26,8 +26,9 @@ import (
 var (
 	// Arguments
 	debug       = flag.Bool("d", false, "debug mode")
-	fileName    = flag.String("c", "config.yaml", "config file path")
+	fileName    = flag.String("c", "", "config file path")
 	showVersion = flag.Bool("v", false, "show version")
+	migrateData = flag.Bool("m", false, "migrate data")
 	// Variables
 	cfg = config.New()
 	db  *storage.DB
@@ -37,7 +38,7 @@ var (
 // usage prints command line usage to stderr.
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage:\n")
-	fmt.Fprintf(os.Stderr, "  ./banshee -c filename [-d]\n")
+	fmt.Fprintf(os.Stderr, "  ./banshee -c filename [-d] [-m]\n")
 	fmt.Fprintf(os.Stderr, "  ./banshee -v\n")
 	fmt.Fprintf(os.Stderr, "%s@%s %s\n", version.Product, version.Version, version.Website)
 	os.Exit(2)
@@ -52,9 +53,9 @@ func initLog() {
 
 func initConfig() {
 	// Config parsing.
-	if flag.NFlag() == 0 || (flag.NFlag() == 1 && *debug) { // Case ./program [-d]
+	if *fileName == "" {
 		log.Warnf("no config specified, using default..")
-	} else { // Case ./program -c filename
+	} else {
 		err := cfg.UpdateWithYamlFile(*fileName)
 		if err != nil {
 			log.Fatalf("failed to load %s, %s", *fileName, err)
@@ -76,6 +77,14 @@ func initDB() {
 	opts := &storage.Options{
 		Period:     cfg.Period,
 		Expiration: cfg.Expiration,
+	}
+	if *migrateData {
+		err := storage.Migrate(path, opts)
+		if err != nil {
+			log.Fatalf("failed to migrate data: %v", err)
+		}
+		log.Infof("data migration was successful")
+		os.Exit(1)
 	}
 	var err error
 	db, err = storage.Open(path, opts)

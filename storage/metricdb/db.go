@@ -321,3 +321,34 @@ func (db *DB) Get(name string, link, start, end uint32) ([]*models.Metric, error
 	}
 	return ms, nil
 }
+
+// scan loops over all the records in the storage.
+func (s *storage) scan(fn func(*models.Metric) error) error {
+	iter := s.db.NewIterator(nil, nil)
+	defer iter.Release()
+	for iter.Next() {
+		m := &models.Metric{}
+		key := iter.Key()
+		value := iter.Value()
+		if err := decodeKey(key, m); err != nil {
+			return err
+		}
+		if err := decodeValue(value, m); err != nil {
+			return err
+		}
+		if err := fn(m); err != nil {
+			return err
+		}
+	}
+	return iter.Error()
+}
+
+// Scan loops over all the records in all storages.
+func (db *DB) Scan(fn func(*models.Metric) error) error {
+	for _, s := range db.pool {
+		if err := s.scan(fn); err != nil {
+			return err
+		}
+	}
+	return nil
+}

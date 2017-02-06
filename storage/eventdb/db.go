@@ -28,16 +28,17 @@ package eventdb
 
 import (
 	"errors"
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util/log"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3" // Import but no use
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"sync"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/log"
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3" // Import but no use
 )
 
 // SQL db dialect
@@ -346,4 +347,28 @@ func (db *DB) GetRange(lowestLevel int, start, end uint32) (ews []EventWrapper, 
 		ews = append(ews, chunk...)
 	}
 	return
+}
+
+// scan loops over all the records in the storage.
+func (s *storage) scan(fn func(EventWrapper) error) error {
+	var ews []EventWrapper
+	if err := s.db.Order("stamp").Find(&ews).Error; err != nil {
+		return err
+	}
+	for _, ew := range ews {
+		if err := fn(ew); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Scan loops over all the records in all storages.
+func (db *DB) Scan(fn func(EventWrapper) error) error {
+	for _, s := range db.pool {
+		if err := s.scan(fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
