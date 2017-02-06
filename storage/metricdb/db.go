@@ -266,6 +266,7 @@ func (s *storage) get(name string, link, start, end uint32) ([]*models.Metric, e
 	startKey := encodeKey(&models.Metric{Link: link, Stamp: start})
 	endKey := encodeKey(&models.Metric{Link: link, Stamp: end})
 	iter := s.db.NewIterator(&util.Range{Start: startKey, Limit: endKey}, nil)
+	defer iter.Release()
 	var ms []*models.Metric
 	for iter.Next() {
 		m := &models.Metric{Name: name}
@@ -279,7 +280,6 @@ func (s *storage) get(name string, link, start, end uint32) ([]*models.Metric, e
 		}
 		ms = append(ms, m)
 	}
-	iter.Release()
 	return ms, iter.Error()
 }
 
