@@ -286,16 +286,17 @@ module.exports = function() {
 
   exports.saveContentToFile = function(content,filename){
     var file = new Blob([content],{
-      type : "application/json"
-    })
+      type : 'application/json'
+    });
     var fileURL = URL.createObjectURL(file);
-    var a = document.createElement("a");
+    var a = document.createElement('a');
     a.href = fileURL;
-    a.target = "_blank";
+    a.target = '_blank';
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    return
+    document.body.removeChild(a);
+    return;
   };
 
   return exports;

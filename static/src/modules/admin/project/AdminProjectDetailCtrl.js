@@ -1,7 +1,7 @@
 /*@ngInject*/
 module.exports =
     function($scope, $location, $mdDialog, $state, $stateParams, $translate,
-             toastr, Project, Rule, User, Config, Util,Team,WebHook) {
+      toastr, Project, Rule, User, Config, Util,Team,WebHook) {
   var projectId = $scope.projectId = $stateParams.id;
   var allUsers = [];
   var allWebHooks=[];
@@ -217,29 +217,20 @@ module.exports =
   };
       
   $scope.exportRules = function(){
-    console.log("aaaa");
     Project.getRulesByProjectId({id: projectId}).$promise.then(function(res) {
-      Util.saveContentToFile(JSON.stringify(res),"rules.json");
+      Util.saveContentToFile(JSON.stringify(res),'rules.json');
     });
   };
   
-  $scope.importRules = function(event){
-    var ctrl = "RuleUploadCtrl";
-    var template = 'modules/admin/project/ruleUploadModal.html';
-    $mdDialog
-      .show({
-        controller: ctrl,
-        templateUrl: template,
-        parent: angular.element(document.body),
-        targetEvent: event,
-        clickOutsideToClose: true,
-        fullscreen: true,
-      })
-      .then(function(res) {
-        
-    });
-    
+  $scope.importRules = function(file){
+    if (file){
+      Project.importRules({id: projectId,file:file}).$promise.then(function(){
+        $scope.loadData();
+      });
+    }
   };
+
+
   $scope.translateRuleRepr = function(rule) {
     return Util.translateRuleRepr(rule, $scope.config, $translate);
   };

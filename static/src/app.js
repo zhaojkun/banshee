@@ -4,6 +4,7 @@ angular.module('banshee', [
   'ngAnimate',
   'ngAria',
   'ngMessages',
+  'ngFileUpload',
 
   'ui.router',
   'ui.bootstrap',

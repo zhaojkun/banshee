@@ -10,7 +10,7 @@ import (
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
 	"github.com/julienschmidt/httprouter"
-	"github.com/mattn/go-sqlite3"
+	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
 // createRule request
@@ -129,7 +129,7 @@ type ruleImportStatus struct {
 	Status error
 }
 
-func importRules(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func importProjectRules(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Params
 	projectID, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil || projectID <= 0 {
@@ -148,7 +148,7 @@ func importRules(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	// Request
 	var req []createRuleRequest
-	if err := RequestBind(r, &req); err != nil {
+	if err := RequestFileBind(r, &req); err != nil {
 		ResponseError(w, ErrBadRequest)
 		return
 	}

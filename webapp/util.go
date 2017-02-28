@@ -39,3 +39,14 @@ func ResponseError(w http.ResponseWriter, err *WebError) error {
 func RequestBind(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
+
+// RequestFileBind binds request file data into value.
+func RequestFileBind(r *http.Request, v interface{}) error {
+	r.ParseMultipartForm(32 << 20)
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return json.NewDecoder(file).Decode(v)
+}
