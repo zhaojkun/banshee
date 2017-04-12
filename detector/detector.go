@@ -28,9 +28,9 @@ type Detector struct {
 	flt  *filter.Filter
 	outs []chan *models.Event
 	// Idle tracking
-	idleMA map[string]int // indexName:trackTimes
-	idleMB map[string]int // indexName:trackTimes
-	lock   sync.Mutex     // protects idleM*
+	idleMA map[string]int64 // indexName:trackTimes
+	idleMB map[string]int64 // indexName:trackTimes
+	lock   sync.Mutex       // protects idleM*
 }
 
 // New creates a new Detector.
@@ -40,8 +40,8 @@ func New(cfg *config.Config, db *storage.DB, flt *filter.Filter) *Detector {
 		db:     db,
 		flt:    flt,
 		outs:   make([]chan *models.Event, 0),
-		idleMA: make(map[string]int, 0),
-		idleMB: make(map[string]int, 0),
+		idleMA: make(map[string]int64, 0),
+		idleMB: make(map[string]int64, 0),
 	}
 }
 
@@ -109,7 +109,7 @@ func (d *Detector) handle(conn net.Conn) {
 			log.Errorf("invalid metric %v : %v, skipping..", m.Name, err)
 			continue
 		}
-		d.process(m, true)
+		d.process(m)
 	}
 	conn.Close()
 	log.Infof("conn %s disconnected", addr)
@@ -120,7 +120,7 @@ func (d *Detector) handle(conn net.Conn) {
 //	1. Match metric with all rules.
 //	2. Detect the metric with matched rules.
 //	3. Output detection results to receivers.
-func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
+func (d *Detector) process(m *models.Metric) {
 	health.IncrNumMetricIncomed(1)
 	timer := util.NewTimer() // Detection cost timer
 	// Match
@@ -128,9 +128,7 @@ func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
 	if !ok {
 		return
 	}
-	if shouldAdjustIdle {
-		d.adjustIdleM(m, rules)
-	}
+	d.adjustIdleM(m, rules)
 	// Detect
 	evs, err := d.detect(m, rules)
 	if err != nil {
@@ -148,6 +146,27 @@ func (d *Detector) process(m *models.Metric, shouldAdjustIdle bool) {
 		log.Warnf("detection is slow: %.2fms", elapsed)
 	}
 	health.AddDetectionCost(elapsed)
+}
+
+func (d *Detector) processIdle(m *models.Metric) {
+	ok, rules := d.match(m)
+	if !ok {
+		return
+	}
+	idx, err := d.db.Index.Get(m.Name)
+	if err != nil {
+		return
+	}
+	m.LinkTo(idx)
+	var evs []*models.Event
+	for _, rule := range d.test(m, idx, rules) {
+		evs = append(evs, models.NewEvent(m, idx, rule))
+	}
+	for _, ev := range evs {
+		d.output(ev)
+	}
+	return
+
 }
 
 // match a metric with rules, and return matched rules.
@@ -189,7 +208,7 @@ func (d *Detector) adjustIdleM(m *models.Metric, rules []*models.Rule) {
 	defer d.lock.Unlock()
 	if b { // Should be tracked.
 		delete(d.idleMA, m.Name)
-		d.idleMB[m.Name] = 0 // Reset to 0 since real metric comes.
+		d.idleMB[m.Name] = int64(m.Stamp)
 	} else { // Shouldn't be tracked.
 		delete(d.idleMA, m.Name)
 		delete(d.idleMB, m.Name)
@@ -240,22 +259,25 @@ func (d *Detector) startIdleTracking() {
 func (d *Detector) checkIdles() {
 	d.lock.Lock()
 	defer d.lock.Unlock()
+	now := time.Now().Unix()
+	offset := int64(d.cfg.Detector.IdleMetricTrackLimit * d.cfg.Detector.IdleMetricCheckInterval)
 	for name, n := range d.idleMA {
 		mockedMetric := &models.Metric{
 			Name:  name,
 			Stamp: uint32(time.Now().Unix()),
-			Value: 0, // !Must 0
+			Value: 0,
+			Score: 0,
 		}
-		d.process(mockedMetric, false)
+		d.processIdle(mockedMetric)
 		// Copy mapA to mapB.
 		// Reason: mapA should be much smaller than mapB.
-		if d.idleMA[name] < d.cfg.Detector.IdleMetricTrackLimit {
-			d.idleMB[name] = n + 1 // And increase idle times
+		if now-n < offset {
+			d.idleMB[name] = n
 		}
 	}
 	// Rename mapB to mapA and reset mapB.
 	d.idleMA = d.idleMB
-	d.idleMB = make(map[string]int, 0)
+	d.idleMB = make(map[string]int64, 0)
 }
 
 // detect input metric with its matched rules.

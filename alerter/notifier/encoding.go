@@ -148,8 +148,10 @@ func packMessage(ew *models.EventWrapper) string {
 	date := time.Unix(int64(metric.Stamp), 0).Format("15:04:05")
 	avg := metric.Average
 	value := metric.Value
-
-	if rule.TrendUp || rule.TrendDown {
+	if rule.TrackIdle && ew.Metric.Value == 0 && ew.Metric.Average == 0 && ew.Metric.Score == 0 {
+		msg = fmt.Sprintf("{%s等级 %s %s %d %s} %s 丢失数据(空值检测)",
+			level, date, project.Name, ruleID, eventID[:7], translatedComment)
+	} else if rule.TrendUp || rule.TrendDown {
 		if ew.Index.Score > 0 {
 			trend = "增加"
 		} else {

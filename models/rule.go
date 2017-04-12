@@ -127,6 +127,11 @@ func (rule *Rule) Test(m *Metric, idx *Index, cfg *config.Config) bool {
 			return false
 		}
 	}
+	if rule.TrackIdle {
+		if m.Value == 0 && m.Average == 0 && m.Score == 0 {
+			return true
+		}
+	}
 	// Default thresholds.
 	var defaultThresholdMax float64
 	var defaultThresholdMin float64
