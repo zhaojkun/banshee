@@ -22,3 +22,4 @@ test-statsd
 test-config.yaml
 data
 test-data
+run.sh
