@@ -120,10 +120,10 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
     Project.getAllProjects().$promise.then(function(res) {
       var projectId = parseInt($stateParams.project);
       $scope.projects = res;
-      var teams = {}
+      var teams = {};
       for(var i in $scope.projects){
         var project = $scope.projects[i];
-        teams[project.id] = project.teamID
+        teams[project.id] = project.teamID;
       }
       $scope.teams = teams;
       if (projectId) {

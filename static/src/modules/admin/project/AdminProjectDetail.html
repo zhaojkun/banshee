@@ -16,8 +16,16 @@
           <!-- Rules -->
           <md-tab label="{{ 'ADMIN_PROJECT_RULES_TEXT' | translate }}">
             <md-content class="md-padding">
-            <div ng-style="{'text-align': 'right'}" layout-padding>
-              <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_ADD_TEXT' | translate }}" ng-click="openModal($event, 'addRule')">
+              <div ng-style="{'text-align': 'right'}" >
+                <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_DOWNLOAD_TEXT' | translate }}" ng-click="exportRules()">
+                  <md-icon class="fa fa-download"  aria-hidden="true" ng-style="{'font-size': '21px'}"></md-icon>
+                  <md-tooltip md-autohide>{{ 'ADMIN_RULE_DOWNLOAD_TEXT' | translate }}</md-tooltip>
+                </md-button>
+                <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_UPLOAD_TEXT' | translate }}" ngf-select="importRules($file)">
+                  <md-icon class="fa fa-upload" aria-hidden="true" ng-style="{'font-size': '21px'}"></md-icon>
+                  <md-tooltip md-autohide>{{ 'ADMIN_RULE_UPLOAD_TEXT' | translate }}</md-tooltip>
+                </md-button>
+                <md-button class="md-raised md-mini" aria-label="{{ 'ADMIN_RULE_ADD_TEXT' | translate }}" ng-click="openModal($event, 'addRule')">
                   <md-icon class="fa fa-plus-circle" ng-style="{'font-size': '21px'}"></md-icon>
                   <md-tooltip md-autohide>{{ 'ADMIN_RULE_ADD_TEXT' | translate }}</md-tooltip>
                 </md-button>

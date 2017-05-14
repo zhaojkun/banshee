@@ -284,5 +284,20 @@ module.exports = function() {
     return k + ['', 'K', 'M', 'G', 'T', 'P'][m];
   };
 
+  exports.saveContentToFile = function(content,filename){
+    var file = new Blob([content],{
+      type : 'application/json'
+    });
+    var fileURL = URL.createObjectURL(file);
+    var a = document.createElement('a');
+    a.href = fileURL;
+    a.target = '_blank';
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
+  };
+
   return exports;
 };
