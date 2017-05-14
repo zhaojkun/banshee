@@ -22,7 +22,7 @@ module.exports = function($resource) {
     getEventsByProjectId:
         {method: 'GET', url: '/api/project/:id/events', isArray: true},
     importRules:
-      {method: 'POST',url: '/api/project/:id/rules',headers:{'Content-Type': undefined},transformRequest:function(data){
+        {method: 'POST',url: '/api/project/:id/rules',headers:{'Content-Type': undefined},transformRequest:function(data){
         var fd = new FormData();
         fd.append('file',data.file);
         return fd;
