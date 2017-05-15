@@ -324,8 +324,16 @@ User
 
    200
    ```
+6. Add user to project by username (basic auth required).
+   
+   ```
+   POST /api/project/:id/user -d { name :"admin" }
+   
+   200
+   ```
 
-6. Get users by project id (basic auth required).
+
+7. Get users by project id (basic auth required).
 
    ```
    GET /api/project/:id/users
