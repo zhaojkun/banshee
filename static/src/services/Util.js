@@ -1,4 +1,7 @@
 /*@ngInject*/
+/*global
+   Blob ,URL
+ */
 module.exports = function() {
   var exports = {};
   exports.buildRepr = function(rule) {

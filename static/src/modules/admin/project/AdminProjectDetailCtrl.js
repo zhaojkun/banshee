@@ -226,23 +226,23 @@ module.exports =
       if (file){
         Project.importRules({id: projectId,file:file}).$promise.then(function(res){
           $scope.loadData();
-          let table = '<table><thead><tr><th><span>rule</span></th>'+
+          var table = '<table><thead><tr><th><span>rule</span></th>'+
             '<th><span>error</span></th></tr></thead><tbody>';
-          let found = false;
-          for(let i=0;i<res.length;i++){
-            if(res[i].Status!=null){
-              found = true
+          var found = false;
+          for(var i=0;i<res.length;i++){
+            if(res[i].Status!==null){
+              found = true;
               table += '<tr><td>'+res[i].Rule+'</td>'+
-                '<td>'+res[i].Status["msg"]+'</td></tr>'
+                '<td>'+res[i].Status.msg+'</td></tr>';
             }
           }
           if(found){
-            table += '</tbody></table>'
+            table += '</tbody></table>';
             var confirm = $mdDialog.alert()
-              .title("errors")
+              .title('errors')
               .htmlContent(table)
-              .ok($translate.instant('OK'))
-            $mdDialog.show(confirm)
+              .ok($translate.instant('OK'));
+            $mdDialog.show(confirm);
           }
         });
       }
