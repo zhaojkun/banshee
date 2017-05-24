@@ -93,6 +93,7 @@ type Config struct {
 	Webapp     configWebapp   `json:"webapp" yaml:"webapp"`
 	Alerter    configAlerter  `json:"alerter" yaml:"alerter"`
 	Notifier   configNotifier `json:"notifier" yaml:"notifier"`
+	Cluster    configCluster  `json:"cluster" yaml:"cluster"`
 }
 
 type configStorage struct {
@@ -145,6 +146,11 @@ type configNotifier struct {
 	SlackURL string `json:"slackURL" yaml:"slack_url"`
 }
 
+type configCluster struct {
+	Master   bool   `json:"master" yaml:"master"`
+	QueueDSN string `json:"queueDSN" yaml:"queue_dsn"`
+}
+
 // New creates a Config with default values.
 func New() *Config {
 	c := new(Config)
@@ -184,6 +190,7 @@ func New() *Config {
 	c.Alerter.NotifyAfter = DefaultNotifyAfter
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = []int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Cluster.Master = true
 	return c
 }
 

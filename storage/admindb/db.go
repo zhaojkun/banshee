@@ -6,7 +6,8 @@ import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util/log"
 	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3" // Import but no use
+	_ "github.com/jinzhu/gorm/dialects/mysql" // Import but no use
+	_ "github.com/mattn/go-sqlite3"           // Import but no use
 )
 
 // SQL db dialect
