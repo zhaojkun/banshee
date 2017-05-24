@@ -111,9 +111,9 @@ module.exports = function($scope, $rootScope, $timeout, $stateParams,
    */
   function watchAll() {
     $scope.$watchGroup(
-        ['filter.datetime', 'filter.limit', 'filter.sort', 'filter.type'],
-        function() { buildCubism(); });
-  };
+      ['filter.datetime', 'filter.limit', 'filter.sort', 'filter.type'],
+      function() { buildCubism(); });
+  }
 
 
   function loadData() {
