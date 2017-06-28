@@ -34,7 +34,7 @@ func getWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().First(webhook, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrWebHookNotFound)
 			return
 		default:
@@ -128,7 +128,7 @@ func deleteWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	// Delete.
 	if err := db.Admin.DB().Delete(webhook).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrWebHookNotFound)
 			return
 		default:
@@ -178,7 +178,7 @@ func updateWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().First(webhook, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrWebHookNotFound)
 			return
 		default:
@@ -193,7 +193,7 @@ func updateWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	webhook.Universal = req.Universal
 	webhook.RuleLevel = req.RuleLevel
 	if err := db.Admin.DB().Save(webhook).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// User not found.
 			ResponseError(w, ErrWebHookNotFound)
 			return
@@ -229,7 +229,7 @@ func getWebHookProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().First(webhook, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrWebHookNotFound)
 			return
 		default:

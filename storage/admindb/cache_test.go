@@ -3,15 +3,18 @@
 package admindb
 
 import (
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util"
 	"os"
 	"testing"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util"
+	"github.com/jinzhu/gorm"
 )
 
 func TestInit(t *testing.T) {
 	fileName := "db-testing"
-	db, _ := Open(fileName)
+	gdb, _ := gorm.Open("sqlite3", fileName)
+	db, _ := Open(gdb)
 	defer db.Close()
 	defer os.RemoveAll(fileName)
 	rule1 := &models.Rule{Pattern: "a.b.*"}

@@ -3,6 +3,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/eleme/banshee/storage/indexdb"
 	"github.com/eleme/banshee/storage/metricdb"
 	"github.com/eleme/banshee/util/log"
+	"github.com/jinzhu/gorm"
 )
 
 // DB file mode.
@@ -18,7 +20,6 @@ const filemode = 0755
 
 // Child db filename.
 const (
-	admindbFileName  = "admin"
 	indexdbFileName  = "index"
 	metricdbFileName = "metric"
 	eventdbFileName  = "event"
@@ -51,12 +52,7 @@ func Open(fileName string, opts *Options) (*DB, error) {
 			return nil, err
 		}
 	}
-	// Admindb.
 	db := new(DB)
-	db.Admin, err = admindb.Open(path.Join(fileName, admindbFileName))
-	if err != nil {
-		return nil, err
-	}
 	// Indexdb.
 	var indexdbOpts *indexdb.Options
 	if opts != nil {
@@ -95,11 +91,34 @@ func Open(fileName string, opts *Options) (*DB, error) {
 	return db, nil
 }
 
+// AdminOptions for Admin database.
+type AdminOptions struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DBName   string `json:"dbName"`
+}
+
+// InitAdminDB init admin database.
+func (db *DB) InitAdminDB(opts AdminOptions) error {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local&interpolateParams=True",
+		opts.User, opts.Password, opts.Host, opts.Port, opts.DBName)
+	gdb, err := gorm.Open("mysql", dsn)
+	if err != nil {
+		return err
+	}
+	db.Admin, err = admindb.Open(gdb)
+	return err
+}
+
 // Close a DB.
 func (db *DB) Close() error {
 	// Admindb.
-	if err := db.Admin.Close(); err != nil {
-		return err
+	if db.Admin != nil {
+		if err := db.Admin.Close(); err != nil {
+			return err
+		}
 	}
 	// Indexdb.
 	if err := db.Index.Close(); err != nil {

@@ -16,7 +16,6 @@ const (
 
 // Exchanges
 const (
-	ExchangeName = "rules"
 	ExchangeType = "fanout"
 )
 
@@ -27,9 +26,18 @@ type message struct {
 	Rule *models.Rule `json:"rule"`
 }
 
+// Options for message hub.
+type Options struct {
+	Master       bool   `json:"master"`
+	DSN          string `json:"dsn"`
+	VHost        string `json:"vHost"`
+	ExchangeName string `json:"exchangeName"`
+	QueueName    string `json:"queueName"`
+}
+
 // Hub is the message hub for rule changes.
 type Hub struct {
-	master    bool
+	opts      *Options
 	db        *storage.DB
 	conn      *amqp.Connection
 	msgCh     chan *message
@@ -38,13 +46,13 @@ type Hub struct {
 }
 
 // New create a  Hub.
-func New(dsn string, master bool, db *storage.DB) (*Hub, error) {
-	conn, err := amqp.Dial(dsn)
+func New(opts *Options, db *storage.DB) (*Hub, error) {
+	conn, err := amqp.Dial(opts.DSN)
 	if err != nil {
 		return nil, err
 	}
 	h := &Hub{
-		master:    master,
+		opts:      opts,
 		db:        db,
 		conn:      conn,
 		msgCh:     make(chan *message, bufferedChangedRulesLimit*2),
@@ -52,7 +60,7 @@ func New(dsn string, master bool, db *storage.DB) (*Hub, error) {
 		delRuleCh: make(chan *models.Rule, bufferedChangedRulesLimit),
 	}
 	errCh := make(chan error, 1)
-	if master {
+	if opts.Master {
 		h.initRuleListener()
 		go h.publisherW(errCh)
 	} else {
@@ -104,7 +112,7 @@ func (h *Hub) publisherW(errCh chan error) {
 		return
 	}
 	defer ch.Close()
-	err = ch.ExchangeDeclare(ExchangeName, ExchangeType, true, false, false, false, nil)
+	err = ch.ExchangeDeclare(h.opts.ExchangeName, ExchangeType, false, false, false, false, nil)
 	if err != nil {
 		errCh <- err
 		return
@@ -115,7 +123,7 @@ func (h *Hub) publisherW(errCh chan error) {
 		if err != nil {
 			continue
 		}
-		err = ch.Publish(ExchangeName, "", false, false, amqp.Publishing{
+		err = ch.Publish(h.opts.ExchangeName, "", false, false, amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        buf,
 		})
@@ -130,17 +138,17 @@ func (h *Hub) consumerW(errCh chan error) {
 		return
 	}
 	defer ch.Close()
-	err = ch.ExchangeDeclare(ExchangeName, ExchangeType, true, false, false, false, nil)
+	err = ch.ExchangeDeclare(h.opts.ExchangeName, ExchangeType, false, false, false, false, nil)
 	if err != nil {
 		errCh <- err
 		return
 	}
-	q, err := ch.QueueDeclare("", false, false, true, false, nil)
+	q, err := ch.QueueDeclare(h.opts.QueueName, false, false, false, false, nil)
 	if err != nil {
 		errCh <- err
 		return
 	}
-	err = ch.QueueBind(q.Name, "", ExchangeName, false, nil)
+	err = ch.QueueBind(q.Name, "", h.opts.ExchangeName, false, nil)
 	if err != nil {
 		errCh <- err
 		return

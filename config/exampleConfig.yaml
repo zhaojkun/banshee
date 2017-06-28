@@ -141,5 +141,5 @@ notifier:
    
 cluster:
   # q dsn for cluster rule exchange
-  queue_dsn: "amqp://guest:guest@localhost:5672/"
+  queue_dsn: ""
   

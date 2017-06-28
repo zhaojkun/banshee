@@ -3,15 +3,18 @@
 package admindb
 
 import (
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util"
 	"os"
 	"testing"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util"
+	"github.com/jinzhu/gorm"
 )
 
 func TestOpen(t *testing.T) {
 	fileName := "db-testing"
-	db, err := Open(fileName)
+	gdb, _ := gorm.Open("sqlite3", fileName)
+	db, err := Open(gdb)
 	util.Must(t, nil == err)
 	util.Must(t, db != nil)
 	util.Must(t, util.IsFileExist(fileName))

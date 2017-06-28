@@ -1,11 +1,13 @@
 {
 	"ImportPath": "github.com/eleme/banshee",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
+	"GoVersion": "go1.8",
 	"Packages": [
 		"github.com/eleme/banshee",
 		"github.com/eleme/banshee/alerter",
 		"github.com/eleme/banshee/alerter/exampleCommand",
+		"github.com/eleme/banshee/alerter/notifier",
+		"github.com/eleme/banshee/algorithm",
+		"github.com/eleme/banshee/cluster",
 		"github.com/eleme/banshee/config",
 		"github.com/eleme/banshee/detector",
 		"github.com/eleme/banshee/filter",
@@ -13,6 +15,7 @@
 		"github.com/eleme/banshee/models",
 		"github.com/eleme/banshee/storage",
 		"github.com/eleme/banshee/storage/admindb",
+		"github.com/eleme/banshee/storage/eventdb",
 		"github.com/eleme/banshee/storage/indexdb",
 		"github.com/eleme/banshee/storage/metricdb",
 		"github.com/eleme/banshee/util",
@@ -26,12 +29,18 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "v1.2-108-g66b7d5c",
+			"Rev": "66b7d5c4956096efd4c945494d64ad73f1d9ec39"
+		},
+		{
 			"ImportPath": "github.com/golang/snappy",
 			"Rev": "723cc1e459b8eea2dea4583200fd60757d40097a"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm",
-			"Rev": "9739cb853cbfb312fb0e20c7643588004cb50e4d"
+			"Comment": "v1.0-157-geae7f6b",
+			"Rev": "eae7f6be603af3190e032fe3c4d465ddaf6ea3d4"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/inflection",
@@ -43,62 +52,17 @@
 			"Rev": "77366a47451a56bb3ba682481eed85b64fea14e8"
 		},
 		{
-			"ImportPath": "github.com/lib/pq/hstore",
-			"Comment": "go1.0-cutoff-61-g83c4f41",
-			"Rev": "83c4f410d0aed80a0f44bac6a576a7f2435791f3"
-		},
-		{
 			"ImportPath": "github.com/mattn/go-sqlite3",
 			"Comment": "v1.1.0-40-g09d5c45",
 			"Rev": "09d5c451710ef887470709463f4f04ff83e1e039"
 		},
 		{
+			"ImportPath": "github.com/streadway/amqp",
+			"Rev": "27859d32540aebd2e5befa52dc59ae8e6a0132b6"
+		},
+		{
 			"ImportPath": "github.com/syndtr/goleveldb/leveldb",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/cache",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/comparer",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/errors",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/filter",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/iterator",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/journal",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/memdb",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/opt",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/storage",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/table",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
-		},
-		{
-			"ImportPath": "github.com/syndtr/goleveldb/leveldb/util",
-			"Rev": "cfa635847112c5dc4782e128fa7e0d05fdbfb394"
+			"Rev": "ab8b5dcf1042e818ab68e770d465112a899b668e"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

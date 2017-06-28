@@ -3,8 +3,9 @@
 package webapp
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // getConfig returns config.
@@ -12,6 +13,12 @@ func getConfig(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	c := cfg.Copy()
 	c.Webapp.Auth[0] = "******"
 	c.Webapp.Auth[1] = "******"
+	c.Storage.Admin.Host = "******"
+	c.Storage.Admin.Port = 0
+	c.Storage.Admin.User = "******"
+	c.Storage.Admin.Password = "******"
+	c.Storage.Admin.DBName = "******"
+	c.Cluster.QueueDSN = "******"
 	ResponseJSONOK(w, c)
 }
 

@@ -28,16 +28,17 @@ package eventdb
 
 import (
 	"errors"
-	"github.com/eleme/banshee/models"
-	"github.com/eleme/banshee/util/log"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3" // Import but no use
 	"io/ioutil"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"sync"
+
+	"github.com/eleme/banshee/models"
+	"github.com/eleme/banshee/util/log"
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3" // Import but no use
 )
 
 // SQL db dialect
@@ -87,7 +88,7 @@ func openStorage(fileName string) (*storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &storage{id: id, db: &db}
+	s := &storage{id: id, db: db}
 	if err = s.migrate(); err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (db *DB) createStorage(stamp uint32) error {
 	if err != nil {
 		return err
 	}
-	s := &storage{db: &gdb, id: id}
+	s := &storage{db: gdb, id: id}
 	if err = s.migrate(); err != nil { // DoNot forget
 		return err
 	}

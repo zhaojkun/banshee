@@ -42,7 +42,7 @@ func getTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	team := &models.Team{}
 	if err := db.Admin.DB().First(team, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -122,7 +122,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	team := &models.Team{}
 	if err := db.Admin.DB().First(team, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -133,7 +133,7 @@ func updateTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Patch.
 	team.Name = req.Name
 	if err := db.Admin.DB().Save(team).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// Not found.
 			ResponseError(w, ErrProjectNotFound)
 			return
@@ -178,7 +178,7 @@ func deleteTeam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Delete.
 	if err := db.Admin.DB().Delete(team).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
