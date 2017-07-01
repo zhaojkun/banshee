@@ -45,7 +45,7 @@ func getProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -141,7 +141,7 @@ func updateProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -156,7 +156,7 @@ func updateProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	proj.SilentTimeEnd = req.SilentTimeEnd
 	proj.TeamID = req.TeamID
 	if err := db.Admin.DB().Save(proj).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// Not found.
 			ResponseError(w, ErrProjectNotFound)
 			return
@@ -211,7 +211,7 @@ func deleteProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	// Delete.
 	if err := db.Admin.DB().Delete(proj).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -294,7 +294,7 @@ func addProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	user := &models.User{}
 	if err := db.Admin.DB().Where("name = ?", req.Name).First(user).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -309,7 +309,7 @@ func addProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	// Find proj
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			ResponseError(w, ErrNotFound)
 			return
 		}
@@ -324,7 +324,7 @@ func addProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	}
 	// Append user.
 	if err := db.Admin.DB().Model(proj).Association("Users").Append(user).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// User or Project not found.
 			ResponseError(w, ErrNotFound)
 			return
@@ -364,7 +364,7 @@ func deleteProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	user := &models.User{}
 	if err := db.Admin.DB().First(user, userID).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -376,7 +376,7 @@ func deleteProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -387,7 +387,7 @@ func deleteProjectUser(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	// Delete user.
 	if err := db.Admin.DB().Model(proj).Association("Users").Delete(user).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrNotFound)
 			return
 		default:
@@ -450,7 +450,7 @@ func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().Where("name = ?", req.Name).First(webhook).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrWebHookNotFound)
 			return
 		default:
@@ -465,7 +465,7 @@ func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	// Find proj
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			ResponseError(w, ErrNotFound)
 			return
 		}
@@ -480,7 +480,7 @@ func addProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 	// Append user.
 	if err := db.Admin.DB().Model(proj).Association("WebHooks").Append(webhook).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// User or Project not found.
 			ResponseError(w, ErrNotFound)
 			return
@@ -520,7 +520,7 @@ func deleteProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.
 	webhook := &models.WebHook{}
 	if err := db.Admin.DB().First(webhook, webhookID).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -532,7 +532,7 @@ func deleteProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -543,7 +543,7 @@ func deleteProjectWebHook(w http.ResponseWriter, r *http.Request, ps httprouter.
 	// Delete webhook.
 	if err := db.Admin.DB().Model(proj).Association("WebHooks").Delete(webhook).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrNotFound)
 			return
 		default:

@@ -93,12 +93,21 @@ type Config struct {
 	Webapp     configWebapp   `json:"webapp" yaml:"webapp"`
 	Alerter    configAlerter  `json:"alerter" yaml:"alerter"`
 	Notifier   configNotifier `json:"notifier" yaml:"notifier"`
+	Cluster    configCluster  `json:"cluster" yaml:"cluster"`
 }
 
 type configStorage struct {
-	Path string `json:"path" yaml:"path"`
+	Path  string      `json:"path" yaml:"path"`
+	Admin configAdmin `json:"admin" yaml:"admin"`
 }
 
+type configAdmin struct {
+	Host     string `json:"host" yaml:"host"`
+	Port     int    `json:"port" yaml:"port"`
+	User     string `json:"user" yaml:"user"`
+	Password string `json:"password" yaml:"password"`
+	DBName   string `json:"dbName" yaml:"dbname"`
+}
 type configDetector struct {
 	Port                      int                `json:"port" yaml:"port"`
 	TrendingFactorLowLevel    float64            `json:"trendingFactorLowLevel" yaml:"trending_factor_low_level"`
@@ -145,6 +154,14 @@ type configNotifier struct {
 	SlackURL string `json:"slackURL" yaml:"slack_url"`
 }
 
+type configCluster struct {
+	Master       bool   `json:"master" yaml:"master"`
+	QueueDSN     string `json:"queueDSN" yaml:"queue_dsn"`
+	VHost        string `json:"vHost" yaml:"v_host"`
+	ExchangeName string `json:"exchangeName" yaml:"exchange_name"`
+	QueueName    string `json:"queueName" yaml:"queue_name"`
+}
+
 // New creates a Config with default values.
 func New() *Config {
 	c := new(Config)
@@ -184,6 +201,7 @@ func New() *Config {
 	c.Alerter.NotifyAfter = DefaultNotifyAfter
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = []int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Cluster.Master = true
 	return c
 }
 
@@ -208,6 +226,7 @@ func (c *Config) Copy() *Config {
 	cfg.Period = c.Period
 	cfg.Expiration = c.Expiration
 	cfg.Storage.Path = c.Storage.Path
+	cfg.Storage.Admin = c.Storage.Admin
 	cfg.Detector.Port = c.Detector.Port
 	cfg.Detector.TrendingFactorLowLevel = c.Detector.TrendingFactorLowLevel
 	cfg.Detector.TrendingFactorMiddleLevel = c.Detector.TrendingFactorMiddleLevel
@@ -241,6 +260,7 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.NotifyAfter = c.Alerter.NotifyAfter
 	cfg.Alerter.AlertCheckInterval = c.Alerter.AlertCheckInterval
 	cfg.Notifier.SlackURL = c.Notifier.SlackURL
+	cfg.Cluster = c.Cluster
 	return cfg
 }
 

@@ -3,10 +3,8 @@ package gorm
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"go/ast"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +12,7 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
+// DefaultTableNameHandler default table name handler
 var DefaultTableNameHandler = func(db *DB, defaultTableName string) string {
 	return defaultTableName
 }
@@ -41,6 +40,7 @@ func newModelStructsMap() *safeModelStructsMap {
 
 var modelStructsMap = newModelStructsMap()
 
+// ModelStruct model definition
 type ModelStruct struct {
 	PrimaryFields    []*StructField
 	StructFields     []*StructField
@@ -48,10 +48,25 @@ type ModelStruct struct {
 	defaultTableName string
 }
 
+// TableName get model's table name
 func (s *ModelStruct) TableName(db *DB) string {
+	if s.defaultTableName == "" && db != nil && s.ModelType != nil {
+		// Set default table name
+		if tabler, ok := reflect.New(s.ModelType).Interface().(tabler); ok {
+			s.defaultTableName = tabler.TableName()
+		} else {
+			tableName := ToDBName(s.ModelType.Name())
+			if db == nil || !db.parent.singularTable {
+				tableName = inflection.Plural(tableName)
+			}
+			s.defaultTableName = tableName
+		}
+	}
+
 	return DefaultTableNameHandler(db, s.defaultTableName)
 }
 
+// StructField model field's struct definition
 type StructField struct {
 	DBName          string
 	Name            string
@@ -69,7 +84,7 @@ type StructField struct {
 }
 
 func (structField *StructField) clone() *StructField {
-	return &StructField{
+	clone := &StructField{
 		DBName:          structField.DBName,
 		Name:            structField.Name,
 		Names:           structField.Names,
@@ -79,11 +94,17 @@ func (structField *StructField) clone() *StructField {
 		IsScanner:       structField.IsScanner,
 		HasDefaultValue: structField.HasDefaultValue,
 		Tag:             structField.Tag,
-		TagSettings:     structField.TagSettings,
+		TagSettings:     map[string]string{},
 		Struct:          structField.Struct,
 		IsForeignKey:    structField.IsForeignKey,
 		Relationship:    structField.Relationship,
 	}
+
+	for key, value := range structField.TagSettings {
+		clone.TagSettings[key] = value
+	}
+
+	return clone
 }
 
 // Relationship described the relationship between models
@@ -91,6 +112,7 @@ type Relationship struct {
 	Kind                         string
 	PolymorphicType              string
 	PolymorphicDBName            string
+	PolymorphicValue             string
 	ForeignFieldNames            []string
 	ForeignDBNames               []string
 	AssociationForeignFieldNames []string
@@ -107,7 +129,7 @@ func getForeignField(column string, fields []*StructField) *StructField {
 	return nil
 }
 
-// GetModelStruct generate model struct & relationships based on struct and tag definition
+// GetModelStruct get value's model struct, relationships based on struct and tag definition
 func (scope *Scope) GetModelStruct() *ModelStruct {
 	var modelStruct ModelStruct
 	// Scope value can't be nil
@@ -132,17 +154,6 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 
 	modelStruct.ModelType = reflectType
 
-	// Set default table name
-	if tabler, ok := reflect.New(reflectType).Interface().(tabler); ok {
-		modelStruct.defaultTableName = tabler.TableName()
-	} else {
-		tableName := ToDBName(reflectType.Name())
-		if scope.db == nil || !scope.db.parent.singularTable {
-			tableName = inflection.Plural(tableName)
-		}
-		modelStruct.defaultTableName = tableName
-	}
-
 	// Get all fields
 	for i := 0; i < reflectType.NumField(); i++ {
 		if fieldStruct := reflectType.Field(i); ast.IsExported(fieldStruct.Name) {
@@ -155,7 +166,7 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 			}
 
 			// is ignored field
-			if fieldStruct.Tag.Get("sql") == "-" {
+			if _, ok := field.TagSettings["-"]; ok {
 				field.IsIgnored = true
 			} else {
 				if _, ok := field.TagSettings["PRIMARY_KEY"]; ok {
@@ -164,6 +175,10 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 				}
 
 				if _, ok := field.TagSettings["DEFAULT"]; ok {
+					field.HasDefaultValue = true
+				}
+
+				if _, ok := field.TagSettings["AUTO_INCREMENT"]; ok && !field.IsPrimaryKey {
 					field.HasDefaultValue = true
 				}
 
@@ -176,17 +191,41 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 				if _, isScanner := fieldValue.(sql.Scanner); isScanner {
 					// is scanner
 					field.IsScanner, field.IsNormal = true, true
+					if indirectType.Kind() == reflect.Struct {
+						for i := 0; i < indirectType.NumField(); i++ {
+							for key, value := range parseTagSetting(indirectType.Field(i).Tag) {
+								if _, ok := field.TagSettings[key]; !ok {
+									field.TagSettings[key] = value
+								}
+							}
+						}
+					}
 				} else if _, isTime := fieldValue.(*time.Time); isTime {
 					// is time
 					field.IsNormal = true
 				} else if _, ok := field.TagSettings["EMBEDDED"]; ok || fieldStruct.Anonymous {
 					// is embedded struct
-					for _, subField := range scope.New(fieldValue).GetStructFields() {
+					for _, subField := range scope.New(fieldValue).GetModelStruct().StructFields {
 						subField = subField.clone()
 						subField.Names = append([]string{fieldStruct.Name}, subField.Names...)
-						if subField.IsPrimaryKey {
-							modelStruct.PrimaryFields = append(modelStruct.PrimaryFields, subField)
+						if prefix, ok := field.TagSettings["EMBEDDED_PREFIX"]; ok {
+							subField.DBName = prefix + subField.DBName
 						}
+
+						if subField.IsPrimaryKey {
+							if _, ok := subField.TagSettings["PRIMARY_KEY"]; ok {
+								modelStruct.PrimaryFields = append(modelStruct.PrimaryFields, subField)
+							} else {
+								subField.IsPrimaryKey = false
+							}
+						}
+
+						if subField.Relationship != nil && subField.Relationship.JoinTableHandler != nil {
+							if joinTableHandler, ok := subField.Relationship.JoinTableHandler.(*JoinTableHandler); ok {
+								joinTableHandler.Setup(subField.Relationship, joinTableHandler.TableName, reflectType, joinTableHandler.Destination.ModelType)
+							}
+						}
+
 						modelStruct.StructFields = append(modelStruct.StructFields, subField)
 					}
 					continue
@@ -270,6 +309,12 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 											associationType = polymorphic
 											relationship.PolymorphicType = polymorphicType.Name
 											relationship.PolymorphicDBName = polymorphicType.DBName
+											// if Dog has multiple set of toys set name of the set (instead of default 'dogs')
+											if value, ok := field.TagSettings["POLYMORPHIC_VALUE"]; ok {
+												relationship.PolymorphicValue = value
+											} else {
+												relationship.PolymorphicValue = scope.TableName()
+											}
 											polymorphicType.IsForeignKey = true
 										}
 									}
@@ -296,7 +341,10 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 										if len(associationForeignKeys) == 0 {
 											for _, foreignKey := range foreignKeys {
 												if strings.HasPrefix(foreignKey, associationType) {
-													associationForeignKeys = append(associationForeignKeys, strings.TrimPrefix(foreignKey, associationType))
+													associationForeignKey := strings.TrimPrefix(foreignKey, associationType)
+													if foreignField := getForeignField(associationForeignKey, modelStruct.StructFields); foreignField != nil {
+														associationForeignKeys = append(associationForeignKeys, associationForeignKey)
+													}
 												}
 											}
 											if len(associationForeignKeys) == 0 && len(foreignKeys) == 1 {
@@ -359,6 +407,12 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 									associationType = polymorphic
 									relationship.PolymorphicType = polymorphicType.Name
 									relationship.PolymorphicDBName = polymorphicType.DBName
+									// if Cat has several different types of toys set name for each (instead of default 'cats')
+									if value, ok := field.TagSettings["POLYMORPHIC_VALUE"]; ok {
+										relationship.PolymorphicValue = value
+									} else {
+										relationship.PolymorphicValue = scope.TableName()
+									}
 									polymorphicType.IsForeignKey = true
 								}
 							}
@@ -389,7 +443,10 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 									if len(associationForeignKeys) == 0 {
 										for _, foreignKey := range foreignKeys {
 											if strings.HasPrefix(foreignKey, associationType) {
-												associationForeignKeys = append(associationForeignKeys, strings.TrimPrefix(foreignKey, associationType))
+												associationForeignKey := strings.TrimPrefix(foreignKey, associationType)
+												if foreignField := getForeignField(associationForeignKey, modelStruct.StructFields); foreignField != nil {
+													associationForeignKeys = append(associationForeignKeys, associationForeignKey)
+												}
 											}
 										}
 										if len(associationForeignKeys) == 0 && len(foreignKeys) == 1 {
@@ -445,7 +502,10 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 									if len(associationForeignKeys) == 0 {
 										for _, foreignKey := range foreignKeys {
 											if strings.HasPrefix(foreignKey, field.Name) {
-												associationForeignKeys = append(associationForeignKeys, strings.TrimPrefix(foreignKey, field.Name))
+												associationForeignKey := strings.TrimPrefix(foreignKey, field.Name)
+												if foreignField := getForeignField(associationForeignKey, toFields); foreignField != nil {
+													associationForeignKeys = append(associationForeignKeys, associationForeignKey)
+												}
 											}
 										}
 										if len(associationForeignKeys) == 0 && len(foreignKeys) == 1 {
@@ -508,61 +568,9 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 	return &modelStruct
 }
 
+// GetStructFields get model's field structs
 func (scope *Scope) GetStructFields() (fields []*StructField) {
 	return scope.GetModelStruct().StructFields
-}
-
-func (scope *Scope) generateSqlTag(field *StructField) string {
-	var sqlType string
-	structType := field.Struct.Type
-	if structType.Kind() == reflect.Ptr {
-		structType = structType.Elem()
-	}
-	reflectValue := reflect.Indirect(reflect.New(structType))
-
-	if value, ok := field.TagSettings["TYPE"]; ok {
-		sqlType = value
-	}
-
-	additionalType := field.TagSettings["NOT NULL"] + " " + field.TagSettings["UNIQUE"]
-	if value, ok := field.TagSettings["DEFAULT"]; ok {
-		additionalType = additionalType + " DEFAULT " + value
-	}
-
-	if field.IsScanner {
-		var getScannerValue func(reflect.Value)
-		getScannerValue = func(value reflect.Value) {
-			reflectValue = value
-			if _, isScanner := reflect.New(reflectValue.Type()).Interface().(sql.Scanner); isScanner && reflectValue.Kind() == reflect.Struct {
-				getScannerValue(reflectValue.Field(0))
-			}
-		}
-		getScannerValue(reflectValue)
-	}
-
-	if sqlType == "" {
-		var size = 255
-
-		if value, ok := field.TagSettings["SIZE"]; ok {
-			size, _ = strconv.Atoi(value)
-		}
-
-		v, autoIncrease := field.TagSettings["AUTO_INCREMENT"]
-		if field.IsPrimaryKey {
-			autoIncrease = true
-		}
-		if v == "FALSE" {
-			autoIncrease = false
-		}
-
-		sqlType = scope.Dialect().SqlTag(reflectValue, size, autoIncrease)
-	}
-
-	if strings.TrimSpace(additionalType) == "" {
-		return sqlType
-	} else {
-		return fmt.Sprintf("%v %v", sqlType, additionalType)
-	}
 }
 
 func parseTagSetting(tags reflect.StructTag) map[string]string {

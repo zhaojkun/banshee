@@ -139,3 +139,7 @@ notifier:
     # Example: "http://hooks.slack.com/services/service_name/token"
     slack_url: ""
    
+cluster:
+  # q dsn for cluster rule exchange
+  queue_dsn: ""
+  

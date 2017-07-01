@@ -3,10 +3,11 @@
 package storage
 
 import (
-	"github.com/eleme/banshee/util"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/eleme/banshee/util"
 )
 
 func TestOpen(t *testing.T) {
@@ -19,7 +20,6 @@ func TestOpen(t *testing.T) {
 	defer db.Close()
 	defer os.RemoveAll(fileName)
 	// Check if child db file exist
-	util.Must(t, util.IsFileExist(path.Join(fileName, admindbFileName)))
 	util.Must(t, util.IsFileExist(path.Join(fileName, indexdbFileName)))
 	util.Must(t, util.IsFileExist(path.Join(fileName, metricdbFileName)))
 	util.Must(t, util.IsFileExist(path.Join(fileName, eventdbFileName)))

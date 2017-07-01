@@ -5,12 +5,13 @@ package admindb
 import (
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/util/log"
+	_ "github.com/go-sql-driver/mysql" // Import but no use
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3" // Import but no use
 )
 
 // SQL db dialect
-const dialect = "sqlite3"
+const dialect = "mysql"
 
 // Gorm logging?
 const gormLogMode = false
@@ -24,14 +25,9 @@ type DB struct {
 }
 
 // Open DB by fileName.
-func Open(fileName string) (*DB, error) {
-	// Open
-	gdb, err := gorm.Open(dialect, fileName)
-	if err != nil {
-		return nil, err
-	}
+func Open(gdb *gorm.DB) (*DB, error) {
 	db := new(DB)
-	db.db = &gdb
+	db.db = gdb
 	// Migration
 	if err := db.migrate(); err != nil {
 		return nil, err

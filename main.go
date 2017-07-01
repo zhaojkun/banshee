@@ -13,6 +13,7 @@ import (
 	"github.com/eleme/banshee/alerter"
 	"github.com/eleme/banshee/alerter/notifier"
 	"github.com/eleme/banshee/algorithm"
+	"github.com/eleme/banshee/cluster"
 	"github.com/eleme/banshee/config"
 	"github.com/eleme/banshee/detector"
 	"github.com/eleme/banshee/filter"
@@ -32,6 +33,7 @@ var (
 	cfg = config.New()
 	db  *storage.DB
 	flt *filter.Filter
+	msg *cluster.Hub
 )
 
 // usage prints command line usage to stderr.
@@ -82,6 +84,16 @@ func initDB() {
 	if err != nil {
 		log.Fatalf("failed to open %s: %v", path, err)
 	}
+	err = db.InitAdminDB(storage.AdminOptions{
+		Host:     cfg.Storage.Admin.Host,
+		Port:     cfg.Storage.Admin.Port,
+		User:     cfg.Storage.Admin.User,
+		Password: cfg.Storage.Admin.Password,
+		DBName:   cfg.Storage.Admin.DBName,
+	})
+	if err != nil {
+		log.Fatalf("failed to init admin db : %v", err)
+	}
 }
 
 func initFilter() {
@@ -108,6 +120,27 @@ func initNotifier() {
 	}
 	notifier.Init(cfg)
 }
+
+func initCluster() {
+	if cfg == nil {
+		panic(errors.New("cluster require db and config"))
+	}
+	var err error
+	if cfg.Cluster.QueueDSN != "" {
+		opts := cluster.Options{
+			Master:       cfg.Cluster.Master,
+			DSN:          cfg.Cluster.QueueDSN,
+			VHost:        cfg.Cluster.VHost,
+			ExchangeName: cfg.Cluster.ExchangeName,
+			QueueName:    cfg.Cluster.QueueName,
+		}
+		msg, err = cluster.New(&opts, db)
+		if err != nil {
+			log.Errorf("cluster message queue open error: %s", err.Error())
+		}
+	}
+}
+
 func init() {
 	// Arguments
 	flag.Usage = usage
@@ -123,6 +156,7 @@ func init() {
 	initFilter()
 	initAlgo()
 	initNotifier()
+	initCluster()
 }
 
 func main() {

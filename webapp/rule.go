@@ -76,7 +76,7 @@ func createRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	proj := &models.Project{}
 	if err := db.Admin.DB().First(proj, projectID).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -138,7 +138,7 @@ func importProjectRules(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 	if err := db.Admin.DB().First(&models.Project{}, projectID).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrProjectNotFound)
 			return
 		default:
@@ -222,7 +222,7 @@ func deleteRule(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Delete
 	if err := db.Admin.DB().Delete(&models.Rule{ID: id}).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrRuleNotFound)
 			return
 		default:

@@ -3,12 +3,13 @@
 package webapp
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/eleme/banshee/models"
 	"github.com/jinzhu/gorm"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mattn/go-sqlite3"
-	"net/http"
-	"strconv"
 )
 
 // getUsers returns all users.
@@ -33,7 +34,7 @@ func getUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	user := &models.User{}
 	if err := db.Admin.DB().First(user, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -140,7 +141,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Delete.
 	if err := db.Admin.DB().Delete(user).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -195,7 +196,7 @@ func updateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	user := &models.User{}
 	if err := db.Admin.DB().First(user, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
@@ -212,7 +213,7 @@ func updateUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	user.Universal = req.Universal
 	user.RuleLevel = req.RuleLevel
 	if err := db.Admin.DB().Save(user).Error; err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// User not found.
 			ResponseError(w, ErrUserNotFound)
 			return
@@ -248,7 +249,7 @@ func getUserProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	user := &models.User{}
 	if err := db.Admin.DB().First(user, id).Error; err != nil {
 		switch err {
-		case gorm.RecordNotFound:
+		case gorm.ErrRecordNotFound:
 			ResponseError(w, ErrUserNotFound)
 			return
 		default:
