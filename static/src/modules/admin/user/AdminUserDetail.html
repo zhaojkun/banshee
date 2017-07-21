@@ -95,10 +95,10 @@
                     <tr ng-repeat="project in projects">
                       <td ng-bind="$index+1" class="td50"></td>
                       <td>
-                        <a ng-bind="project.name" ui-sref='banshee.admin.team.project.detail({id: project.id})' class="md-body-2"></a>
+                        <a ng-bind="project.name" ui-sref='banshee.admin.team.project.detail({id: project.id,teamID:project.teamID})' class="md-body-2"></a>
                       </td>
                       <td class="text-right">
-                        <a ui-sref='banshee.admin.team.project.detail({id: project.id})'>
+                        <a ui-sref='banshee.admin.team.project.detail({id: project.id,teamID:project.teamID})'>
                           <md-button class="md-raised md-primary md-mini" aria-label="edit project">
                             <i class="fa fa-pencil"></i>
                           </md-button>
