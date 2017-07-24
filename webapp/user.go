@@ -274,3 +274,87 @@ func getUserProjects(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	}
 	ResponseJSONOK(w, projs)
 }
+
+type copyUserRequest struct {
+	From int `json:"from"`
+	To   int `json:"to"`
+}
+
+func copyUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	req := &copyUserRequest{}
+	if err := RequestBind(r, req); err != nil {
+		ResponseError(w, ErrBadRequest)
+		return
+	}
+	var userA, userB models.User
+	if err := db.Admin.DB().First(&userA, req.From).Error; err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			ResponseError(w, ErrUserNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+	if err := db.Admin.DB().First(&userB, req.To).Error; err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			ResponseError(w, ErrUserNotFound)
+			return
+		default:
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+	// upgrade user B from user A
+	if userA.EnableEmail {
+		userB.EnableEmail = true
+	}
+	if userA.EnablePhone {
+		userB.EnablePhone = true
+	}
+	if userA.Universal {
+		userB.Universal = true
+	}
+	if userA.RuleLevel > userB.RuleLevel {
+		userB.RuleLevel = userA.RuleLevel
+	}
+	err := db.Admin.DB().Save(&userB).Error
+	if err != nil {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	// copy projects  to user b
+	var projUserA, projUserB []projectUser
+	err = db.Admin.DB().Table("project_users").Where("user_id = ?", userA.ID).Find(&projUserA).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	err = db.Admin.DB().Table("project_users").Where("user_id = ?", userB.ID).Find(&projUserB).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		ResponseError(w, NewUnexceptedWebError(err))
+		return
+	}
+	projsMB := make(map[int]bool)
+	for _, proj := range projUserB {
+		projsMB[proj.ProjectID] = true
+	}
+	projs := make(map[int]bool)
+	for _, proj := range projUserA {
+		if _, ok := projsMB[proj.ProjectID]; !ok {
+			projs[proj.ProjectID] = true
+		}
+	}
+	for key := range projs {
+		err := db.Admin.DB().Table("project_users").Save(&projectUser{
+			UserID:    userB.ID,
+			ProjectID: key,
+		}).Error
+		if err != nil {
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
+	}
+}
