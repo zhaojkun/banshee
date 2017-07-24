@@ -354,6 +354,13 @@ User
    ]
    ```
 
+8. Copy rules bewteen users based on userID (basic auth required).
+   ```
+   POST /api/users/copy -d {"from": 1 ,"to": 2 }
+   
+   200
+   ```
+
 Rule
 ----
 
