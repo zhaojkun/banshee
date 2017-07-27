@@ -357,4 +357,5 @@ func copyUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 	}
+	ResponseJSONOK(w, userB)
 }
