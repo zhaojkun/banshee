@@ -490,22 +490,16 @@ func (d *Detector) nextIdx(idx *models.Index, m *models.Metric, f float64) *mode
 // pickTrendingFactor picks a trending factor by rules levels.
 func (d *Detector) pickTrendingFactor(rules []*models.Rule) float64 {
 	maxLevel := models.RuleLevelLow
-	factor := d.cfg.Detector.TrendingFactorLowLevel
 	for _, rule := range rules {
-		switch rule.Level {
-		case models.RuleLevelLow:
-			if maxLevel < rule.Level {
-				factor = d.cfg.Detector.TrendingFactorLowLevel
-			}
-		case models.RuleLevelMiddle:
-			if maxLevel < rule.Level {
-				factor = d.cfg.Detector.TrendingFactorMiddleLevel
-			}
-		case models.RuleLevelHigh:
-			if maxLevel < rule.Level {
-				factor = d.cfg.Detector.TrendingFactorHighLevel
-			}
+		if rule.Level > maxLevel {
+			maxLevel = rule.Level
 		}
 	}
-	return factor
+	if maxLevel == models.RuleLevelLow {
+		return d.cfg.Detector.TrendingFactorLowLevel
+	} else if maxLevel == models.RuleLevelMiddle {
+		return d.cfg.Detector.TrendingFactorMiddleLevel
+	} else {
+		return d.cfg.Detector.TrendingFactorHighLevel
+	}
 }
