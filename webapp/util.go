@@ -11,6 +11,11 @@ import (
 
 // ResponseJSONOK writes ok response.
 func ResponseJSONOK(w http.ResponseWriter, v interface{}) error {
+	if v == nil {
+		v = map[string]string{
+			"message": "OK",
+		}
+	}
 	return ResponseJSON(w, http.StatusOK, v)
 }
 

@@ -149,6 +149,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 	}
+	ResponseJSONOK(w, nil)
 }
 
 // updateUser request
