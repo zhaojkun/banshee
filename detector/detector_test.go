@@ -39,12 +39,26 @@ func TestFill0Issue470(t *testing.T) {
 func TestPickTrendingFactor(t *testing.T) {
 	cfg := config.New()
 	d := &Detector{cfg: cfg}
+
 	rules := []*models.Rule{
-		&models.Rule{Level: models.RuleLevelLow},
+		{Level: models.RuleLevelLow},
 	}
 	util.Must(t, d.pickTrendingFactor(rules) == cfg.Detector.TrendingFactorLowLevel)
-	rules = append(rules, &models.Rule{Level: models.RuleLevelMiddle})
+
+	rules = []*models.Rule{
+		{Level: models.RuleLevelMiddle},
+	}
 	util.Must(t, d.pickTrendingFactor(rules) == cfg.Detector.TrendingFactorMiddleLevel)
-	rules = append(rules, &models.Rule{Level: models.RuleLevelHigh})
+
+	rules = []*models.Rule{
+		{Level: models.RuleLevelHigh},
+	}
+	util.Must(t, d.pickTrendingFactor(rules) == cfg.Detector.TrendingFactorHighLevel)
+
+	rules = []*models.Rule{
+		{Level: models.RuleLevelLow},
+		{Level: models.RuleLevelHigh},
+		{Level: models.RuleLevelMiddle},
+	}
 	util.Must(t, d.pickTrendingFactor(rules) == cfg.Detector.TrendingFactorHighLevel)
 }
