@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/eleme/banshee/alerter"
 	"github.com/eleme/banshee/models"
@@ -14,7 +15,18 @@ import (
 
 // Slack Notifier
 type Slack struct {
-	name string
+	name   string
+	client *http.Client
+}
+
+// NewSlack create a slack client for notification.
+func NewSlack(name string) *Slack {
+	return &Slack{
+		name: name,
+		client: &http.Client{
+			Timeout: time.Second * 10,
+		},
+	}
 }
 
 // Notify metric event
@@ -46,7 +58,7 @@ func (s *Slack) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	body, _ := json.Marshal(data)
 	req, err := http.NewRequest("POST", cfg.Notifier.SlackURL, bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
-	_, err = http.DefaultClient.Do(req)
+	_, err = s.client.Do(req)
 	return err
 }
 
@@ -58,5 +70,5 @@ func (s *Slack) getColor(name string) string {
 }
 
 func init() {
-	alerter.RegisterNotifier("slack", &Slack{name: "banshee-bot"})
+	alerter.RegisterNotifier("slack", NewSlack("banshee-bot"))
 }

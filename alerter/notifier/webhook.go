@@ -4,13 +4,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/eleme/banshee/alerter"
 	"github.com/eleme/banshee/models"
 )
 
 // WebHook notifier
-type WebHook struct{}
+type WebHook struct {
+	client *http.Client
+}
+
+// NewWebHook create a webhook client for notification.
+func NewWebHook() *WebHook {
+	return &WebHook{
+		client: &http.Client{
+			Timeout: time.Second * 10,
+		},
+	}
+}
 
 // Event is the webhook payload
 type Event struct {
@@ -34,10 +46,10 @@ func (w *WebHook) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	body, _ := json.Marshal(evt)
 	req, err := http.NewRequest("POST", hook.URL, bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
-	_, err = http.DefaultClient.Do(req)
+	_, err = w.client.Do(req)
 	return err
 }
 
 func init() {
-	alerter.RegisterNotifier("webhook", new(WebHook))
+	alerter.RegisterNotifier("webhook", NewWebHook())
 }

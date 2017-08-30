@@ -5,6 +5,7 @@ import (
 
 	"github.com/eleme/banshee/models"
 	"github.com/eleme/banshee/storage"
+	"github.com/eleme/banshee/util/log"
 	"github.com/streadway/amqp"
 )
 
@@ -85,10 +86,7 @@ func (h *Hub) initAddRuleListener() {
 	go func() {
 		for {
 			rule := <-h.addRuleCh
-			h.msgCh <- &message{
-				Type: RULEADD,
-				Rule: rule,
-			}
+			h.msgCh <- &message{Type: RULEADD, Rule: rule}
 		}
 	}()
 }
@@ -97,10 +95,7 @@ func (h *Hub) initDelRuleListener() {
 	go func() {
 		for {
 			rule := <-h.delRuleCh
-			h.msgCh <- &message{
-				Type: RULEDELETE,
-				Rule: rule,
-			}
+			h.msgCh <- &message{Type: RULEDELETE, Rule: rule}
 		}
 	}()
 }
@@ -127,6 +122,7 @@ func (h *Hub) publisherW(errCh chan error) {
 			ContentType: "text/plain",
 			Body:        buf,
 		})
+		log.Infof("sending rule message %v", msg)
 	}
 	return
 }
@@ -168,6 +164,7 @@ func (h *Hub) consumerW(errCh chan error) {
 		if m.Rule == nil {
 			continue
 		}
+		log.Infof("received message %v", m)
 		if m.Type == RULEADD {
 			h.db.Admin.RulesCache.Put(m.Rule)
 		} else if m.Type == RULEDELETE {
