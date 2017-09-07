@@ -64,6 +64,7 @@ type EventWrapper struct {
 	Team                  *Team    `json:"team"`
 	Project               *Project `json:"project"`
 	User                  *User    `json:"user,omitempty"`
+	AlarmUsers            []*User  `json:"alarmUsers,omitempty"`
 	RuleTranslatedComment string   `json:"ruleTranslatedComment"`
 }
 

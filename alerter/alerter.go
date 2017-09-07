@@ -311,11 +311,13 @@ func (al *Alerter) work() {
 			log.Errorf("get user from project %v: %v", ew.Project.Name, err)
 			continue
 		}
-		for _, user := range users {
+		ew.AlarmUsers = make([]*models.User, 0, len(users))
+		for i, user := range users {
 			ew.User = &user
 			if ew.Rule.Level < user.RuleLevel {
 				continue
 			}
+			ew.AlarmUsers = append(ew.AlarmUsers, &users[i])
 			if len(al.cfg.Alerter.Command) == 0 {
 				log.Warnf("alert command not configured")
 				continue
@@ -346,8 +348,8 @@ func (al *Alerter) work() {
 				log.Errorf("notifier %s: %v", hook.Name, err)
 			}
 			log.Infof("send to webhook %s with %s ok", hook.Name, ew.Metric.Name)
-
 		}
+		ew.AlarmUsers = nil
 		if len(users) != 0 || len(ew.Project.WebHooks) != 0 {
 			health.IncrNumAlertingEvents(1)
 		}

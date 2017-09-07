@@ -666,7 +666,20 @@ WebHook
     "team": {
       "id": 4,
       "name": "note"
-     }
+     },
+    "alarmUsers": [
+               {
+                 "email": "xiaoming@gmail.com",
+                 "enableEmail": false,
+                 "enablePhone": true,
+                 "id": 2,
+                 "name": "xiaoming",
+                 "phone": "18718718718",
+                 "ruleLevel": 2,
+                 "universal": true
+               },
+               ...
+    ]
     }
   ```
 
