@@ -105,6 +105,7 @@ func (f *Filter) initAddRuleListener() {
 	go func() {
 		for {
 			rule := <-f.addRuleCh
+			log.Infof("filter add rule %s", rule.Pattern)
 			f.addRule(rule)
 		}
 	}()
@@ -115,6 +116,7 @@ func (f *Filter) initDelRuleListener() {
 	go func() {
 		for {
 			rule := <-f.delRuleCh
+			log.Infof("filter delete rule %s", rule.Pattern)
 			f.delRule(rule)
 		}
 	}()
