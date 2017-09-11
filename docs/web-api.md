@@ -630,6 +630,10 @@ WebHook
   {
     "id": "ab372c88c08ada73bd35feea740896d340de770e",
     "comment": "add note",
+    "timestamp": 1505149763562,
+    "text": "{低等级 20:39:00 test 4 efe0f31} test大于设定阈值 当前值1.11,阈值1",
+    "grafanaLink": "grafanaLink",
+    "ruleLink": "ruleLink",
     "metric": {
       "name": "timer.count_ps.note.add",
       "stamp": 1477361415,

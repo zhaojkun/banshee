@@ -349,7 +349,6 @@ func (al *Alerter) work() {
 			}
 			log.Infof("send to webhook %s with %s ok", hook.Name, ew.Metric.Name)
 		}
-		ew.AlarmUsers = nil
 		if len(users) != 0 || len(ew.Project.WebHooks) != 0 {
 			health.IncrNumAlertingEvents(1)
 		}
