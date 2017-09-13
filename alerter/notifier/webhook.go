@@ -26,12 +26,17 @@ func NewWebHook() *WebHook {
 
 // Event is the webhook payload
 type Event struct {
-	ID      string          `json:"id"`
-	Comment string          `json:"comment"`
-	Metric  *models.Metric  `json:"metric"`
-	Rule    *models.Rule    `json:"rule"`
-	Project *models.Project `json:"project"`
-	Team    *models.Team    `json:"team"`
+	ID          string          `json:"id"`
+	Comment     string          `json:"comment"`
+	Timestamp   int64           `json:"timestamp"`
+	Text        string          `json:"text"`
+	GrafanaLink string          `json:"grafanaLink"`
+	RuleLink    string          `json:"ruleLink"`
+	Metric      *models.Metric  `json:"metric"`
+	Rule        *models.Rule    `json:"rule"`
+	Project     *models.Project `json:"project"`
+	Team        *models.Team    `json:"team"`
+	AlarmUsers  []*models.User  `json:"alarmUsers"`
 }
 
 // Notify event
@@ -43,7 +48,17 @@ func (w *WebHook) Notify(hook models.WebHook, ew *models.EventWrapper) error {
 	evt.Rule = ew.Rule
 	evt.Team = ew.Team
 	evt.Project = ew.Project
+	evt.AlarmUsers = ew.AlarmUsers
+
+	graphiteMetricName := graphiteName(ew.Metric.Name)
+
+	evt.GrafanaLink = getGrafanaPanelURL(graphiteMetricName)
+	evt.RuleLink = getRuleURL(ew.Project.TeamID, ew.Project.ID, ew.Rule.ID)
+	evt.Text = packMessage(ew)
+	evt.Timestamp = time.Now().UnixNano()/1e6
+
 	body, _ := json.Marshal(evt)
+
 	req, err := http.NewRequest("POST", hook.URL, bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
 	_, err = w.client.Do(req)
