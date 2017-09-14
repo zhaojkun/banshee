@@ -13,14 +13,19 @@ import (
 	"github.com/eleme/banshee/util/trie"
 )
 
+// Rule types
+const (
+	RULEADD    = "add"
+	RULEDELETE = "delete"
+)
+
 // Filter is to filter metrics by rules.
 type Filter struct {
 	sync.Mutex
 	// Config
 	cfg *config.Config
 	// Rule changes
-	addRuleCh chan *models.Rule
-	delRuleCh chan *models.Rule
+	changeRuleCh chan *models.Message
 	// Trie
 	trie *trie.Trie
 }
@@ -94,28 +99,21 @@ const bufferedChangedRulesLimit = 128
 func New(cfg *config.Config) *Filter {
 	return &Filter{
 		cfg:       cfg,
-		addRuleCh: make(chan *models.Rule, bufferedChangedRulesLimit),
-		delRuleCh: make(chan *models.Rule, bufferedChangedRulesLimit),
+		changeRuleCh: make(chan *models.Message, bufferedChangedRulesLimit*128),
 		trie:      trie.New(),
 	}
 }
 
-// initAddRuleListener starts a goroutine to listen on new rules.
-func (f *Filter) initAddRuleListener() {
+// initRuleListener starts a goroutine to listen on new rules.
+func (f *Filter) initRuleListener() {
 	go func() {
 		for {
-			rule := <-f.addRuleCh
-			f.addRule(rule)
-		}
-	}()
-}
-
-// initDelRuleListener starts a goroutine to listen on rule deletes.
-func (f *Filter) initDelRuleListener() {
-	go func() {
-		for {
-			rule := <-f.delRuleCh
-			f.delRule(rule)
+			m := <-f.changeRuleCh
+			if m.Type == RULEADD {
+				f.addRule(m.Rule)
+			} else if m.Type == RULEDELETE {
+				f.delRule(m.Rule)
+			}
 		}
 	}()
 }
@@ -124,8 +122,7 @@ func (f *Filter) initDelRuleListener() {
 func (f *Filter) initFromDB(db *storage.DB) {
 	log.Debugf("init filter's rules from cache..")
 	// Listen rules changes.
-	db.Admin.RulesCache.OnAdd(f.addRuleCh)
-	db.Admin.RulesCache.OnDel(f.delRuleCh)
+	db.Admin.RulesCache.OnChange(f.changeRuleCh)
 	// Add rules from cache
 	rules := db.Admin.RulesCache.All()
 	for _, rule := range rules {
@@ -136,8 +133,7 @@ func (f *Filter) initFromDB(db *storage.DB) {
 // Init filter.
 func (f *Filter) Init(db *storage.DB) {
 	f.initFromDB(db)
-	f.initAddRuleListener()
-	f.initDelRuleListener()
+	f.initRuleListener()
 }
 
 // addRule adds a rule to the filter.

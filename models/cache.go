@@ -13,6 +13,11 @@ type cache struct {
 	shared bool
 }
 
+type Message struct {
+	Type string       `json:"type"`
+	Rule *Rule `json:"rule"`
+}
+
 // Share the instance between goroutines.
 func (c *cache) Share() {
 	if c.shared {
