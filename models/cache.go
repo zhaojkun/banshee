@@ -13,9 +13,10 @@ type cache struct {
 	shared bool
 }
 
+// Message is a add or delete event.
 type Message struct {
 	Type string       `json:"type"`
-	Rule *Rule `json:"rule"`
+	Rule *Rule        `json:"rule"`
 }
 
 // Share the instance between goroutines.
