@@ -67,19 +67,20 @@ func (al *Alerter) Start() {
 }
 
 // hourInRange returns true if given hour is in range [start, end).
+// if start == end means all day will alert.
 // Examples:
-//	hourInRange(10, 7, 19) // true
-//	hourInRange(10, 20, 19) // false
+//  hourInRange(10, 7, 19) // true
+//  hourInRange(10, 20, 19) // false
+//  hourInRange(0, 0, 0) // false
 func hourInRange(hour, start, end int) bool {
-	switch {
-	case start < end:
-		return start <= hour && hour < end
-	case start > end:
-		return start <= hour || hour < end
-	case start == end:
-		return start == hour
-	}
-	return false
+    switch {
+    case start < end:
+        return start <= hour && hour < end
+    case start > end:
+        return start <= hour || hour < end
+    default:
+        return false
+    }
 }
 
 // shouldProjBeSilent returns true if given project should be silent at this
