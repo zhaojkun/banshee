@@ -5,8 +5,9 @@ package indexdb
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/eleme/banshee/models"
 	"math"
+
+	"github.com/eleme/banshee/models"
 )
 
 // Format
@@ -42,8 +43,5 @@ func decode(value []byte, idx *models.Index) error {
 	if err := binary.Read(r, binary.BigEndian, &idx.Score); err != nil {
 		return err
 	}
-	if err := binary.Read(r, binary.BigEndian, &idx.Average); err != nil {
-		return err
-	}
-	return nil
+	return binary.Read(r, binary.BigEndian, &idx.Average)
 }
