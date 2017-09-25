@@ -9,12 +9,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Rule types
-const (
-	RULEADD    = "add"
-	RULEDELETE = "delete"
-)
-
 // Exchanges
 const (
 	ExchangeType = "fanout"
@@ -33,10 +27,10 @@ type Options struct {
 
 // Hub is the message hub for rule changes.
 type Hub struct {
-	opts      *Options
-	db        *storage.DB
-	conn      *amqp.Connection
-	msgCh     chan *models.Message
+	opts  *Options
+	db    *storage.DB
+	conn  *amqp.Connection
+	msgCh chan *models.Message
 }
 
 // New create a  Hub.
@@ -46,10 +40,10 @@ func New(opts *Options, db *storage.DB) (*Hub, error) {
 		return nil, err
 	}
 	h := &Hub{
-		opts:      opts,
-		db:        db,
-		conn:      conn,
-		msgCh:     make(chan *models.Message, bufferedChangedRulesLimit*2),
+		opts:  opts,
+		db:    db,
+		conn:  conn,
+		msgCh: make(chan *models.Message, bufferedChangedRulesLimit*2),
 	}
 	errCh := make(chan error, 1)
 	if opts.Master {
@@ -135,9 +129,9 @@ func (h *Hub) consumerW(errCh chan error) {
 			continue
 		}
 		log.Infof("received message %v", m)
-		if m.Type == RULEADD {
+		if m.Type == models.RULEADD {
 			h.db.Admin.RulesCache.Put(m.Rule)
-		} else if m.Type == RULEDELETE {
+		} else if m.Type == models.RULEDELETE {
 			h.db.Admin.RulesCache.Delete(m.Rule.ID)
 		}
 	}

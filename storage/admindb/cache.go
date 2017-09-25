@@ -9,12 +9,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// Rule types
-const (
-	RULEADD    = "add"
-	RULEDELETE = "delete"
-)
-
 type rulesCache struct {
 	// Cache
 	rules *safemap.SafeMap
@@ -71,7 +65,7 @@ func (c *rulesCache) Put(rule *models.Rule) bool {
 	r := rule.Copy()
 	r.Share()
 	c.rules.Set(rule.ID, r)
-	c.push(&models.Message{Type: RULEADD, Rule: rule.Copy()})
+	c.push(&models.Message{Type: models.RULEADD, Rule: rule.Copy()})
 	return true
 }
 
@@ -89,7 +83,7 @@ func (c *rulesCache) Delete(id int) bool {
 	r, ok := c.rules.Pop(id)
 	if ok {
 		rule := r.(*models.Rule)
-		c.push(&models.Message{Type: RULEDELETE, Rule: rule.Copy()})
+		c.push(&models.Message{Type: models.RULEDELETE, Rule: rule.Copy()})
 		return true
 	}
 	return false

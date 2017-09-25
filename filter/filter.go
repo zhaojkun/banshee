@@ -13,12 +13,6 @@ import (
 	"github.com/eleme/banshee/util/trie"
 )
 
-// Rule types
-const (
-	RULEADD    = "add"
-	RULEDELETE = "delete"
-)
-
 // Filter is to filter metrics by rules.
 type Filter struct {
 	sync.Mutex
@@ -98,9 +92,9 @@ const bufferedChangedRulesLimit = 128
 // New creates a new Filter.
 func New(cfg *config.Config) *Filter {
 	return &Filter{
-		cfg:       cfg,
+		cfg:          cfg,
 		changeRuleCh: make(chan *models.Message, bufferedChangedRulesLimit*128),
-		trie:      trie.New(),
+		trie:         trie.New(),
 	}
 }
 
@@ -109,9 +103,9 @@ func (f *Filter) initRuleListener() {
 	go func() {
 		for {
 			m := <-f.changeRuleCh
-			if m.Type == RULEADD {
+			if m.Type == models.RULEADD {
 				f.addRule(m.Rule)
-			} else if m.Type == RULEDELETE {
+			} else if m.Type == models.RULEDELETE {
 				f.delRule(m.Rule)
 			}
 		}
