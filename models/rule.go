@@ -16,6 +16,18 @@ const (
 	RuleLevelHigh
 )
 
+// Rule types
+const (
+	RULEADD    = "add"
+	RULEDELETE = "delete"
+)
+
+// Message is a add or delete event.
+type Message struct {
+	Type string `json:"type"`
+	Rule *Rule  `json:"rule"`
+}
+
 // Rule is a type to describe alerter rule.
 type Rule struct {
 	// Rule may be cached.

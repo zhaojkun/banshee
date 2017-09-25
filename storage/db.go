@@ -129,8 +129,5 @@ func (db *DB) Close() error {
 		return err
 	}
 	// Eventdb.
-	if err := db.Event.Close(); err != nil {
-		return err
-	}
-	return nil
+	return db.Event.Close()
 }
