@@ -9,23 +9,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Rule types
-const (
-	RULEADD    = "add"
-	RULEDELETE = "delete"
-)
-
 // Exchanges
 const (
 	ExchangeType = "fanout"
 )
 
 const bufferedChangedRulesLimit = 128
-
-type message struct {
-	Type string       `json:"type"`
-	Rule *models.Rule `json:"rule"`
-}
 
 // Options for message hub.
 type Options struct {
@@ -38,12 +27,10 @@ type Options struct {
 
 // Hub is the message hub for rule changes.
 type Hub struct {
-	opts      *Options
-	db        *storage.DB
-	conn      *amqp.Connection
-	msgCh     chan *message
-	addRuleCh chan *models.Rule
-	delRuleCh chan *models.Rule
+	opts  *Options
+	db    *storage.DB
+	conn  *amqp.Connection
+	msgCh chan *models.Message
 }
 
 // New create a  Hub.
@@ -53,12 +40,10 @@ func New(opts *Options, db *storage.DB) (*Hub, error) {
 		return nil, err
 	}
 	h := &Hub{
-		opts:      opts,
-		db:        db,
-		conn:      conn,
-		msgCh:     make(chan *message, bufferedChangedRulesLimit*2),
-		addRuleCh: make(chan *models.Rule, bufferedChangedRulesLimit),
-		delRuleCh: make(chan *models.Rule, bufferedChangedRulesLimit),
+		opts:  opts,
+		db:    db,
+		conn:  conn,
+		msgCh: make(chan *models.Message, bufferedChangedRulesLimit*2),
 	}
 	errCh := make(chan error, 1)
 	if opts.Master {
@@ -76,28 +61,7 @@ func New(opts *Options, db *storage.DB) (*Hub, error) {
 }
 
 func (h *Hub) initRuleListener() {
-	h.db.Admin.RulesCache.OnAdd(h.addRuleCh)
-	h.db.Admin.RulesCache.OnDel(h.delRuleCh)
-	h.initAddRuleListener()
-	h.initDelRuleListener()
-}
-
-func (h *Hub) initAddRuleListener() {
-	go func() {
-		for {
-			rule := <-h.addRuleCh
-			h.msgCh <- &message{Type: RULEADD, Rule: rule}
-		}
-	}()
-}
-
-func (h *Hub) initDelRuleListener() {
-	go func() {
-		for {
-			rule := <-h.delRuleCh
-			h.msgCh <- &message{Type: RULEDELETE, Rule: rule}
-		}
-	}()
+	h.db.Admin.RulesCache.OnChange(h.msgCh)
 }
 
 func (h *Hub) publisherW(errCh chan error) {
@@ -156,7 +120,7 @@ func (h *Hub) consumerW(errCh chan error) {
 	}
 	errCh <- nil
 	for msg := range msgs {
-		var m message
+		var m models.Message
 		err := json.Unmarshal(msg.Body, &m)
 		if err != nil {
 			continue
@@ -165,9 +129,9 @@ func (h *Hub) consumerW(errCh chan error) {
 			continue
 		}
 		log.Infof("received message %v", m)
-		if m.Type == RULEADD {
+		if m.Type == models.RULEADD {
 			h.db.Admin.RulesCache.Put(m.Rule)
-		} else if m.Type == RULEDELETE {
+		} else if m.Type == models.RULEDELETE {
 			h.db.Admin.RulesCache.Delete(m.Rule.ID)
 		}
 	}

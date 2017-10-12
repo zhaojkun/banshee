@@ -275,10 +275,7 @@ func (c *Config) Validate() error {
 	if err := c.Webapp.validateWebapp(); err != nil {
 		return err
 	}
-	if err := c.Alerter.validateAlerter(); err != nil {
-		return err
-	}
-	return nil
+	return c.Alerter.validateAlerter()
 }
 
 func (c *Config) validateGlobals() error {
