@@ -257,6 +257,7 @@ func (c *Config) Copy() *Config {
 	cfg.Webapp.Auth = c.Webapp.Auth
 	cfg.Webapp.Static = c.Webapp.Static
 	cfg.Webapp.Language = c.Webapp.Language
+	cfg.Webapp.URLPrefix = c.Webapp.URLPrefix
 	cfg.Webapp.PrivateDocURL = c.Webapp.PrivateDocURL
 	cfg.Webapp.GraphiteURL = c.Webapp.GraphiteURL
 	cfg.Alerter.Command = c.Alerter.Command
