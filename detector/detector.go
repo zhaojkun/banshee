@@ -106,7 +106,7 @@ func (d *Detector) handle(conn net.Conn) {
 			continue
 		}
 		if err = m.Validate(); err != nil {
-			log.Errorf("invalid metric %v : %v, skipping..", m.Name, err)
+			log.Debugf("invalid metric %v : %v, skipping..", m.Name, err)
 			continue
 		}
 		d.process(m)
