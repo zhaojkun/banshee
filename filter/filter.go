@@ -4,6 +4,7 @@
 package filter
 
 import (
+	"path/filepath"
 	"sync"
 
 	"github.com/eleme/banshee/config"
@@ -161,10 +162,11 @@ func (f *Filter) delRule(rule *models.Rule) {
 
 // MatchedRules returns the matched rules by metric name.
 func (f *Filter) MatchedRules(m *models.Metric, shouldLimitHit bool) (rules []*models.Rule) {
+	isInIgnoreHitList := f.matchIgnoreHitList(m)
 	d := f.trie.Matched(m.Name)
 	for _, v := range d {
 		n := v.(*node)
-		if shouldLimitHit && f.cfg.Detector.EnableIntervalHitLimit {
+		if shouldLimitHit && f.cfg.Detector.EnableIntervalHitLimit && !isInIgnoreHitList {
 			hits := n.incrHits(m)
 			if hits > f.cfg.Detector.IntervalHitLimit {
 				log.Debugf("%s hits over interval hit limit", n.pattern)
@@ -174,4 +176,17 @@ func (f *Filter) MatchedRules(m *models.Metric, shouldLimitHit bool) (rules []*m
 		rules = append(rules, n.currentRules()...)
 	}
 	return
+}
+
+func (f *Filter) matchIgnoreHitList(m *models.Metric) bool {
+	for _, p := range f.cfg.Detector.IntervalLimitIgnoreList {
+		ok, err := filepath.Match(p, m.Name)
+		if err != nil {
+			continue
+		}
+		if ok {
+			return true
+		}
+	}
+	return false
 }

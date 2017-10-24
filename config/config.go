@@ -119,6 +119,7 @@ type configDetector struct {
 	BlackList                 []string           `json:"blackList" yaml:"blacklist"`
 	EnableIntervalHitLimit    bool               `json:"enableIntervalHitLimit" yaml:"enable_interval_hit_limit"`
 	IntervalHitLimit          uint32             `json:"intervalHitLimit" yaml:"interval_hit_limit"`
+	IntervalLimitIgnoreList   []string           `json:"intervalLimitIgnoreList" yaml:"interval_limit_ignore_list"`
 	DefaultThresholdMaxs      map[string]float64 `json:"defaultThresholdMaxs" yaml:"default_threshold_maxs"`
 	DefaultThresholdMins      map[string]float64 `json:"defaultThresholdMins" yaml:"default_threshold_mins"`
 	FillBlankZeros            []string           `json:"fillBlankZeros" yaml:"fill_blank_zeros"`
