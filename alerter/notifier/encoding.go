@@ -161,7 +161,7 @@ func packMessage(ew *models.EventWrapper) string {
 			level, date, project.Name, ruleID, eventID[:7], translatedComment, tp,
 			trend, wrapNumber(value), unit, wrapNumber(avg), unit)
 	} else {
-		if rule.ThresholdMin != 0 && metric.Value < rule.ThresholdMin {
+		if rule.ThresholdMin != 0 && metric.Value <= rule.ThresholdMin {
 			trend = "小于"
 			threshold = rule.ThresholdMin
 		} else {
