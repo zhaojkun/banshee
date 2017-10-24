@@ -207,3 +207,13 @@ func (rule *Rule) SetNumMetrics(n int) {
 	defer rule.Unlock()
 	rule.NumMetrics = n
 }
+
+// AnyTrendRelated checks if all rules is trend related.
+func AnyTrendRelated(rules []*Rule) bool {
+	for _, rule := range rules {
+		if rule.IsTrendRelated() {
+			return true
+		}
+	}
+	return false
+}
