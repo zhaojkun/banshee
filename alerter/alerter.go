@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -142,6 +143,17 @@ func (al *Alerter) getUniversalWebHooks() (univs []models.WebHook, err error) {
 	return
 }
 
+// checkBlackList returns true is given metric match rule in the blacklist.
+func (al *Alerter) checkBlackList(m *models.Metric) bool {
+	for _, p := range al.cfg.Alerter.BlackList {
+		matched, _ := filepath.Match(p, m.Name)
+		if matched {
+			return true
+		}
+	}
+	return false
+}
+
 // checkOneDayAlerts returns true if given metric exceeds the one day
 // limit.
 func (al *Alerter) checkOneDayAlerts(m *models.Metric) bool {
@@ -270,7 +282,11 @@ func (al *Alerter) work() {
 	for {
 		ev := <-al.In
 		ew := models.NewWrapperOfEvent(ev) // Avoid locks
-		if al.checkAlertAt(ew.Metric) {    // Check alert interval
+		if al.checkBlackList(ew.Metric) {  // Check blacklist
+			log.Infof("metric %v is in the blacklist", ew.Metric.Name)
+			continue
+		}
+		if al.checkAlertAt(ew.Metric) { // Check alert interval
 			log.Infof("metric %v does not reaches the minimal alert interval %v", ew.Metric.Name, al.cfg.Alerter.Interval)
 			continue
 		}

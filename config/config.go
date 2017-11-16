@@ -140,14 +140,15 @@ type configWebapp struct {
 }
 
 type configAlerter struct {
-	Command                string `json:"command" yaml:"command"`
-	ExecCommandTimeout     int    `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
-	Workers                int    `json:"workers" yaml:"workers"`
-	Interval               uint32 `json:"interval" yaml:"interval"`
-	AlertCheckInterval     uint32 `json:"alert_check_interval" yaml:"alert_check_interval"`
-	NotifyAfter            int    `json:"notify_after" yaml:"notify_after"`
-	OneDayLimit            uint32 `json:"oneDayLimit" yaml:"one_day_limit"`
-	DefaultSilentTimeRange []int  `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
+	Command                string   `json:"command" yaml:"command"`
+	ExecCommandTimeout     int      `json:"execCommandTimeOut" yaml:"exec_command_time_out"`
+	Workers                int      `json:"workers" yaml:"workers"`
+	Interval               uint32   `json:"interval" yaml:"interval"`
+	AlertCheckInterval     uint32   `json:"alert_check_interval" yaml:"alert_check_interval"`
+	NotifyAfter            int      `json:"notify_after" yaml:"notify_after"`
+	OneDayLimit            uint32   `json:"oneDayLimit" yaml:"one_day_limit"`
+	DefaultSilentTimeRange []int    `json:"defaultSilentTimeRange" yaml:"default_silent_time_range"`
+	BlackList              []string `json:"blackList" yaml:"blacklist"`
 }
 
 type configNotifier struct {
@@ -201,6 +202,7 @@ func New() *Config {
 	c.Alerter.NotifyAfter = DefaultNotifyAfter
 	c.Alerter.OneDayLimit = DefaultAlerterOneDayLimit
 	c.Alerter.DefaultSilentTimeRange = []int{DefaultSilentTimeStart, DefaultSilentTimeEnd}
+	c.Alerter.BlackList = []string{}
 	c.Cluster.Master = true
 	return c
 }
@@ -259,6 +261,7 @@ func (c *Config) Copy() *Config {
 	cfg.Alerter.DefaultSilentTimeRange = c.Alerter.DefaultSilentTimeRange
 	cfg.Alerter.NotifyAfter = c.Alerter.NotifyAfter
 	cfg.Alerter.AlertCheckInterval = c.Alerter.AlertCheckInterval
+	cfg.Alerter.BlackList = c.Alerter.BlackList
 	cfg.Notifier.SlackURL = c.Notifier.SlackURL
 	cfg.Cluster = c.Cluster
 	return cfg
