@@ -343,10 +343,7 @@ func (d *Detector) save(m *models.Metric, idx *models.Index) error {
 	}
 	// Save metric.
 	m.LinkTo(idx) // Important
-	if err := d.db.Metric.Put(m); err != nil {
-		return err
-	}
-	return nil
+	return d.db.Metric.Put(m)
 }
 
 // shouldFill0 returns true if given metric needs to fill blanks with zeros to

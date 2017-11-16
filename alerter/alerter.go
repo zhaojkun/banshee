@@ -68,19 +68,20 @@ func (al *Alerter) Start() {
 }
 
 // hourInRange returns true if given hour is in range [start, end).
+// if start == end means all day will alert.
 // Examples:
-//	hourInRange(10, 7, 19) // true
-//	hourInRange(10, 20, 19) // false
+//  hourInRange(10, 7, 19) // true
+//  hourInRange(10, 20, 19) // false
+//  hourInRange(0, 0, 0) // false
 func hourInRange(hour, start, end int) bool {
-	switch {
-	case start < end:
-		return start <= hour && hour < end
-	case start > end:
-		return start <= hour || hour < end
-	case start == end:
-		return start == hour
-	}
-	return false
+    switch {
+    case start < end:
+        return start <= hour && hour < end
+    case start > end:
+        return start <= hour || hour < end
+    default:
+        return false
+    }
 }
 
 // shouldProjBeSilent returns true if given project should be silent at this
@@ -327,11 +328,13 @@ func (al *Alerter) work() {
 			log.Errorf("get user from project %v: %v", ew.Project.Name, err)
 			continue
 		}
-		for _, user := range users {
+		ew.AlarmUsers = make([]*models.User, 0, len(users))
+		for i, user := range users {
 			ew.User = &user
 			if ew.Rule.Level < user.RuleLevel {
 				continue
 			}
+			ew.AlarmUsers = append(ew.AlarmUsers, &users[i])
 			if len(al.cfg.Alerter.Command) == 0 {
 				log.Warnf("alert command not configured")
 				continue
@@ -362,7 +365,6 @@ func (al *Alerter) work() {
 				log.Errorf("notifier %s: %v", hook.Name, err)
 			}
 			log.Infof("send to webhook %s with %s ok", hook.Name, ew.Metric.Name)
-
 		}
 		if len(users) != 0 || len(ew.Project.WebHooks) != 0 {
 			health.IncrNumAlertingEvents(1)
