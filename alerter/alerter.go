@@ -74,27 +74,24 @@ func (al *Alerter) Start() {
 //  hourInRange(10, 20, 19) // false
 //  hourInRange(0, 0, 0) // false
 func hourInRange(hour, start, end int) bool {
-    switch {
-    case start < end:
-        return start <= hour && hour < end
-    case start > end:
-        return start <= hour || hour < end
-    default:
-        return false
-    }
+	switch {
+	case start < end:
+		return start <= hour && hour < end
+	case start > end:
+		return start <= hour || hour < end
+	default:
+		return false
+	}
 }
 
 // shouldProjBeSilent returns true if given project should be silent at this
 // time.
 func (al *Alerter) shoudProjBeSilent(proj *models.Project) bool {
-	var start, end int
-	if proj.EnableSilent {
-		start = proj.SilentTimeStart
-		end = proj.SilentTimeEnd
-	} else {
-		start = al.cfg.Alerter.DefaultSilentTimeRange[0]
-		end = al.cfg.Alerter.DefaultSilentTimeRange[1]
+	if !proj.EnableSilent {
+		return false
 	}
+	start := proj.SilentTimeStart
+	end := proj.SilentTimeEnd
 	now := time.Now().Hour()
 	return hourInRange(now, start, end)
 }
