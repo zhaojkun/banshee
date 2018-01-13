@@ -17,6 +17,12 @@ storage:
     # If the configured path dose not exist, banshee would create one with
     # this path.
     path: ./data
+    admin:
+      host: "127.0.0.1"
+      port: 3306
+      user: "banshee"
+      password: ""
+      dbname: "banshee"
 
 detector:
     # Port for detector tcp server, default: 2015
