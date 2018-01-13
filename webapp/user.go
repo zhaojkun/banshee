@@ -134,9 +134,11 @@ func deleteUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ResponseError(w, NewUnexceptedWebError(err))
 		return
 	}
-	if err := db.Admin.DB().Model(user).Association("Projects").Delete(projs).Error; err != nil {
-		ResponseError(w, NewUnexceptedWebError(err))
-		return
+	if len(projs) > 0 {
+		if err := db.Admin.DB().Model(user).Association("Projects").Delete(projs).Error; err != nil {
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
 	}
 	// Delete.
 	if err := db.Admin.DB().Delete(user).Error; err != nil {

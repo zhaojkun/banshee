@@ -204,9 +204,11 @@ func deleteProject(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		ResponseError(w, NewUnexceptedWebError(err))
 		return
 	}
-	if err := db.Admin.DB().Model(proj).Association("Users").Delete(users).Error; err != nil {
-		ResponseError(w, NewUnexceptedWebError(err))
-		return
+	if len(users) > 0 {
+		if err := db.Admin.DB().Model(proj).Association("Users").Delete(users).Error; err != nil {
+			ResponseError(w, NewUnexceptedWebError(err))
+			return
+		}
 	}
 	// Delete.
 	if err := db.Admin.DB().Delete(proj).Error; err != nil {

@@ -170,6 +170,11 @@ func New() *Config {
 	c.Period = DefaultPeriod
 	c.Expiration = DefaultExpiration
 	c.Storage.Path = "./data"
+	c.Storage.Admin.Host = "127.0.0.1"
+	c.Storage.Admin.Port = 3306
+	c.Storage.Admin.User = "banshee"
+	c.Storage.Admin.Password = ""
+	c.Storage.Admin.DBName = "banshee"
 	c.Detector.Port = 2015
 	c.Detector.TrendingFactorLowLevel = DefaultTrendingFactorLowLevel
 	c.Detector.TrendingFactorMiddleLevel = DefaultTrendingFactorMiddleLevel
